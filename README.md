@@ -1,6 +1,6 @@
-# MiniMax Tic-Tac-Toe (C)
+# MiniMax Tic-Tac-Toe
 
-A compact, algorithm-focused Tic-Tac-Toe engine implemented in C featuring a Minimax search with alpha–beta pruning and targeted move ordering. The board size is configurable via `BOARD_SIZE` (default 3).
+A compact, algorithm-focused Tic-Tac-Toe engine implemented in C featuring a full-depth Minimax search with alpha–beta pruning and targeted move ordering. The board size is configurable via `BOARD_SIZE` (default 3). On a 3×3 board the engine plays perfectly — self-play always ends in a draw.
 
 - Language: C
 - Build system: Make
@@ -134,10 +134,11 @@ Interactive game:
 Self-play benchmark mode:
 
 - `--selfplay [games] [--quiet]`
-  - Example: `./ttt --selfplay 10000 --quiet`
+  - Example: `./ttt -s 10000 -q`
   - Without `--quiet`, timing and throughput (games/s) are printed.
   - Short flags are supported: `-s` for `--selfplay`, `-q` for `--quiet`.
   - If `[games]` is omitted, the default is `1000`.
+  - On a 3×3 board all games end in ties — this is the expected result for optimal play.
 
 ## Using the engine
 
