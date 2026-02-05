@@ -15,7 +15,7 @@
 /* Global game state used by the simple CLI program. */
 char board[BOARD_SIZE][BOARD_SIZE];
 char player_turn = 'x';
-int move_count = 0; /* number of moves played so far */
+static int move_count = 0; /* number of moves played so far */
 char human_symbol = 'x';
 char ai_symbol = 'o';
 
@@ -107,6 +107,41 @@ void printGameResult(GameResult result)
     }
 }
 
+/* Read and validate a single board coordinate from stdin. Returns 0-based index. */
+static int getValidCoord(const char *prompt)
+{
+    int value;
+
+    while (1)
+    {
+        printf("%s", prompt);
+        int rc = scanf("%d", &value);
+
+        if (rc != 1)
+        {
+            if (rc == EOF)
+            {
+                printf("\nEOF received. Exiting game.\n");
+                exit(0);
+            }
+
+            printf("Invalid input. Enter a number 1-%d.\n", BOARD_SIZE);
+            discardLine();
+            continue;
+        }
+
+        discardLine();
+
+        if (value < 1 || value > BOARD_SIZE)
+        {
+            printf("Out of range (1-%d).\n", BOARD_SIZE);
+            continue;
+        }
+
+        return value - 1;
+    }
+}
+
 /*
  * Prompt the user for a move as 1-based (column, row), validate input, and
  * return 0-based (row, col). Re-prompts on invalid or out-of-range input.
@@ -116,79 +151,17 @@ void getMove(int *out_row, int *out_col)
 {
     while (1)
     {
-        int col_input, row_input;
-
-        while (1)
-        {
-            printf("Input column: ");
-            int rc = scanf("%d", &col_input);
-
-            if (rc != 1)
-            {
-                if (rc == EOF)
-                {
-                    printf("\nEOF received. Exiting game.\n");
-                    exit(0);
-                }
-
-                printf("Invalid column input. Enter a number 1-%d.\n", BOARD_SIZE);
-                discardLine();
-                continue;
-            }
-
-            discardLine();
-
-            if (col_input < 1 || col_input > BOARD_SIZE)
-            {
-                printf("Column out of range (1-%d).\n", BOARD_SIZE);
-                continue;
-            }
-
-            break;
-        }
-
-        while (1)
-        {
-            printf("Input row: ");
-            int rc = scanf("%d", &row_input);
-
-            if (rc != 1)
-            {
-                if (rc == EOF)
-                {
-                    printf("\nEOF received. Exiting game.\n");
-                    exit(0);
-                }
-
-                printf("Invalid row input. Enter a number 1-%d.\n", BOARD_SIZE);
-                discardLine();
-                continue;
-            }
-
-            discardLine();
-
-            if (row_input < 1 || row_input > BOARD_SIZE)
-            {
-                printf("Row out of range (1-%d).\n", BOARD_SIZE);
-                continue;
-            }
-
-            break;
-        }
-
-        int col = col_input - 1;
-        int row = row_input - 1;
+        int col = getValidCoord("Input column: ");
+        int row = getValidCoord("Input row: ");
 
         if (board[row][col] != ' ')
         {
-            printf("Cell already occupied. Choose another.\n");
-            printf("\n");
+            printf("Cell already occupied. Choose another.\n\n");
             continue;
         }
 
         *out_row = row;
         *out_col = col;
-
         return;
     }
 }
