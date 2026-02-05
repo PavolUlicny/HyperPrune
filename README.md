@@ -4,7 +4,7 @@ A compact, algorithm-focused Tic-Tac-Toe engine implemented in C featuring a ful
 
 - Language: C
 - Build system: Make
-- License: Unlicense
+- License: MIT
 
 ## Minimax-first overview
 
@@ -186,4 +186,4 @@ transposition_table_free();
 
 ## License
 
-This project is released under the Unlicense. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
