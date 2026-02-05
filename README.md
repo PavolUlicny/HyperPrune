@@ -4,7 +4,7 @@ A compact, algorithm-focused Tic-Tac-Toe engine implemented in C featuring a ful
 
 - Language: C
 - Build system: Make
-- License: Unlicense
+- License: MIT
 
 ## Minimax-first overview
 
@@ -160,4 +160,4 @@ getAiMove(board, /* aiPlayer */ 'x', &r, &c);
 
 ## License
 
-This project is released under the Unlicense. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
