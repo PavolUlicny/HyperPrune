@@ -42,7 +42,7 @@ static int numDigits(int number)
 }
 
 /* Initialize all board cells to ' ' (empty). */
-void initializeBoard()
+void initializeBoard(void)
 {
     for (size_t i = 0; i < BOARD_SIZE; i++)
     {
@@ -54,7 +54,7 @@ void initializeBoard()
 }
 
 /* Pretty-print the board with 1-based indices on both axes. */
-void printBoard()
+void printBoard(void)
 {
     int digits = numDigits(BOARD_SIZE);
 
