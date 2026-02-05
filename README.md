@@ -151,7 +151,6 @@ Minimal example:
 
 int main(void)
 {
-    char board[BOARD_SIZE][BOARD_SIZE];
     initializeBoard();
 
     // ... populate board with current position ...
