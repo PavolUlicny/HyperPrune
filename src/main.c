@@ -7,7 +7,6 @@
  *   * --quiet/-q suppresses timing output
  */
 
-#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -106,11 +105,10 @@ static int selfPlay(int gameCount, int quiet)
     int ai1Wins = 0;
     int ai2Wins = 0;
     int ties = 0;
-    struct timespec startTime;
-    struct timespec endTime;
+    clock_t startTime = 0;
 
     if (!quiet)
-        clock_gettime(CLOCK_MONOTONIC, &startTime);
+        startTime = clock();
 
     for (int g = 0; g < gameCount; ++g)
     {
@@ -149,8 +147,7 @@ static int selfPlay(int gameCount, int quiet)
 
     if (!quiet)
     {
-        clock_gettime(CLOCK_MONOTONIC, &endTime);
-        double elapsed = (double)(endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1e9;
+        double elapsed = (double)(clock() - startTime) / CLOCKS_PER_SEC;
         double throughput = elapsed > 0 ? (gameCount / elapsed) : 0.0;
         printf("Self-play finished: %d games\nAI1Wins = %d AI2Wins = %d Ties = %d\n", gameCount, ai1Wins, ai2Wins, ties);
         printf("Elapsed: %.3f s\nThroughput: %.1f games/s\n", elapsed, throughput);
