@@ -126,13 +126,13 @@ Run the binary:
 
 ### Change board size
 
-`BOARD_SIZE` defaults to 3 in `src/TicTacToe/tic_tac_toe.h`. You can override at compile time, e.g.:
+`BOARD_SIZE` defaults to 3. Override it at compile time via Make:
 
 ```sh
-make CFLAGS+='-DBOARD_SIZE=4'
+make BOARD_SIZE=4
 ```
 
-…or by editing `BOARD_SIZE` in [`tic_tac_toe.h`](src/TicTacToe/tic_tac_toe.h).
+…or by editing the default in [`tic_tac_toe.h`](src/TicTacToe/tic_tac_toe.h).
 
 Note: The search space grows exponentially with board size. The transposition table provides dramatic speedup for larger boards (500x+ on 4×4), making boards up to 4×4 practical for self-play benchmarking.
 
