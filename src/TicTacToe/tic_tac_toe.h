@@ -44,10 +44,10 @@ extern "C"
     extern char ai_symbol;    /* AI's symbol (opposite of human_symbol) */
 
     /** Set all board cells to ' ' (empty). */
-    void initializeBoard();
+    void initializeBoard(void);
 
     /** Pretty-print the current board to stdout with row/column indices. */
-    void printBoard();
+    void printBoard(void);
 
     /** Print a human-readable message and board for a terminal result. */
     void printGameResult(GameResult result);
