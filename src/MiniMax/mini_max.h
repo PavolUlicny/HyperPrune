@@ -22,6 +22,11 @@
 
 #include "../TicTacToe/tic_tac_toe.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /**
  * Compute the AI's next move using Minimax with alpha–beta pruning.
  *
@@ -37,5 +42,9 @@
  *  - Otherwise, orders candidate moves and runs a full-depth alpha–beta search
  */
 void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, int *out_col);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
