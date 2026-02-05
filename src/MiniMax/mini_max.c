@@ -382,7 +382,6 @@ static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int de
  */
 static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta)
 {
-
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
     {
@@ -438,7 +437,7 @@ static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int dep
  * Public entry: select the best move for aiPlayer.
  * Short-circuits:
  *  - Terminal board -> (-1, -1)
- *  - Empty board    -> center (even sizes pick (BOARD_SIZE/2, BOARD_SIZE/2))
+ *  - Empty board    -> center (BOARD_SIZE/2, BOARD_SIZE/2) without searching
  */
 void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, int *out_col)
 {
@@ -453,19 +452,11 @@ void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, 
     MoveList emptySpots;
     findEmptySpots(board, &emptySpots);
 
-    if (emptySpots.count == BOARD_SIZE * BOARD_SIZE)
+    if (emptySpots.count == MAX_MOVES)
     {
-        int lowerMiddle = (BOARD_SIZE - 1) / 2;
-        int upperMiddle = BOARD_SIZE / 2;
-        int centerRow = lowerMiddle;
-        int centerCol = lowerMiddle;
-        if (BOARD_SIZE % 2 == 0)
-        {
-            centerRow = upperMiddle;
-            centerCol = upperMiddle;
-        }
-        *out_row = centerRow;
-        *out_col = centerCol;
+        /* center square; for even boards, lower-right of the central 2×2 */
+        *out_row = BOARD_SIZE / 2;
+        *out_col = BOARD_SIZE / 2;
         return;
     }
 
