@@ -174,7 +174,6 @@ int main(void)
     zobrist_init();
     transposition_table_init(1000000);  // 1M entries (~16 MB)
 
-    char board[BOARD_SIZE][BOARD_SIZE];
     initializeBoard();
 
     // ... populate board with current position ...
