@@ -119,7 +119,7 @@ static int selfPlay(int gameCount, int quiet)
     if (!quiet)
     {
         clock_gettime(CLOCK_MONOTONIC, &endTime);
-        double elapsed = (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_nsec - startTime.tv_nsec) / 1e9;
+        double elapsed = (double)(endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1e9;
         double throughput = elapsed > 0 ? (gameCount / elapsed) : 0.0;
         printf("Self-play finished: %d games. AI1Wins=%d AI2Wins=%d Ties=%d\n", gameCount, ai1Wins, ai2Wins, ties);
         printf("Elapsed: %.3f s, Throughput: %.1f games/s\n", elapsed, throughput);
@@ -139,9 +139,25 @@ int main(int argc, char **argv)
     {
         int games = 1000;
         int quiet = 0;
+        int flag_start = 2;
+
         if (argc >= 3)
-            games = atoi(argv[2]);
-        for (int i = 3; i < argc; ++i)
+        {
+            char *endp;
+            long val = strtol(argv[2], &endp, 10);
+            if (endp != argv[2] && *endp == '\0')
+            {
+                if (val < 1)
+                {
+                    fprintf(stderr, "Game count must be a positive integer.\n");
+                    return 1;
+                }
+                games = (int)val;
+                flag_start = 3;
+            }
+        }
+
+        for (int i = flag_start; i < argc; ++i)
         {
             if (strcmp(argv[i], "--quiet") == 0 || strcmp(argv[i], "-q") == 0)
                 quiet = 1;
