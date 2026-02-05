@@ -168,21 +168,25 @@ Minimal example:
 #include "MiniMax/mini_max.h"
 #include "MiniMax/transposition.h"
 
-// Initialize transposition table (call once at program start)
-zobrist_init();
-transposition_table_init(1000000);  // 1M entries (~16 MB)
+int main(void)
+{
+    // Initialize transposition table (call once at program start)
+    zobrist_init();
+    transposition_table_init(1000000);  // 1M entries (~16 MB)
 
-char board[BOARD_SIZE][BOARD_SIZE];
-initializeBoard();
+    char board[BOARD_SIZE][BOARD_SIZE];
+    initializeBoard();
 
-// ... populate board with current position ...
+    // ... populate board with current position ...
 
-int r = -1, c = -1;
-getAiMove(board, /* aiPlayer */ 'x', &r, &c);
-// If r,c are -1,-1 the position was terminal; otherwise play (r,c)
+    int r = -1, c = -1;
+    getAiMove(board, /* aiPlayer */ 'x', &r, &c);
+    // If r,c are -1,-1 the position was terminal; otherwise play (r,c)
 
-// Clean up at program exit
-transposition_table_free();
+    // Clean up at program exit
+    transposition_table_free();
+    return 0;
+}
 ```
 
 ## License
