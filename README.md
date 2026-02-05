@@ -149,14 +149,18 @@ Minimal example:
 #include "TicTacToe/tic_tac_toe.h"
 #include "MiniMax/mini_max.h"
 
-char board[BOARD_SIZE][BOARD_SIZE];
-initializeBoard();
+int main(void)
+{
+    char board[BOARD_SIZE][BOARD_SIZE];
+    initializeBoard();
 
-// ... populate board with current position ...
+    // ... populate board with current position ...
 
-int r = -1, c = -1;
-getAiMove(board, /* aiPlayer */ 'x', &r, &c);
-// If r,c are -1,-1 the position was terminal; otherwise play (r,c)
+    int r = -1, c = -1;
+    getAiMove(board, /* aiPlayer */ 'x', &r, &c);
+    // If r,c are -1,-1 the position was terminal; otherwise play (r,c)
+    return 0;
+}
 ```
 
 ## License
