@@ -22,12 +22,14 @@ RELEASE_CFLAGS := -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -fno-plt
 
 ifeq ($(BUILD),debug)
 MODE_CFLAGS := $(DEBUG_CFLAGS)
+MODE_LDFLAGS :=
 else
 MODE_CFLAGS := $(RELEASE_CFLAGS)
+MODE_LDFLAGS := -flto
 endif
 
 CFLAGS := $(WARNINGS) $(BASE_CFLAGS) $(MODE_CFLAGS)
-LDFLAGS := -flto
+LDFLAGS := $(MODE_LDFLAGS)
 
 .PHONY: all clean run rebuild debug release
 
