@@ -10,6 +10,7 @@
 #define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <string.h>
 #include <time.h>
 #include "TicTacToe/tic_tac_toe.h"
@@ -147,7 +148,7 @@ int main(int argc, char **argv)
             long val = strtol(argv[2], &endp, 10);
             if (endp != argv[2] && *endp == '\0')
             {
-                if (val < 1)
+                if (val < 1 || val > INT_MAX)
                 {
                     fprintf(stderr, "Game count must be a positive integer.\n");
                     return 1;
