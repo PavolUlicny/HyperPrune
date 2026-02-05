@@ -40,7 +40,7 @@ typedef enum
 } HelperScores;
 
 /* Collect all empty cells in row-major order. */
-static void findEmptySpots(const char board[BOARD_SIZE][BOARD_SIZE], MoveList *out_emptySpots)
+static void findEmptySpots(char board[BOARD_SIZE][BOARD_SIZE], MoveList *out_emptySpots)
 {
     out_emptySpots->count = 0;
     for (int i = 0; i < BOARD_SIZE; i++)
@@ -105,7 +105,7 @@ static int moveWeight(int row, int col)
  * Fast win check based on the last move applied.
  * Only scans the affected row, column, and relevant diagonal(s).
  */
-static int didLastMoveWin(const char board[BOARD_SIZE][BOARD_SIZE], int row, int col)
+static int didLastMoveWin(char board[BOARD_SIZE][BOARD_SIZE], int row, int col)
 {
     char player = board[row][col];
     if (player == ' ')
@@ -222,7 +222,7 @@ static void orderMoves(MoveList *moves)
  *  -  0 for tie
  *  -  1 (CONTINUE_SCORE) if the game is not terminal
  */
-static int boardScore(const char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer)
+static int boardScore(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer)
 {
     for (int i = 0; i < BOARD_SIZE; i++)
     {
