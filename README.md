@@ -54,8 +54,6 @@ Depth-based scoring tweaks terminal values to prefer quicker wins and delay loss
 - `static int boardScore(const char board[...], char aiPlayer)`
   - Evaluates only for terminal detection: returns `AI_WIN_SCORE`/`PLAYER_WIN_SCORE` based on who completed a line relative to `aiPlayer`, `TIE_SCORE` if full and no winner, or `CONTINUE_SCORE` when moves remain.
 
-For a readable sketch, see the included pseudocode: [`pseudoMiniMax.txt`](pseudoMiniMax.txt).
-
 ## Key sources
 
 - Engine: [`src/MiniMax/mini_max.c`](src/MiniMax/mini_max.c), [`src/MiniMax/mini_max.h`](src/MiniMax/mini_max.h)
