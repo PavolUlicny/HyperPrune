@@ -64,3 +64,6 @@ dkms.conf
 *.t
 ttt
 build/
+
+# .claude folder
+.claude/ 
