@@ -84,6 +84,7 @@ Depth-based scoring tweaks terminal values to prefer quicker wins and delay loss
 Requirements:
 
 - GCC or Clang compatible with C11
+- Linux, macOS, or Windows (MinGW)
 
 Common targets:
 
@@ -95,7 +96,7 @@ Common targets:
 
 Release build flags include:
 
-- `-O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -fno-plt`
+- `-O3 -march=native -flto -fomit-frame-pointer -DNDEBUG`
 
 ### Build without Make (manual)
 
@@ -104,7 +105,7 @@ You can compile directly with gcc or clang. The commands below produce the same 
 - Release (gcc):
 
 ```sh
-gcc -std=c11 -Wall -Wextra -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -fno-plt -pipe \
+gcc -std=c11 -Wall -Wextra -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -pipe \
   src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -o ttt
 ```
 
@@ -138,7 +139,7 @@ Note: The search space grows exponentially with board size. The transposition ta
 To override `BOARD_SIZE` without Make, pass `-DBOARD_SIZE=4` (example) to the compile command, e.g.:
 
 ```sh
-gcc -std=c11 -Wall -Wextra -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -fno-plt -pipe \
+gcc -std=c11 -Wall -Wextra -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -pipe \
   -DBOARD_SIZE=4 \
   src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -o ttt
 ```
