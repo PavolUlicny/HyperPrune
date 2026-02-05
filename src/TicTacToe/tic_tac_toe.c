@@ -44,9 +44,9 @@ static int numDigits(int number)
 /* Initialize all board cells to ' ' (empty). */
 void initializeBoard(void)
 {
-    for (size_t i = 0; i < BOARD_SIZE; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
-        for (size_t j = 0; j < BOARD_SIZE; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
             board[i][j] = ' ';
         }
