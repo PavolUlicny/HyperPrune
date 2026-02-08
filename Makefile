@@ -94,7 +94,7 @@ pgo:
 	@echo "[PGO  ] Step 3/3: Rebuilding with profile-guided optimizations..."
 	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native $(PGO_USE) -flto -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) $(SOURCES) -o $(TARGET)
 	@$(MAKE) pgo-clean > /dev/null 2>&1
-	@echo "[PGO  ] ✅ PGO-optimized binary ready! (~25% faster than standard release)"
+	@echo "[PGO  ] PGO-optimized binary ready! (~25% faster than standard release)"
 
 pgo-clean:
 	@echo "[CLEAN] removing PGO profile data"
