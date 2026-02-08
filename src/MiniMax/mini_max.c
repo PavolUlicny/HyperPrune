@@ -41,13 +41,22 @@ typedef enum
     INF = INT_MAX
 } HelperScores;
 
+/*
+ * Safe mask for valid board positions.
+ * Avoids undefined behavior when MAX_MOVES == 64 (1ULL << 64 is UB).
+ */
+static inline uint64_t valid_positions_mask(void)
+{
+    return (MAX_MOVES == 64) ? ~0ULL : ((1ULL << MAX_MOVES) - 1);
+}
+
 /* Collect all empty cells using bit scanning. */
 static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
 {
     out_emptySpots->count = 0;
 
     uint64_t empty = ~(board.x_pieces | board.o_pieces);
-    empty &= ((1ULL << MAX_MOVES) - 1); /* Mask valid positions */
+    empty &= valid_positions_mask(); /* Mask valid positions */
 
 #ifdef __GNUC__
     /* Use compiler builtin for fast bit scanning */
@@ -201,8 +210,7 @@ static int boardScore(Bitboard board, char aiPlayer)
 
     /* Check if board is full (tie) */
     uint64_t occupied = board.x_pieces | board.o_pieces;
-    uint64_t all_cells = (1ULL << MAX_MOVES) - 1;
-    if (occupied == all_cells)
+    if (occupied == valid_positions_mask())
         return TIE_SCORE;
 
     return CONTINUE_SCORE;
