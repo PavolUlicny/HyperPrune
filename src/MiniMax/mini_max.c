@@ -41,20 +41,36 @@ typedef enum
     INF = INT_MAX
 } HelperScores;
 
-/* Collect all empty cells in row-major order. */
-static void findEmptySpots(char board[BOARD_SIZE][BOARD_SIZE], MoveList *out_emptySpots)
+/* Collect all empty cells using bit scanning. */
+static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
 {
     out_emptySpots->count = 0;
-    for (int i = 0; i < BOARD_SIZE; i++)
+
+    uint64_t empty = ~(board.x_pieces | board.o_pieces);
+    empty &= ((1ULL << MAX_MOVES) - 1); /* Mask valid positions */
+
+#ifdef __GNUC__
+    /* Use compiler builtin for fast bit scanning */
+    while (empty)
     {
-        for (int j = 0; j < BOARD_SIZE; j++)
+        int bit = __builtin_ctzll(empty); /* Count trailing zeros (O(1)) */
+        out_emptySpots->moves[out_emptySpots->count++] = (Move){
+            .row = BIT_TO_ROW(bit),
+            .col = BIT_TO_COL(bit)};
+        empty &= empty - 1; /* Clear least significant bit */
+    }
+#else
+    /* Fallback for non-GCC compilers */
+    for (int i = 0; i < MAX_MOVES; i++)
+    {
+        if (empty & (1ULL << i))
         {
-            if (board[i][j] == ' ')
-            {
-                out_emptySpots->moves[out_emptySpots->count++] = (Move){i, j};
-            }
+            out_emptySpots->moves[out_emptySpots->count++] = (Move){
+                .row = BIT_TO_ROW(i),
+                .col = BIT_TO_COL(i)};
         }
     }
+#endif
 }
 
 /*
@@ -104,70 +120,16 @@ static int moveWeight(int row, int col)
 }
 
 /*
- * Fast win check based on the last move applied.
- * Only scans the affected row, column, and relevant diagonal(s).
+ * Fast win check based on the last move applied (uses bitboard).
  */
-static int didLastMoveWin(char board[BOARD_SIZE][BOARD_SIZE], int row, int col)
+static int didLastMoveWin(Bitboard board, int row, int col)
 {
-    char player = board[row][col];
+    char player = bitboard_get_cell(board, row, col);
     if (player == ' ')
         return 0;
 
-    int win = 1;
-    for (int c = 0; c < BOARD_SIZE; ++c)
-    {
-        if (board[row][c] != player)
-        {
-            win = 0;
-            break;
-        }
-    }
-    if (win)
-        return 1;
-
-    win = 1;
-    for (int r = 0; r < BOARD_SIZE; ++r)
-    {
-        if (board[r][col] != player)
-        {
-            win = 0;
-            break;
-        }
-    }
-    if (win)
-        return 1;
-
-    if (row == col)
-    {
-        win = 1;
-        for (int i = 0; i < BOARD_SIZE; ++i)
-        {
-            if (board[i][i] != player)
-            {
-                win = 0;
-                break;
-            }
-        }
-        if (win)
-            return 1;
-    }
-
-    if (row + col == BOARD_SIZE - 1)
-    {
-        win = 1;
-        for (int i = 0; i < BOARD_SIZE; ++i)
-        {
-            if (board[i][BOARD_SIZE - 1 - i] != player)
-            {
-                win = 0;
-                break;
-            }
-        }
-        if (win)
-            return 1;
-    }
-
-    return 0;
+    uint64_t player_pieces = (player == 'x') ? board.x_pieces : board.o_pieces;
+    return bitboard_did_last_move_win(player_pieces, row, col);
 }
 
 /*
@@ -218,115 +180,41 @@ static void orderMoves(MoveList *moves)
 }
 
 /*
- * Terminal evaluation:
+ * Terminal evaluation using bitboard win detection:
  *  - +100 if a line completed by aiPlayer
  *  - -100 if a line completed by opponent
  *  -  0 for tie
  *  -  1 (CONTINUE_SCORE) if the game is not terminal
  */
-static int boardScore(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer)
+static int boardScore(Bitboard board, char aiPlayer)
 {
-    for (int i = 0; i < BOARD_SIZE; i++)
-    {
-        char first = board[i][0];
+    /* Check if AI has won */
+    uint64_t ai_pieces = (aiPlayer == 'x') ? board.x_pieces : board.o_pieces;
+    if (bitboard_has_won(ai_pieces))
+        return AI_WIN_SCORE;
 
-        if (first == ' ')
-            continue;
+    /* Check if opponent has won */
+    char opponent = (aiPlayer == 'x') ? 'o' : 'x';
+    uint64_t opponent_pieces = (opponent == 'x') ? board.x_pieces : board.o_pieces;
+    if (bitboard_has_won(opponent_pieces))
+        return PLAYER_WIN_SCORE;
 
-        int allSame = 1;
+    /* Check if board is full (tie) */
+    uint64_t occupied = board.x_pieces | board.o_pieces;
+    uint64_t all_cells = (1ULL << MAX_MOVES) - 1;
+    if (occupied == all_cells)
+        return TIE_SCORE;
 
-        for (int j = 1; j < BOARD_SIZE; j++)
-        {
-            if (board[i][j] != first)
-            {
-                allSame = 0;
-                break;
-            }
-        }
-
-        if (allSame)
-            return (first == aiPlayer) ? AI_WIN_SCORE : PLAYER_WIN_SCORE;
-    }
-
-    for (int j = 0; j < BOARD_SIZE; j++)
-    {
-        char first = board[0][j];
-
-        if (first == ' ')
-            continue;
-
-        int allSame = 1;
-
-        for (int i = 1; i < BOARD_SIZE; i++)
-        {
-            if (board[i][j] != first)
-            {
-                allSame = 0;
-                break;
-            }
-        }
-
-        if (allSame)
-            return (first == aiPlayer) ? AI_WIN_SCORE : PLAYER_WIN_SCORE;
-    }
-
-    char first = board[0][0];
-
-    if (first != ' ')
-    {
-        int allSame = 1;
-
-        for (int i = 1; i < BOARD_SIZE; i++)
-        {
-            if (board[i][i] != first)
-            {
-                allSame = 0;
-                break;
-            }
-        }
-
-        if (allSame)
-            return (first == aiPlayer) ? AI_WIN_SCORE : PLAYER_WIN_SCORE;
-    }
-
-    first = board[0][BOARD_SIZE - 1];
-
-    if (first != ' ')
-    {
-        int allSame = 1;
-
-        for (int i = 1; i < BOARD_SIZE; i++)
-        {
-            if (board[i][BOARD_SIZE - 1 - i] != first)
-            {
-                allSame = 0;
-                break;
-            }
-        }
-
-        if (allSame)
-            return (first == aiPlayer) ? AI_WIN_SCORE : PLAYER_WIN_SCORE;
-    }
-
-    for (int i = 0; i < BOARD_SIZE; i++)
-    {
-        for (int j = 0; j < BOARD_SIZE; j++)
-        {
-            if (board[i][j] == ' ')
-                return CONTINUE_SCORE;
-        }
-    }
-
-    return TIE_SCORE;
+    return CONTINUE_SCORE;
 }
 
-static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta, uint64_t hash);
+static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int beta, uint64_t hash);
 
 /*
  * Maximizing ply (AI).
  * Returns best score achievable for aiPlayer from the current position.
  */
-static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta, uint64_t hash)
+static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int beta, uint64_t hash)
 {
     /* Transposition table probe */
     int transposition_table_score;
@@ -359,7 +247,7 @@ static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int de
     for (int i = 0; i < emptySpots.count; i++)
     {
         Move move = emptySpots.moves[i];
-        board[move.row][move.col] = aiPlayer;
+        bitboard_make_move(&board, move.row, move.col, aiPlayer);
         uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
         int score;
         if (didLastMoveWin(board, move.row, move.col))
@@ -375,7 +263,7 @@ static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int de
         {
             score = miniMaxLow(board, aiPlayer, depth + 1, alpha, beta, new_hash);
         }
-        board[move.row][move.col] = ' ';
+        bitboard_unmake_move(&board, move.row, move.col, aiPlayer);
 
         if (score > bestScore)
         {
@@ -412,7 +300,7 @@ static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int de
  * Minimizing ply (opponent).
  * Returns worst-case score for aiPlayer given optimal opponent play.
  */
-static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta, uint64_t hash)
+static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int beta, uint64_t hash)
 {
     /* Transposition table probe */
     int transposition_table_score;
@@ -446,7 +334,7 @@ static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int dep
     for (int i = 0; i < emptySpots.count; i++)
     {
         Move move = emptySpots.moves[i];
-        board[move.row][move.col] = opponent;
+        bitboard_make_move(&board, move.row, move.col, opponent);
         uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, opponent);
         int score;
         if (didLastMoveWin(board, move.row, move.col))
@@ -462,7 +350,7 @@ static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int dep
         {
             score = miniMaxHigh(board, aiPlayer, depth + 1, alpha, beta, new_hash);
         }
-        board[move.row][move.col] = ' ';
+        bitboard_unmake_move(&board, move.row, move.col, opponent);
 
         if (score < bestScore)
         {
@@ -501,7 +389,7 @@ static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int dep
  *  - Terminal board -> (-1, -1)
  *  - Empty board    -> center (BOARD_SIZE/2, BOARD_SIZE/2) without searching
  */
-void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, int *out_col)
+void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
 {
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
@@ -540,11 +428,11 @@ void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, 
     for (int i = 0; i < emptySpots.count; ++i)
     {
         Move move = emptySpots.moves[i];
-        board[move.row][move.col] = aiPlayer;
+        bitboard_make_move(&board, move.row, move.col, aiPlayer);
 
         if (didLastMoveWin(board, move.row, move.col))
         {
-            board[move.row][move.col] = ' ';
+            bitboard_unmake_move(&board, move.row, move.col, aiPlayer);
             *out_row = move.row;
             *out_col = move.col;
             return;
@@ -552,7 +440,7 @@ void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, 
 
         uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
         int score = miniMaxLow(board, aiPlayer, 1, alpha, beta, new_hash);
-        board[move.row][move.col] = ' ';
+        bitboard_unmake_move(&board, move.row, move.col, aiPlayer);
 
         if (score > bestScore)
         {

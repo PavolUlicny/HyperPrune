@@ -11,8 +11,8 @@
  * (e.g., 3x3) but supports arbitrary square sizes via BOARD_SIZE.
  *
  * Board representation:
- * - A 2D char array sized [BOARD_SIZE][BOARD_SIZE]
- * - 'x' and 'o' represent players; ' ' (space) represents an empty cell
+ * - Bitboard structure with two uint64_t (x_pieces, o_pieces)
+ * - 'x' and 'o' pieces stored as bit positions (max 8x8 = 64 bits)
  *
  * Notable characteristics:
  * - Deterministic results due to stable ordering within buckets
@@ -31,7 +31,7 @@ extern "C"
  * Compute the AI's next move using Minimax with alpha–beta pruning.
  *
  * Parameters:
- *  - board:     Current position; modified temporarily during search but restored before return
+ *  - board:     Current position (bitboard representation)
  *  - aiPlayer:  The AI symbol ('x' or 'o') to maximize for
  *  - out_row:   Output pointer for selected row (0-based). Set to -1 if the game is already terminal
  *  - out_col:   Output pointer for selected column (0-based). Set to -1 if the game is already terminal
@@ -41,7 +41,7 @@ extern "C"
  *  - On an empty board, selects the center without searching
  *  - Otherwise, orders candidate moves and runs a full-depth alpha–beta search
  */
-void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, int *out_col);
+void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col);
 
 #ifdef __cplusplus
 }
