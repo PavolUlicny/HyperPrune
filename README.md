@@ -64,12 +64,14 @@ Depth-based scoring tweaks terminal values to prefer quicker wins and delay loss
 
 ### Public function highlights
 
-- `void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int* out_row, int* out_col)`
+- `void getAiMove(Bitboard board, char aiPlayer, int* out_row, int* out_col)`
   - Returns `(-1, -1)` if the position is already terminal (win or tie) for either side.
   - Otherwise, orders moves and runs a full-depth alpha–beta search (first reply via `miniMaxLow`) to pick the best move. If a top-level immediate win is found, it is returned directly.
+  - **Note**: Board is represented as a `Bitboard` struct with two `uint64_t` fields (`x_pieces`, `o_pieces`), supporting boards up to 8×8.
 
-- `static int boardScore(const char board[...], char aiPlayer)`
+- `static int boardScore(Bitboard board, char aiPlayer)`
   - Evaluates only for terminal detection: returns `AI_WIN_SCORE`/`PLAYER_WIN_SCORE` based on who completed a line relative to `aiPlayer`, `TIE_SCORE` if full and no winner, or `CONTINUE_SCORE` when moves remain.
+  - Uses pre-computed win masks for O(1) win detection.
 
 ## Key sources
 
@@ -208,16 +210,17 @@ Minimal example:
 
 int main(void)
 {
-    // Initialize transposition table (call once at program start)
+    // Initialize win masks and transposition table (call once at program start)
+    init_win_masks();
     zobrist_init();
     transposition_table_init(1000000);  // 1M entries (~16 MB)
 
     initializeBoard();
 
-    // ... populate board with current position ...
+    // ... use bitboard_make_move() to populate board_state ...
 
     int r = -1, c = -1;
-    getAiMove(board, /* aiPlayer */ 'x', &r, &c);
+    getAiMove(board_state, /* aiPlayer */ 'x', &r, &c);
     // If r,c are -1,-1 the position was terminal; otherwise play (r,c)
 
     // Clean up at program exit
