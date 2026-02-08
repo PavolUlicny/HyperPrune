@@ -9,7 +9,8 @@ TARGET := ttt
 SOURCES := \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/TicTacToe/tic_tac_toe.c \
-	$(SRCDIR)/MiniMax/mini_max.c
+	$(SRCDIR)/MiniMax/mini_max.c \
+	$(SRCDIR)/MiniMax/transposition.c
 
 OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 DEPS := $(OBJECTS:.o=.d)
