@@ -56,7 +56,7 @@ void zobrist_init(void)
     zobrist_player_keys[1] = ((uint64_t)rand() << 32) | (uint64_t)rand();
 }
 
-uint64_t zobrist_hash(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer)
+uint64_t zobrist_hash(Bitboard board, char aiPlayer)
 {
     /*
      * Hash encodes both position AND perspective (aiPlayer).
@@ -66,16 +66,42 @@ uint64_t zobrist_hash(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer)
      */
     uint64_t hash = zobrist_player_keys[player_to_index(aiPlayer)];
 
+#ifdef __GNUC__
+    /* Hash X pieces using bit scanning */
+    uint64_t x_pieces = board.x_pieces;
+    while (x_pieces)
+    {
+        int bit = __builtin_ctzll(x_pieces);
+        int row = BIT_TO_ROW(bit);
+        int col = BIT_TO_COL(bit);
+        hash ^= zobrist_keys[row][col][0];
+        x_pieces &= x_pieces - 1;
+    }
+
+    /* Hash O pieces */
+    uint64_t o_pieces = board.o_pieces;
+    while (o_pieces)
+    {
+        int bit = __builtin_ctzll(o_pieces);
+        int row = BIT_TO_ROW(bit);
+        int col = BIT_TO_COL(bit);
+        hash ^= zobrist_keys[row][col][1];
+        o_pieces &= o_pieces - 1;
+    }
+#else
+    /* Fallback for non-GCC compilers */
     for (int r = 0; r < BOARD_SIZE; r++)
     {
         for (int c = 0; c < BOARD_SIZE; c++)
         {
-            if (board[r][c] != ' ')
+            char cell = bitboard_get_cell(board, r, c);
+            if (cell != ' ')
             {
-                hash ^= zobrist_keys[r][c][player_to_index(board[r][c])];
+                hash ^= zobrist_keys[r][c][player_to_index(cell)];
             }
         }
     }
+#endif
 
     return hash;
 }

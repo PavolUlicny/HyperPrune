@@ -39,12 +39,12 @@ extern "C"
      * Compute full board hash from scratch.
      *
      * Parameters:
-     *  - board: Current position
+     *  - board: Current position (bitboard representation)
      *  - aiPlayer: The maximizing player ('x' or 'o')
      *
      * Returns: 64-bit Zobrist hash uniquely identifying this position
      */
-    uint64_t zobrist_hash(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer);
+    uint64_t zobrist_hash(Bitboard board, char aiPlayer);
 
     /**
      * Incremental hash update: toggle a piece on/off.
