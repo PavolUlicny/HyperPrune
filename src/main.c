@@ -68,7 +68,7 @@ static void playGame(void)
                 if (ai_row == -1 || ai_col == -1)
                 {
                     fprintf(stderr, "Error: AI returned invalid move (terminal position)\n");
-                    break;  /* Exit game loop */
+                    break; /* Exit game loop */
                 }
 
                 makeMove(ai_row, ai_col);
@@ -128,7 +128,7 @@ static int selfPlay(int gameCount, int quiet)
             if (currentRow == -1 || currentCol == -1)
             {
                 fprintf(stderr, "Error: AI returned invalid move in self-play (game %d)\n", g + 1);
-                return 1;  /* Exit with error */
+                return 1; /* Exit with error */
             }
 
             makeMove(currentRow, currentCol);
@@ -208,7 +208,7 @@ int main(int argc, char **argv)
     if (BOARD_SIZE <= 3)
     {
         /* Verified optimal for 3×3 via 100M game testing */
-        transposition_table_size = 100000;  /* 1.5 MB */
+        transposition_table_size = 100000; /* 1.5 MB */
     }
     else if (BOARD_SIZE == 4)
     {
