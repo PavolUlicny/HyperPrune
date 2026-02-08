@@ -8,11 +8,13 @@
  *  - Early cutoffs via last-move win checks and last-move tie shortcut
  *  - Depth-adjusted terminal scoring (prefer faster wins, delay losses)
  *  - Simple opening heuristic: play center on empty board
+ *  - Transposition table with Zobrist hashing for position caching
  *
  * Public entry point: getAiMove(...)
  */
 
 #include "mini_max.h"
+#include "transposition.h"
 #include <limits.h>
 
 /* A single board coordinate (row, col). */
@@ -318,14 +320,22 @@ static int boardScore(const char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer)
     return TIE_SCORE;
 }
 
-static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta);
+static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta, uint64_t hash);
 
 /*
  * Maximizing ply (AI).
  * Returns best score achievable for aiPlayer from the current position.
  */
-static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta)
+static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta, uint64_t hash)
 {
+    /* Transposition table probe */
+    int transposition_table_score;
+    TranspositionTableNodeType transposition_table_type;
+    if (transposition_table_probe(hash, depth, alpha, beta, &transposition_table_score, &transposition_table_type))
+    {
+        return transposition_table_score;
+    }
+
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
     {
@@ -343,11 +353,14 @@ static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int de
     findEmptySpots(board, &emptySpots);
     orderMoves(&emptySpots);
     int bestScore = -INF;
+    Move bestMove = {-1, -1};
+    int original_alpha = alpha;
 
     for (int i = 0; i < emptySpots.count; i++)
     {
         Move move = emptySpots.moves[i];
         board[move.row][move.col] = aiPlayer;
+        uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
         int score;
         if (didLastMoveWin(board, move.row, move.col))
         {
@@ -360,18 +373,37 @@ static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int de
         }
         else
         {
-            score = miniMaxLow(board, aiPlayer, depth + 1, alpha, beta);
+            score = miniMaxLow(board, aiPlayer, depth + 1, alpha, beta, new_hash);
         }
         board[move.row][move.col] = ' ';
 
         if (score > bestScore)
+        {
             bestScore = score;
+            bestMove = move;
+        }
 
         if (score > alpha)
             alpha = score;
         if (beta <= alpha)
-            break;
+            break; /* Beta cutoff */
     }
+
+    /* Classify node type for transposition table storage */
+    TranspositionTableNodeType store_type;
+    if (bestScore >= beta)
+    {
+        store_type = TRANSPOSITION_TABLE_LOWERBOUND; /* Beta cutoff */
+    }
+    else if (bestScore <= original_alpha)
+    {
+        store_type = TRANSPOSITION_TABLE_UPPERBOUND; /* All moves were <= original alpha */
+    }
+    else
+    {
+        store_type = TRANSPOSITION_TABLE_EXACT; /* PV node */
+    }
+    transposition_table_store(hash, depth, bestScore, store_type, bestMove.row, bestMove.col);
 
     return bestScore;
 }
@@ -380,8 +412,16 @@ static int miniMaxHigh(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int de
  * Minimizing ply (opponent).
  * Returns worst-case score for aiPlayer given optimal opponent play.
  */
-static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta)
+static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int depth, int alpha, int beta, uint64_t hash)
 {
+    /* Transposition table probe */
+    int transposition_table_score;
+    TranspositionTableNodeType transposition_table_type;
+    if (transposition_table_probe(hash, depth, alpha, beta, &transposition_table_score, &transposition_table_type))
+    {
+        return transposition_table_score;
+    }
+
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
     {
@@ -399,12 +439,15 @@ static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int dep
     findEmptySpots(board, &emptySpots);
     orderMoves(&emptySpots);
     int bestScore = INF;
+    Move bestMove = {-1, -1};
     char opponent = (aiPlayer == 'x') ? 'o' : 'x';
+    int original_beta = beta;
 
     for (int i = 0; i < emptySpots.count; i++)
     {
         Move move = emptySpots.moves[i];
         board[move.row][move.col] = opponent;
+        uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, opponent);
         int score;
         if (didLastMoveWin(board, move.row, move.col))
         {
@@ -417,18 +460,37 @@ static int miniMaxLow(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int dep
         }
         else
         {
-            score = miniMaxHigh(board, aiPlayer, depth + 1, alpha, beta);
+            score = miniMaxHigh(board, aiPlayer, depth + 1, alpha, beta, new_hash);
         }
         board[move.row][move.col] = ' ';
 
         if (score < bestScore)
+        {
             bestScore = score;
+            bestMove = move;
+        }
 
         if (score < beta)
             beta = score;
         if (beta <= alpha)
-            break;
+            break; /* Alpha cutoff */
     }
+
+    /* Classify node type for transposition table storage */
+    TranspositionTableNodeType store_type;
+    if (bestScore <= alpha)
+    {
+        store_type = TRANSPOSITION_TABLE_UPPERBOUND; /* Alpha cutoff */
+    }
+    else if (bestScore >= original_beta)
+    {
+        store_type = TRANSPOSITION_TABLE_LOWERBOUND; /* All moves were >= original beta */
+    }
+    else
+    {
+        store_type = TRANSPOSITION_TABLE_EXACT; /* PV node */
+    }
+    transposition_table_store(hash, depth, bestScore, store_type, bestMove.row, bestMove.col);
 
     return bestScore;
 }
@@ -473,6 +535,7 @@ void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, 
     int beta = INF;
     Move bestMove = emptySpots.moves[0];
     int bestScore = -INF;
+    uint64_t hash = zobrist_hash(board, aiPlayer);
 
     for (int i = 0; i < emptySpots.count; ++i)
     {
@@ -487,7 +550,8 @@ void getAiMove(char board[BOARD_SIZE][BOARD_SIZE], char aiPlayer, int *out_row, 
             return;
         }
 
-        int score = miniMaxLow(board, aiPlayer, 1, alpha, beta);
+        uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
+        int score = miniMaxLow(board, aiPlayer, 1, alpha, beta, new_hash);
         board[move.row][move.col] = ' ';
 
         if (score > bestScore)
