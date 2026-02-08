@@ -13,11 +13,15 @@
 #include "tic_tac_toe.h"
 
 /* Global game state used by the simple CLI program. */
-char board[BOARD_SIZE][BOARD_SIZE];
+Bitboard board_state = {0, 0};
 char player_turn = 'x';
 static int move_count = 0; /* number of moves played so far */
 char human_symbol = 'x';
 char ai_symbol = 'o';
+
+/* Win detection masks: 8 masks for 3x3 (3 rows + 3 cols + 2 diagonals) */
+static uint64_t win_masks[2 * BOARD_SIZE + 2];
+static int win_mask_count = 0;
 
 /* Consume the rest of the current input line (including newline). */
 static void discardLine(void)
@@ -41,21 +45,99 @@ static int numDigits(int number)
     return digitQuantity;
 }
 
+/* Initialize win masks for bitboard win detection */
+void init_win_masks(void)
+{
+    int idx = 0;
+
+    /* Row masks */
+    for (int r = 0; r < BOARD_SIZE; r++)
+    {
+        uint64_t mask = 0;
+        for (int c = 0; c < BOARD_SIZE; c++)
+            mask |= BIT_MASK(r, c);
+        win_masks[idx++] = mask;
+    }
+
+    /* Column masks */
+    for (int c = 0; c < BOARD_SIZE; c++)
+    {
+        uint64_t mask = 0;
+        for (int r = 0; r < BOARD_SIZE; r++)
+            mask |= BIT_MASK(r, c);
+        win_masks[idx++] = mask;
+    }
+
+    /* Main diagonal */
+    uint64_t mask = 0;
+    for (int i = 0; i < BOARD_SIZE; i++)
+        mask |= BIT_MASK(i, i);
+    win_masks[idx++] = mask;
+
+    /* Anti-diagonal */
+    mask = 0;
+    for (int i = 0; i < BOARD_SIZE; i++)
+        mask |= BIT_MASK(i, BOARD_SIZE - 1 - i);
+    win_masks[idx++] = mask;
+
+    win_mask_count = idx;
+}
+
+/* Check if a player has won using pre-computed masks */
+int bitboard_has_won(uint64_t player_pieces)
+{
+    for (int i = 0; i < win_mask_count; i++)
+    {
+        if ((player_pieces & win_masks[i]) == win_masks[i])
+            return 1;
+    }
+    return 0;
+}
+
+/* Optimized win check for last move */
+int bitboard_did_last_move_win(uint64_t player_pieces, int row, int col)
+{
+    /* Check row */
+    if ((player_pieces & win_masks[row]) == win_masks[row])
+        return 1;
+
+    /* Check column */
+    if ((player_pieces & win_masks[BOARD_SIZE + col]) == win_masks[BOARD_SIZE + col])
+        return 1;
+
+    /* Check main diagonal (if on it) */
+    if (row == col && (player_pieces & win_masks[2 * BOARD_SIZE]) == win_masks[2 * BOARD_SIZE])
+        return 1;
+
+    /* Check anti-diagonal (if on it) */
+    if (row + col == BOARD_SIZE - 1 &&
+        (player_pieces & win_masks[2 * BOARD_SIZE + 1]) == win_masks[2 * BOARD_SIZE + 1])
+        return 1;
+
+    return 0;
+}
+
+/* Convert bitboard to char array for display */
+static void bitboard_to_array(Bitboard board, char out_array[BOARD_SIZE][BOARD_SIZE])
+{
+    for (int r = 0; r < BOARD_SIZE; r++)
+        for (int c = 0; c < BOARD_SIZE; c++)
+            out_array[r][c] = bitboard_get_cell(board, r, c);
+}
+
 /* Initialize all board cells to ' ' (empty). */
 void initializeBoard(void)
 {
-    for (int i = 0; i < BOARD_SIZE; i++)
-    {
-        for (int j = 0; j < BOARD_SIZE; j++)
-        {
-            board[i][j] = ' ';
-        }
-    }
+    board_state.x_pieces = 0;
+    board_state.o_pieces = 0;
 }
 
 /* Pretty-print the board with 1-based indices on both axes. */
 void printBoard(void)
 {
+    char display[BOARD_SIZE][BOARD_SIZE];
+    bitboard_to_array(board_state, display);
+
     int digits = numDigits(BOARD_SIZE);
 
     putchar('\n');
@@ -73,7 +155,7 @@ void printBoard(void)
 
         for (int j = 1; j <= BOARD_SIZE; ++j)
         {
-            printf("[%*c]", digits, board[i - 1][j - 1]);
+            printf("[%*c]", digits, display[i - 1][j - 1]);
         }
         putchar('\n');
     }
@@ -154,7 +236,7 @@ void getMove(int *out_row, int *out_col)
         int col = getValidCoord("Input column: ");
         int row = getValidCoord("Input row: ");
 
-        if (board[row][col] != ' ')
+        if (!bitboard_is_empty(board_state, row, col))
         {
             printf("Cell already occupied. Choose another.\n\n");
             continue;
@@ -169,73 +251,23 @@ void getMove(int *out_row, int *out_col)
 /* Place the current player's symbol and toggle player_turn; increment move_count. */
 void makeMove(int row, int col)
 {
-    board[row][col] = player_turn;
+    bitboard_make_move(&board_state, row, col, player_turn);
     player_turn = (player_turn == 'x') ? 'o' : 'x';
     move_count++;
 }
 
 /*
  * Check whether the last move at (row,col) finished the game.
- * Scans the affected row, column, and diagonals only.
+ * Uses bitboard win detection for fast checking.
  * Returns PLAYER_WIN/AI_WIN/TIE/CONTINUE.
  */
 GameResult checkWinner(int row, int col)
 {
-    char player = board[row][col];
+    char player = bitboard_get_cell(board_state, row, col);
+    uint64_t player_pieces = (player == 'x') ? board_state.x_pieces : board_state.o_pieces;
 
-    int win = 1;
-    for (int c = 0; c < BOARD_SIZE; ++c)
-    {
-        if (board[row][c] != player)
-        {
-            win = 0;
-            break;
-        }
-    }
-    if (win)
+    if (bitboard_did_last_move_win(player_pieces, row, col))
         return (player == human_symbol) ? PLAYER_WIN : AI_WIN;
-
-    win = 1;
-    for (int r = 0; r < BOARD_SIZE; ++r)
-    {
-        if (board[r][col] != player)
-        {
-            win = 0;
-            break;
-        }
-    }
-    if (win)
-        return (player == human_symbol) ? PLAYER_WIN : AI_WIN;
-
-    if (row == col)
-    {
-        win = 1;
-        for (int i = 0; i < BOARD_SIZE; ++i)
-        {
-            if (board[i][i] != player)
-            {
-                win = 0;
-                break;
-            }
-        }
-        if (win)
-            return (player == human_symbol) ? PLAYER_WIN : AI_WIN;
-    }
-
-    if (row + col == BOARD_SIZE - 1)
-    {
-        win = 1;
-        for (int i = 0; i < BOARD_SIZE; ++i)
-        {
-            if (board[i][BOARD_SIZE - 1 - i] != player)
-            {
-                win = 0;
-                break;
-            }
-        }
-        if (win)
-            return (player == human_symbol) ? PLAYER_WIN : AI_WIN;
-    }
 
     if (move_count < MAX_MOVES)
         return GAME_CONTINUE;
