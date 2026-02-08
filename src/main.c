@@ -61,7 +61,7 @@ static void playGame(void)
             else
             {
                 int ai_row, ai_col;
-                getAiMove(board, ai_symbol, &ai_row, &ai_col);
+                getAiMove(board_state, ai_symbol, &ai_row, &ai_col);
 
                 /* Defensive: getAiMove returns (-1, -1) for terminal positions */
                 if (ai_row == -1 || ai_col == -1)
@@ -120,7 +120,7 @@ static int selfPlay(int gameCount, int quiet)
             int currentCol = -1;
             char currentPlayer = player_turn;
 
-            getAiMove(board, currentPlayer, &currentRow, &currentCol);
+            getAiMove(board_state, currentPlayer, &currentRow, &currentCol);
 
             /* Defensive: getAiMove returns (-1, -1) for terminal positions */
             if (currentRow == -1 || currentCol == -1)
@@ -171,6 +171,9 @@ static int selfPlay(int gameCount, int quiet)
  */
 int main(int argc, char **argv)
 {
+    /* Initialize win masks for bitboard operations */
+    init_win_masks();
+
     /* Initialize Zobrist hashing and transposition table */
     zobrist_init();
 
