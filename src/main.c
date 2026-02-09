@@ -100,9 +100,21 @@ static int selfPlay(int gameCount, int quiet)
     int ai2Wins = 0;
     int ties = 0;
     clock_t startTime = 0;
+    int timing_available = 0;
 
     if (!quiet)
+    {
         startTime = clock();
+        if (startTime == (clock_t)-1)
+        {
+            fprintf(stderr, "Warning: clock() failed, timing stats will be unavailable\n");
+            timing_available = 0;
+        }
+        else
+        {
+            timing_available = 1;
+        }
+    }
 
     for (int g = 0; g < gameCount; ++g)
     {
@@ -141,18 +153,93 @@ static int selfPlay(int gameCount, int quiet)
 
     if (!quiet)
     {
-        double elapsed = (double)(clock() - startTime) / CLOCKS_PER_SEC;
-        double throughput = elapsed > 0 ? (gameCount / elapsed) : 0.0;
-        printf("Self-play finished: %d games\nAI1Wins = %d AI2Wins = %d Ties = %d\n", gameCount, ai1Wins, ai2Wins, ties);
-        printf("Elapsed: %.3f s\nThroughput: %.1f games/s\n", elapsed, throughput);
+        double elapsed = 0.0;
+        double throughput = 0.0;
+
+        /* Try to get timing data if clock was available at start */
+        if (timing_available)
+        {
+            clock_t endTime = clock();
+            if (endTime == (clock_t)-1)
+            {
+                fprintf(stderr, "Warning: clock() failed at end, timing stats unavailable\n");
+                timing_available = 0;
+            }
+            else
+            {
+                elapsed = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+                if (elapsed < 0)
+                {
+                    fprintf(stderr, "Warning: negative elapsed time, timing stats unavailable\n");
+                    timing_available = 0;
+                }
+                else
+                {
+                    throughput = elapsed > 0 ? (gameCount / elapsed) : 0.0;
+                }
+            }
+        }
+
+        /* Calculate percentages */
+        double ai1_pct = (100.0 * ai1Wins) / gameCount;
+        double ai2_pct = (100.0 * ai2Wins) / gameCount;
+        double tie_pct = (100.0 * ties) / gameCount;
+
+        /* Print results header */
+        printf("\n");
+        printf("═══════════════════════════════════════════════════════════════\n");
+        printf("  Self-Play Results: %d games\n", gameCount);
+        printf("═══════════════════════════════════════════════════════════════\n");
+
+        /* Print game outcomes (always available) */
+        printf("  Outcomes\n");
+        printf("    X wins:  %8d  (%5.1f%%)\n", ai1Wins, ai1_pct);
+        printf("    O wins:  %8d  (%5.1f%%)\n", ai2Wins, ai2_pct);
+        printf("    Ties:    %8d  (%5.1f%%)\n", ties, tie_pct);
+        printf("\n");
+
+        /* Print performance stats (only if timing available) */
+        if (timing_available)
+        {
+            printf("  Performance\n");
+            printf("    Elapsed:     %8.3f s\n", elapsed);
+            if (throughput >= 1000000.0)
+                printf("    Throughput:  %8.2f M games/s\n", throughput / 1000000.0);
+            else if (throughput >= 1000.0)
+                printf("    Throughput:  %8.2f K games/s\n", throughput / 1000.0);
+            else
+                printf("    Throughput:  %8.1f games/s\n", throughput);
+            printf("\n");
+        }
 
         /* Print Transposition Table statistics */
         size_t hits, misses, collisions;
         transposition_table_get_stats(&hits, &misses, &collisions);
+
+        /* Check for overflow in total_probes calculation */
         size_t total_probes = hits + misses;
-        double hit_rate = total_probes > 0 ? (100.0 * hits / total_probes) : 0.0;
-        printf("Transposition Table Stats: hits = %zu misses = %zu collisions = %zu (%.1f%% hit rate)\n",
-               hits, misses, collisions, hit_rate);
+        double hit_rate = 0.0;
+        double miss_rate = 0.0;
+
+        if (total_probes < hits || total_probes < misses)
+        {
+            /* Overflow detected - calculate rates using double to avoid wrap */
+            double total_probes_d = (double)hits + (double)misses;
+            hit_rate = (100.0 * hits) / total_probes_d;
+            miss_rate = (100.0 * misses) / total_probes_d;
+        }
+        else if (total_probes > 0)
+        {
+            hit_rate = (100.0 * hits) / total_probes;
+            miss_rate = (100.0 * misses) / total_probes;
+        }
+
+        printf("  Transposition Table\n");
+        printf("    Hits:        %12zu  (%5.1f%%)\n", hits, hit_rate);
+        printf("    Misses:      %12zu  (%5.1f%%)\n", misses, miss_rate);
+        printf("    Collisions:  %12zu\n", collisions);
+        printf("═══════════════════════════════════════════════════════════════\n");
+        printf("\n");
     }
 
     return 0;
