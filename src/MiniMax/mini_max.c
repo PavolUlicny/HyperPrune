@@ -4,7 +4,6 @@
  *
  * This file implements a deterministic Minimax engine with:
  *  - Alpha–beta pruning
- *  - Lightweight move ordering (center > diagonals/adjacent > others)
  *  - Early cutoffs via last-move win checks and last-move tie shortcut
  *  - Depth-adjusted terminal scoring (prefer faster wins, delay losses)
  *  - Simple opening heuristic: play center on empty board
@@ -83,52 +82,6 @@ static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
 }
 
 /*
- * Heuristic weight for move ordering:
- *  - 4: exact center (Manhattan distance 0 to center)
- *  - 3: on a diagonal OR Manhattan distance 1 from center
- *  - 2: everything else
- * Works for odd and even BOARD_SIZE by using two central indices.
- */
-static int moveWeight(int row, int col)
-{
-    int lowerMiddle = (BOARD_SIZE - 1) / 2;
-    int upperMiddle = BOARD_SIZE / 2;
-
-    int distanceRowToLowerMiddle = row - lowerMiddle;
-    if (distanceRowToLowerMiddle < 0)
-        distanceRowToLowerMiddle = -distanceRowToLowerMiddle;
-
-    int distanceRowToUpperMiddle = row - upperMiddle;
-    if (distanceRowToUpperMiddle < 0)
-        distanceRowToUpperMiddle = -distanceRowToUpperMiddle;
-
-    int minimalRowDistance = distanceRowToLowerMiddle < distanceRowToUpperMiddle ? distanceRowToLowerMiddle : distanceRowToUpperMiddle;
-
-    int distanceColumnToLowerMiddle = col - lowerMiddle;
-    if (distanceColumnToLowerMiddle < 0)
-        distanceColumnToLowerMiddle = -distanceColumnToLowerMiddle;
-
-    int distanceColumnToUpperMiddle = col - upperMiddle;
-    if (distanceColumnToUpperMiddle < 0)
-        distanceColumnToUpperMiddle = -distanceColumnToUpperMiddle;
-
-    int minimalColumnDistance = distanceColumnToLowerMiddle < distanceColumnToUpperMiddle ? distanceColumnToLowerMiddle : distanceColumnToUpperMiddle;
-
-    int manhattanDistanceToCenter = minimalRowDistance + minimalColumnDistance;
-
-    if (manhattanDistanceToCenter == 0)
-        return 4;
-
-    if (row == col || row + col == BOARD_SIZE - 1)
-        return 3;
-
-    if (manhattanDistanceToCenter == 1)
-        return 3;
-
-    return 2;
-}
-
-/*
  * Fast win check based on the last move applied (uses bitboard).
  */
 static int didLastMoveWin(Bitboard board, int row, int col)
@@ -139,53 +92,6 @@ static int didLastMoveWin(Bitboard board, int row, int col)
 
     uint64_t player_pieces = (player == 'x') ? board.x_pieces : board.o_pieces;
     return bitboard_did_last_move_win(player_pieces, row, col);
-}
-
-/*
- * Partition moves by weight into three buckets and concatenate them
- * (4 -> 3 -> 2). Within each bucket, original row-major ordering is kept,
- * ensuring deterministic results for tied scores.
- */
-static void orderMoves(MoveList *moves)
-{
-    Move movesWithWeightFour[MAX_MOVES];
-    Move movesWithWeightThree[MAX_MOVES];
-    Move movesWithWeightTwo[MAX_MOVES];
-    int movesWithWeightFourCount = 0;
-    int movesWithWeightThreeCount = 0;
-    int movesWithWeightTwoCount = 0;
-
-    for (int moveIndex = 0; moveIndex < moves->count; ++moveIndex)
-    {
-        Move move = moves->moves[moveIndex];
-        int weight = moveWeight(move.row, move.col);
-        if (weight == 4)
-        {
-            movesWithWeightFour[movesWithWeightFourCount++] = move;
-        }
-        else if (weight == 3)
-        {
-            movesWithWeightThree[movesWithWeightThreeCount++] = move;
-        }
-        else
-        {
-            movesWithWeightTwo[movesWithWeightTwoCount++] = move;
-        }
-    }
-
-    int writeIndex = 0;
-    for (int index = 0; index < movesWithWeightFourCount; ++index)
-    {
-        moves->moves[writeIndex++] = movesWithWeightFour[index];
-    }
-    for (int index = 0; index < movesWithWeightThreeCount; ++index)
-    {
-        moves->moves[writeIndex++] = movesWithWeightThree[index];
-    }
-    for (int index = 0; index < movesWithWeightTwoCount; ++index)
-    {
-        moves->moves[writeIndex++] = movesWithWeightTwo[index];
-    }
 }
 
 /*
@@ -247,7 +153,6 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
 
     MoveList emptySpots;
     findEmptySpots(board, &emptySpots);
-    orderMoves(&emptySpots);
     int bestScore = -INF;
     Move bestMove = {-1, -1};
     int original_alpha = alpha;
@@ -333,7 +238,6 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
 
     MoveList emptySpots;
     findEmptySpots(board, &emptySpots);
-    orderMoves(&emptySpots);
     int bestScore = INF;
     Move bestMove = {-1, -1};
     char opponent = (aiPlayer == 'x') ? 'o' : 'x';
@@ -424,8 +328,6 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
         *out_col = emptySpots.moves[0].col;
         return;
     }
-
-    orderMoves(&emptySpots);
 
     int alpha = -INF;
     int beta = INF;
