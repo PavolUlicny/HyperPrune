@@ -29,7 +29,11 @@ extern "C"
 #define BOARD_SIZE 3
 #endif
 
-/* Bitboards only support up to 8x8 boards (64 bits in uint64_t) */
+/* Bitboards support 3x3 to 8x8 boards (64 bits in uint64_t) */
+#if BOARD_SIZE < 3
+#error "BOARD_SIZE < 3 is not supported (minimum is 3x3)"
+#endif
+
 #if BOARD_SIZE > 8
 #error "BOARD_SIZE > 8 is not supported with bitboard implementation (max 64 positions)"
 #endif
