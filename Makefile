@@ -78,7 +78,7 @@ MODE_LDFLAGS := -flto
 endif
 
 CFLAGS := $(WARNINGS) $(BASE_CFLAGS) $(MODE_CFLAGS)
-LDFLAGS := $(MODE_LDFLAGS)
+LDFLAGS := $(MODE_LDFLAGS) -lm
 
 .PHONY: all clean run rebuild debug release pgo pgo-clean
 
@@ -124,7 +124,7 @@ pgo:
 	@$(MAKE) clean > /dev/null
 	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native $(PGO_GENERATE) \
 		-fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
-		$(SOURCES) -o $(TARGET)
+		$(SOURCES) -o $(TARGET) -lm
 	@PROFILE_GAMES=$$((1000000 / (($(BOARD_SIZE) - 2) * ($(BOARD_SIZE) - 2)))); \
 	if [ $$PROFILE_GAMES -lt 10000 ]; then PROFILE_GAMES=10000; fi; \
 	echo "[PGO  ] Step 2/3: Running workload to collect profile data ($$PROFILE_GAMES games)..."; \
@@ -133,7 +133,7 @@ pgo:
 	@echo "[PGO  ] Step 3/3: Rebuilding with profile-guided optimizations..."
 	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native $(PGO_USE) -flto \
 		-fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
-		$(SOURCES) -o $(TARGET)
+		$(SOURCES) -o $(TARGET) -lm
 	@$(MAKE) pgo-clean > /dev/null 2>&1
 	@echo "[PGO  ] PGO-optimized binary ready"
 

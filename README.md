@@ -146,14 +146,14 @@ You can compile directly with gcc or clang. The commands below produce the same 
 
 ```sh
 gcc -std=c11 -Wall -Wextra -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -pipe \
-  src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -o ttt
+  src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -o ttt -lm
 ```
 
 - Debug (gcc):
 
 ```sh
 gcc -std=c11 -Wall -Wextra -O0 -g -pipe \
-  src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -o ttt
+  src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -o ttt -lm
 ```
 
 - Using clang: replace `gcc` with `clang`.
@@ -181,7 +181,7 @@ To override `BOARD_SIZE` without Make, pass `-DBOARD_SIZE=4` (example) to the co
 ```sh
 gcc -std=c11 -Wall -Wextra -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -pipe \
   -DBOARD_SIZE=4 \
-  src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -o ttt
+  src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -o ttt -lm
 ```
 
 ## CLI usage
