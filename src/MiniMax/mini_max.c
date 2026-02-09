@@ -141,7 +141,6 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
     MoveList emptySpots;
     findEmptySpots(board, &emptySpots);
     int bestScore = -INF;
-    Move bestMove = {-1, -1};
     int original_alpha = alpha;
 
     for (int i = 0; i < emptySpots.count; i++)
@@ -169,7 +168,6 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
         if (score > bestScore)
         {
             bestScore = score;
-            bestMove = move;
         }
 
         if (score > alpha)
@@ -192,7 +190,7 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
     {
         store_type = TRANSPOSITION_TABLE_EXACT; /* PV node */
     }
-    transposition_table_store(hash, depth, bestScore, store_type, bestMove.row, bestMove.col);
+    transposition_table_store(hash, depth, bestScore, store_type);
 
     return bestScore;
 }
@@ -227,7 +225,6 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
     MoveList emptySpots;
     findEmptySpots(board, &emptySpots);
     int bestScore = INF;
-    Move bestMove = {-1, -1};
     char opponent = (aiPlayer == 'x') ? 'o' : 'x';
     int original_beta = beta;
 
@@ -256,7 +253,6 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
         if (score < bestScore)
         {
             bestScore = score;
-            bestMove = move;
         }
 
         if (score < beta)
@@ -279,7 +275,7 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
     {
         store_type = TRANSPOSITION_TABLE_EXACT; /* PV node */
     }
-    transposition_table_store(hash, depth, bestScore, store_type, bestMove.row, bestMove.col);
+    transposition_table_store(hash, depth, bestScore, store_type);
 
     return bestScore;
 }
