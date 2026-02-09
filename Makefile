@@ -1,24 +1,9 @@
-# =============================================================================
 # MiniMax Tic-Tac-Toe Makefile
-# =============================================================================
-# Requirements:
-#   - POSIX-compliant shell (bash, sh, zsh)
-#   - GCC 7+ or Clang 6+ with C11 support
-#   - Platforms: Linux, macOS, WSL, MinGW, MSYS2
-#
-# Note: Native Windows (cmd.exe/PowerShell) is not supported.
-#       Use WSL, MSYS2, or MinGW for Windows builds.
-#
-# Build flags:
-#   - Uses -march=native for CPU-specific optimizations
-#   - Binaries are NOT portable to other CPU architectures
-#   - For distributable builds, remove -march=native
-# =============================================================================
+# Provides debug/release builds and a PGO target for the ttt binary.
 
 CC ?= gcc
 
 # Detect compiler type for PGO flags
-# Note: clang-cl (MSVC-compatible Clang) is not supported
 ifeq ($(CC),clang)
 	PGO_GENERATE := -fprofile-instr-generate
 	PGO_USE := -fprofile-instr-use=default.profdata
@@ -108,15 +93,9 @@ clean:
 	@echo "[CLEAN] removing build artifacts"
 	@rm -rf build $(TARGET)
 
-# Profile-Guided Optimization (PGO) - 3-step process for maximum performance
+# Profile-Guided Optimization (PGO)
 # Usage: make pgo [BOARD_SIZE=N]
-# Requirements:
-#   - POSIX shell (uses shell arithmetic and conditionals)
-#   - GCC or Clang compiler (clang-cl not supported)
-# Profiling workload: Dynamically scaled based on board size
-#   Formula: games = max(10000, 1,000,000 / (BOARD_SIZE - 2)^2)
-#   3x3: 1M games, 4x4: 250K games, 5x5: 111K games, etc.
-#   Empirically derived from benchmarking on 3x3 and 4x4
+# Profiling workload: games = max(10000, 1,000,000 / (BOARD_SIZE - 2)^2)
 pgo:
 	@echo "[PGO  ] Using compiler: $(CC)"
 	@echo "[PGO  ] Step 1/3: Building with profiling instrumentation..."

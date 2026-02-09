@@ -156,7 +156,7 @@ extern "C"
     int bitboard_has_won(uint64_t player_pieces);
 
     /**
-     * Fast win check based on last move.
+     * Win check based on last move.
      * Only checks relevant patterns (row, col, diagonals if applicable).
      */
     int bitboard_did_last_move_win(uint64_t player_pieces, int row, int col);

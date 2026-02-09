@@ -5,7 +5,7 @@
  * re-evaluating identical positions reached via different move orders.
  *
  * Key components:
- *  - Zobrist hashing: fast incremental position hashing via XOR
+ *  - Zobrist hashing: incremental position hashing via XOR
  *  - Transposition table storage: hash table mapping positions to (score, depth, bounds)
  *  - Replacement strategy: always-replace for hash collisions
  *
@@ -42,7 +42,7 @@ extern "C"
      *  - board: Current position (bitboard representation)
      *  - aiPlayer: The maximizing player ('x' or 'o')
      *
-     * Returns: 64-bit Zobrist hash uniquely identifying this position
+     * Returns: 64-bit Zobrist hash for this position
      */
     uint64_t zobrist_hash(Bitboard board, char aiPlayer);
 
@@ -75,15 +75,12 @@ extern "C"
     /**
      * Transposition table entry.
      * Stores search results for a single position.
-     *
-     * Size: 16 bytes (8+2+2+1+3 with padding for alignment)
-     * (Compiler-dependent; use sizeof(TranspositionTableEntry) for exact size)
      */
     typedef struct
     {
         uint64_t hash;      /* Zobrist hash (0 = empty slot) */
         int16_t score;      /* Stored score */
-        uint16_t depth;     /* Search depth (supports boards up to 255×255) */
+        uint16_t depth;     /* Search depth */
         uint8_t type;       /* TranspositionTableNodeType */
         uint8_t padding[3]; /* Padding for alignment */
     } TranspositionTableEntry;
@@ -92,7 +89,7 @@ extern "C"
      * Initialize transposition table with given size.
      *
      * Parameters:
-     *  - size: Number of entries (e.g., 1000000 for ~16 MB)
+     *  - size: Number of entries
      *
      * Note: Call transposition_table_free() when done to release memory
      */

@@ -4,7 +4,7 @@
  *
  * This file implements a deterministic Minimax engine with:
  *  - Alpha–beta pruning
- *  - Depth-adjusted terminal scoring (prefer faster wins, delay losses)
+ *  - Depth-adjusted terminal scoring
  *  - Simple opening heuristic: play center on empty board
  *  - Transposition table with Zobrist hashing for position caching
  *
@@ -57,10 +57,10 @@ static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
     empty &= valid_positions_mask(); /* Mask valid positions */
 
 #ifdef __GNUC__
-    /* Use compiler builtin for fast bit scanning */
+    /* Use compiler builtin for bit scanning */
     while (empty)
     {
-        int bit = __builtin_ctzll(empty); /* Count trailing zeros (O(1)) */
+        int bit = __builtin_ctzll(empty); /* Count trailing zeros */
         out_emptySpots->moves[out_emptySpots->count++] = (Move){
             .row = BIT_TO_ROW(bit),
             .col = BIT_TO_COL(bit)};
@@ -173,7 +173,7 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
     }
     else
     {
-        store_type = TRANSPOSITION_TABLE_EXACT; /* PV node */
+        store_type = TRANSPOSITION_TABLE_EXACT; /* Exact score */
     }
     transposition_table_store(hash, depth, bestScore, store_type);
 
@@ -244,7 +244,7 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
     }
     else
     {
-        store_type = TRANSPOSITION_TABLE_EXACT; /* PV node */
+        store_type = TRANSPOSITION_TABLE_EXACT; /* Exact score */
     }
     transposition_table_store(hash, depth, bestScore, store_type);
 

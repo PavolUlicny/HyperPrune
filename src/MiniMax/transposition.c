@@ -120,7 +120,7 @@ void transposition_table_init(size_t size)
     {
         fprintf(stderr, "Warning: Failed to allocate transposition table (%zu entries, %.1f MB)\n",
                 size, (size * sizeof(TranspositionTableEntry)) / (1024.0 * 1024.0));
-        fprintf(stderr, "Continuing without transposition table - performance will be degraded.\n");
+        fprintf(stderr, "Continuing without transposition table.\n");
         transposition_table_size = 0;
     }
 

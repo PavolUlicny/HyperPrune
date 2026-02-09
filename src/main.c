@@ -2,7 +2,7 @@
  * Program entry and CLI modes
  * ---------------------------
  * - Interactive game loop (human vs AI)
- * - Self-play benchmarking via --selfplay|-s [games] [--quiet|-q]
+ * - Self-play mode via --selfplay|-s [games] [--quiet|-q]
  *   * Default games: 1000 when omitted
  *   * --quiet/-q suppresses timing output
  */
@@ -18,14 +18,8 @@
 #include "MiniMax/transposition.h"
 
 /*
- * Maximum transposition table size: caps memory usage for large boards.
- * Default: 100M entries = ~1.6 GB (each entry is 16 bytes).
- *
- * Adjust based on available system memory:
- * - 50M entries  = ~800 MB  (conservative)
- * - 100M entries = ~1.6 GB  (default, recommended)
- * - 200M entries = ~3.2 GB  (aggressive, for 7×7+)
- * - 500M entries = ~8 GB    (maximum, for 8×8+)
+ * Maximum transposition table size (entry count).
+ * This caps the allocation when BOARD_SIZE is large.
  */
 #define MAX_TRANSPOSITION_TABLE_SIZE 100000000
 
@@ -92,7 +86,7 @@ static void playGame(void)
 }
 
 /*
- * Self-play benchmarking: runs gameCount AI vs AI games starting from an empty
+ * Self-play mode: runs gameCount AI vs AI games starting from an empty
  * board, alternating turns. Collects win/tie stats and (optionally) prints
  * timing and throughput.
  *
@@ -178,49 +172,23 @@ int main(int argc, char **argv)
     zobrist_init();
 
     /*
-     * Dynamic transposition table sizing - OPTIMIZED FOR MAXIMUM PERFORMANCE
-     *
-     * Empirically derived from systematic mega-scale benchmarking (644M games):
-     *   - 3×3: 100K entries  = 2.21M games/s (100% hit rate, 1.5 MB)
-     *   - 4×4: 1.5M entries  = 239K games/s  (100% hit rate, 24 MB)
-     *
+     * Dynamic transposition table sizing.
      * Formula: size = 1,500,000 × (BOARD_SIZE / 4)^9.4
-     *
-     * The 9.4 exponent captures:
-     *   - Exponential growth of search space (~BOARD_SIZE^7-8 for visited positions)
-     *   - Safety margin for hash collisions (~20% overcapacity)
-     *   - Performance buffer to maintain 100% hit rates under all conditions
-     *
-     * Calculated sizes (capped at MAX_TRANSPOSITION_TABLE_SIZE):
-     *   - 3×3: 100K   (1.5 MB)   - verified optimal
-     *   - 4×4: 1.5M   (24 MB)    - verified optimal
-     *   - 5×5: ~13M   (200 MB)   - extrapolated, aggressive for performance
-     *   - 6×6: ~69M   (1.1 GB)   - extrapolated, aggressive for performance
-     *   - 7×7: ~100M  (1.6 GB)   - capped at maximum
-     *   - 8×8: ~100M  (1.6 GB)   - capped at maximum
-     *
-     * Philosophy: Err on the side of larger tables for maximum performance.
-     * Users running 6×6+ boards clearly have sufficient RAM. Configure
-     * MAX_TRANSPOSITION_TABLE_SIZE if memory is constrained.
+     * The result is capped at MAX_TRANSPOSITION_TABLE_SIZE.
      */
     size_t transposition_table_size;
 
     if (BOARD_SIZE <= 3)
     {
-        /* Verified optimal for 3×3 via 100M game testing */
-        transposition_table_size = 100000; /* 1.5 MB */
+        transposition_table_size = 100000;
     }
     else if (BOARD_SIZE == 4)
     {
-        /* Verified optimal for 4×4 via 5M game testing */
-        transposition_table_size = 1500000; /* 24 MB */
+        transposition_table_size = 1500000;
     }
     else
     {
-        /*
-         * Extrapolate for larger boards using exponential scaling.
-         * Growth exponent 9.4 derived from log((1.5M / 100K)) / log(4/3) ≈ 9.43
-         */
+        /* Extrapolate for larger boards using exponential scaling. */
         double growth_factor = pow((double)BOARD_SIZE / 4.0, 9.4);
         transposition_table_size = (size_t)(1500000.0 * growth_factor);
 

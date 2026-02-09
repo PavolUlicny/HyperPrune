@@ -6,17 +6,17 @@
  * ---------------------
  * Public API for the Minimax-based Tic-Tac-Toe engine.
  *
- * The engine searches the full game tree using Minimax with alpha–beta pruning
- * and a lightweight move ordering heuristic. It is designed for small boards
- * (e.g., 3x3) but supports arbitrary square sizes via BOARD_SIZE.
+ * The engine searches the full game tree using Minimax with alpha–beta pruning.
+ * BOARD_SIZE is configured at
+ * compile time (3-8 per tic_tac_toe.h).
  *
  * Board representation:
  * - Bitboard structure with two uint64_t (x_pieces, o_pieces)
  * - 'x' and 'o' pieces stored as bit positions (max 8x8 = 64 bits)
  *
  * Notable characteristics:
- * - Deterministic results due to stable ordering within buckets
- * - Depth-adjusted scoring prefers faster wins and delays losses
+ * - Deterministic results due to stable ordering of move generation
+ * - Depth-adjusted scoring
  * - Simple opening heuristic (play center on empty board)
  */
 

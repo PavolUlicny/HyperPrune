@@ -5,7 +5,7 @@
  * Responsibilities in this file:
  *  - Maintain global board state and player symbols
  *  - Basic I/O helpers for a terminal UI (reading moves, printing board)
- *  - Lightweight result checking after each move
+ *  - Result checking after each move
  */
 
 #include <stdlib.h>
@@ -19,7 +19,7 @@ static int move_count = 0; /* number of moves played so far */
 char human_symbol = 'x';
 char ai_symbol = 'o';
 
-/* Win detection masks: 8 masks for 3x3 (3 rows + 3 cols + 2 diagonals) */
+/* Win detection masks for rows, columns, and diagonals */
 static uint64_t win_masks[2 * BOARD_SIZE + 2];
 static int win_mask_count = 0;
 
@@ -94,7 +94,7 @@ int bitboard_has_won(uint64_t player_pieces)
     return 0;
 }
 
-/* Optimized win check for last move */
+/* Win check based on last move */
 int bitboard_did_last_move_win(uint64_t player_pieces, int row, int col)
 {
     /* Check row */
@@ -258,7 +258,7 @@ void makeMove(int row, int col)
 
 /*
  * Check whether the last move at (row,col) finished the game.
- * Uses bitboard win detection for fast checking.
+ * Uses bitboard win detection for checking.
  * Returns PLAYER_WIN/AI_WIN/TIE/CONTINUE.
  */
 GameResult checkWinner(int row, int col)
