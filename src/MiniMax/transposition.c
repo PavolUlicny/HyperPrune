@@ -202,8 +202,7 @@ int transposition_table_probe(uint64_t hash, int depth, int alpha, int beta,
     return 0;
 }
 
-void transposition_table_store(uint64_t hash, int depth, int score, TranspositionTableNodeType type,
-                               int best_row, int best_col)
+void transposition_table_store(uint64_t hash, int depth, int score, TranspositionTableNodeType type)
 {
     if (transposition_table == NULL || transposition_table_size == 0)
     {
@@ -218,9 +217,6 @@ void transposition_table_store(uint64_t hash, int depth, int score, Transpositio
     entry->score = (int16_t)score;
     entry->depth = (uint16_t)depth;
     entry->type = (uint8_t)type;
-    entry->best_row = (int8_t)best_row;
-    entry->best_col = (int8_t)best_col;
-    entry->padding = 0;
 }
 
 void transposition_table_get_stats(size_t *hits, size_t *misses, size_t *collisions)
