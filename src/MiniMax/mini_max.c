@@ -82,19 +82,6 @@ static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
 }
 
 /*
- * Fast win check based on the last move applied (uses bitboard).
- */
-static int didLastMoveWin(Bitboard board, int row, int col)
-{
-    char player = bitboard_get_cell(board, row, col);
-    if (player == ' ')
-        return 0;
-
-    uint64_t player_pieces = (player == 'x') ? board.x_pieces : board.o_pieces;
-    return bitboard_did_last_move_win(player_pieces, row, col);
-}
-
-/*
  * Terminal evaluation using bitboard win detection:
  *  - +100 if a line completed by aiPlayer
  *  - -100 if a line completed by opponent
@@ -163,7 +150,8 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
         bitboard_make_move(&board, move.row, move.col, aiPlayer);
         uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
         int score;
-        if (didLastMoveWin(board, move.row, move.col))
+        uint64_t ai_pieces = (aiPlayer == 'x') ? board.x_pieces : board.o_pieces;
+        if (bitboard_did_last_move_win(ai_pieces, move.row, move.col))
         {
             /* immediate win after this move; prefer faster wins */
             score = AI_WIN_SCORE - (depth + 1);
@@ -249,7 +237,8 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
         bitboard_make_move(&board, move.row, move.col, opponent);
         uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, opponent);
         int score;
-        if (didLastMoveWin(board, move.row, move.col))
+        uint64_t opponent_pieces = (opponent == 'x') ? board.x_pieces : board.o_pieces;
+        if (bitboard_did_last_move_win(opponent_pieces, move.row, move.col))
         {
             /* opponent just won; later losses are (slightly) better */
             score = PLAYER_WIN_SCORE + (depth + 1);
@@ -340,7 +329,8 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
         Move move = emptySpots.moves[i];
         bitboard_make_move(&board, move.row, move.col, aiPlayer);
 
-        if (didLastMoveWin(board, move.row, move.col))
+        uint64_t ai_pieces = (aiPlayer == 'x') ? board.x_pieces : board.o_pieces;
+        if (bitboard_did_last_move_win(ai_pieces, move.row, move.col))
         {
             bitboard_unmake_move(&board, move.row, move.col, aiPlayer);
             *out_row = move.row;
