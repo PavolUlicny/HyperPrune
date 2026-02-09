@@ -76,18 +76,16 @@ extern "C"
      * Transposition table entry.
      * Stores search results for a single position.
      *
-     * Size: Typically 16 bytes on 64-bit systems with standard alignment.
+     * Size: 16 bytes (8+2+2+1+3 with padding for alignment)
      * (Compiler-dependent; use sizeof(TranspositionTableEntry) for exact size)
      */
     typedef struct
     {
-        uint64_t hash;   /* Zobrist hash (0 = empty slot) */
-        int16_t score;   /* Stored score */
-        uint16_t depth;  /* Search depth (supports boards up to 255×255) */
-        uint8_t type;    /* TranspositionTableNodeType */
-        int8_t best_row; /* Best move row (-1 if none) */
-        int8_t best_col; /* Best move col (-1 if none) */
-        uint8_t padding; /* Padding for alignment */
+        uint64_t hash;     /* Zobrist hash (0 = empty slot) */
+        int16_t score;     /* Stored score */
+        uint16_t depth;    /* Search depth (supports boards up to 255×255) */
+        uint8_t type;      /* TranspositionTableNodeType */
+        uint8_t padding[3]; /* Padding for alignment */
     } TranspositionTableEntry;
 
     /**
@@ -131,10 +129,8 @@ extern "C"
      *  - depth: Search depth
      *  - score: Evaluated score
      *  - type: Node type (exact/lower/upper bound)
-     *  - best_row, best_col: Best move found (-1 if none)
      */
-    void transposition_table_store(uint64_t hash, int depth, int score, TranspositionTableNodeType type,
-                                   int best_row, int best_col);
+    void transposition_table_store(uint64_t hash, int depth, int score, TranspositionTableNodeType type);
 
     /**
      * Get transposition table statistics.
