@@ -4,7 +4,6 @@
  *
  * This file implements a deterministic Minimax engine with:
  *  - Alpha–beta pruning
- *  - Early cutoffs via last-move win checks and last-move tie shortcut
  *  - Depth-adjusted terminal scoring (prefer faster wins, delay losses)
  *  - Simple opening heuristic: play center on empty board
  *  - Transposition table with Zobrist hashing for position caching
