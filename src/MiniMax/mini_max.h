@@ -27,21 +27,21 @@ extern "C"
 {
 #endif
 
-/**
- * Compute the AI's next move using Minimax with alpha–beta pruning.
- *
- * Parameters:
- *  - board:     Current position (bitboard representation)
- *  - aiPlayer:  The AI symbol ('x' or 'o') to maximize for
- *  - out_row:   Output pointer for selected row (0-based). Set to -1 if the game is already terminal
- *  - out_col:   Output pointer for selected column (0-based). Set to -1 if the game is already terminal
- *
- * Behavior:
- *  - If the board is terminal (win/tie), returns (-1, -1)
- *  - On an empty board, selects the center without searching
- *  - Otherwise, orders candidate moves and runs a full-depth alpha–beta search
- */
-void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col);
+    /**
+     * Compute the AI's next move using Minimax with alpha–beta pruning.
+     *
+     * Parameters:
+     *  - board:     Current position (bitboard representation)
+     *  - aiPlayer:  The AI symbol ('x' or 'o') to maximize for
+     *  - out_row:   Output pointer for selected row (0-based). Set to -1 if the game is already terminal
+     *  - out_col:   Output pointer for selected column (0-based). Set to -1 if the game is already terminal
+     *
+     * Behavior:
+     *  - If the board is terminal (win/tie), returns (-1, -1)
+     *  - On an empty board, selects the center without searching
+     *  - Otherwise, orders candidate moves and runs a full-depth alpha–beta search
+     */
+    void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col);
 
 #ifdef __cplusplus
 }

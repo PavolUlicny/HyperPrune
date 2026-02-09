@@ -81,10 +81,10 @@ extern "C"
      */
     typedef struct
     {
-        uint64_t hash;     /* Zobrist hash (0 = empty slot) */
-        int16_t score;     /* Stored score */
-        uint16_t depth;    /* Search depth (supports boards up to 255×255) */
-        uint8_t type;      /* TranspositionTableNodeType */
+        uint64_t hash;      /* Zobrist hash (0 = empty slot) */
+        int16_t score;      /* Stored score */
+        uint16_t depth;     /* Search depth (supports boards up to 255×255) */
+        uint8_t type;       /* TranspositionTableNodeType */
         uint8_t padding[3]; /* Padding for alignment */
     } TranspositionTableEntry;
 
