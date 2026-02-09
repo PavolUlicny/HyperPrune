@@ -331,7 +331,7 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
 
     int alpha = -INF;
     int beta = INF;
-    Move bestMove = emptySpots.moves[0];
+    Move bestMove = {-1, -1};
     int bestScore = -INF;
     uint64_t hash = zobrist_hash(board, aiPlayer);
 
