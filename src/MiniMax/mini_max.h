@@ -16,7 +16,6 @@
  *
  * Notable characteristics:
  * - Deterministic results due to stable ordering of move generation
- * - Depth-adjusted scoring
  * - Simple opening heuristic (play center on empty board)
  */
 
