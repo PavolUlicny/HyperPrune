@@ -217,27 +217,30 @@ static int selfPlay(int gameCount, int quiet)
         transposition_table_get_stats(&hits, &misses, &collisions);
 
         /* Check for overflow in total_probes calculation */
-        size_t total_probes = hits + misses;
+        size_t total_probes = hits + misses + collisions;
         double hit_rate = 0.0;
         double miss_rate = 0.0;
+        double collision_rate = 0.0;
 
-        if (total_probes < hits || total_probes < misses)
+        if (total_probes < hits || total_probes < misses || total_probes < collisions)
         {
             /* Overflow detected - calculate rates using double to avoid wrap */
-            double total_probes_d = (double)hits + (double)misses;
+            double total_probes_d = (double)hits + (double)misses + (double)collisions;
             hit_rate = (100.0 * hits) / total_probes_d;
             miss_rate = (100.0 * misses) / total_probes_d;
+            collision_rate = (100.0 * collisions) / total_probes_d;
         }
         else if (total_probes > 0)
         {
             hit_rate = (100.0 * hits) / total_probes;
             miss_rate = (100.0 * misses) / total_probes;
+            collision_rate = (100.0 * collisions) / total_probes;
         }
 
         printf("  Transposition Table\n");
         printf("    Hits:        %12zu  (%5.1f%%)\n", hits, hit_rate);
         printf("    Misses:      %12zu  (%5.1f%%)\n", misses, miss_rate);
-        printf("    Collisions:  %12zu\n", collisions);
+        printf("    Collisions:  %12zu  (%5.1f%%)\n", collisions, collision_rate);
         printf("═══════════════════════════════════════════════════════════════\n");
         printf("\n");
     }
