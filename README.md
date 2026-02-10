@@ -82,7 +82,8 @@ Self-play (AI vs AI):
 CLI flags:
 
 - `--selfplay`, `-s` optional game count (default 1000)
-- `--quiet`, `-q` suppress timing and transposition table stats
+- `--quiet`, `-q` suppress all self-play output (outcomes, timing, and transposition table stats)
+- `--tt-size SIZE`, `-t SIZE` override transposition table size in entries (default: auto-sized, max 100M)
 
 CLI examples:
 
