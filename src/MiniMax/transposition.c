@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <string.h>
 
 /*
  * Zobrist keys: [row][col][player_index]
