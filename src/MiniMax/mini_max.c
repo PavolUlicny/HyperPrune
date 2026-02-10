@@ -4,7 +4,7 @@
  *
  * This file implements a deterministic Minimax engine with:
  *  - Alpha–beta pruning
- *  - Depth-adjusted terminal scoring
+ *  - Terminal-only scoring (win/loss/tie evaluation)
  *  - Simple opening heuristic: play center on empty board
  *  - Transposition table with Zobrist hashing for position caching
  *
@@ -108,18 +108,18 @@ static int boardScore(Bitboard board, char aiPlayer)
     return CONTINUE_SCORE;
 }
 
-static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int beta, uint64_t hash);
+static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64_t hash);
 
 /*
  * Maximizing ply (AI).
  * Returns best score achievable for aiPlayer from the current position.
  */
-static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int beta, uint64_t hash)
+static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint64_t hash)
 {
     /* Transposition table probe */
     int transposition_table_score;
     TranspositionTableNodeType transposition_table_type;
-    if (transposition_table_probe(hash, depth, alpha, beta, &transposition_table_score, &transposition_table_type))
+    if (transposition_table_probe(hash, alpha, beta, &transposition_table_score, &transposition_table_type))
     {
         return transposition_table_score;
     }
@@ -127,14 +127,8 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
     {
-        /* terminal: propagate depth-adjusted values */
-        if (state == TIE_SCORE)
-            return TIE_SCORE;
-
-        if (state > 0)
-            return state - depth;
-
-        return state + depth;
+        /* terminal: return raw score (no depth adjustment) */
+        return state;
     }
 
     MoveList emptySpots;
@@ -147,7 +141,7 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
         Move move = emptySpots.moves[i];
         bitboard_make_move(&board, move.row, move.col, aiPlayer);
         uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
-        int score = miniMaxLow(board, aiPlayer, depth + 1, alpha, beta, new_hash);
+        int score = miniMaxLow(board, aiPlayer, alpha, beta, new_hash);
         bitboard_unmake_move(&board, move.row, move.col, aiPlayer);
 
         if (score > bestScore)
@@ -175,7 +169,7 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
     {
         store_type = TRANSPOSITION_TABLE_EXACT; /* Exact score */
     }
-    transposition_table_store(hash, depth, bestScore, store_type);
+    transposition_table_store(hash, bestScore, store_type);
 
     return bestScore;
 }
@@ -184,12 +178,12 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int depth, int alpha, int 
  * Minimizing ply (opponent).
  * Returns worst-case score for aiPlayer given optimal opponent play.
  */
-static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int beta, uint64_t hash)
+static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64_t hash)
 {
     /* Transposition table probe */
     int transposition_table_score;
     TranspositionTableNodeType transposition_table_type;
-    if (transposition_table_probe(hash, depth, alpha, beta, &transposition_table_score, &transposition_table_type))
+    if (transposition_table_probe(hash, alpha, beta, &transposition_table_score, &transposition_table_type))
     {
         return transposition_table_score;
     }
@@ -197,14 +191,8 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
     {
-        /* terminal: propagate depth-adjusted values */
-        if (state == TIE_SCORE)
-            return TIE_SCORE;
-
-        if (state > 0)
-            return state - depth;
-
-        return state + depth;
+        /* terminal: return raw score (no depth adjustment) */
+        return state;
     }
 
     MoveList emptySpots;
@@ -218,7 +206,7 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
         Move move = emptySpots.moves[i];
         bitboard_make_move(&board, move.row, move.col, opponent);
         uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, opponent);
-        int score = miniMaxHigh(board, aiPlayer, depth + 1, alpha, beta, new_hash);
+        int score = miniMaxHigh(board, aiPlayer, alpha, beta, new_hash);
         bitboard_unmake_move(&board, move.row, move.col, opponent);
 
         if (score < bestScore)
@@ -246,7 +234,7 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int depth, int alpha, int b
     {
         store_type = TRANSPOSITION_TABLE_EXACT; /* Exact score */
     }
-    transposition_table_store(hash, depth, bestScore, store_type);
+    transposition_table_store(hash, bestScore, store_type);
 
     return bestScore;
 }
@@ -296,7 +284,7 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
         Move move = emptySpots.moves[i];
         bitboard_make_move(&board, move.row, move.col, aiPlayer);
         uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
-        int score = miniMaxLow(board, aiPlayer, 1, alpha, beta, new_hash);
+        int score = miniMaxLow(board, aiPlayer, alpha, beta, new_hash);
         bitboard_unmake_move(&board, move.row, move.col, aiPlayer);
 
         if (score > bestScore)
