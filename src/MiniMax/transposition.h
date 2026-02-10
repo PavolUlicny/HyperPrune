@@ -6,7 +6,7 @@
  *
  * Key components:
  *  - Zobrist hashing: incremental position hashing via XOR
- *  - Transposition table storage: hash table mapping positions to (score, depth, bounds)
+ *  - Transposition table storage: hash table mapping positions to (score, bounds)
  *  - Replacement strategy: always-replace for hash collisions
  *
  * Usage:
@@ -86,10 +86,9 @@ extern "C"
     {
         uint64_t hash;      /* Zobrist hash (full 64-bit, no encoding needed) */
         int16_t score;      /* Stored score */
-        uint16_t depth;     /* Search depth */
         uint8_t type;       /* TranspositionTableNodeType */
         uint8_t occupied;   /* 0 = empty slot, 1 = occupied */
-        uint8_t padding[2]; /* Padding for alignment */
+        uint8_t padding[4]; /* Padding for alignment */
     } TranspositionTableEntry;
 
     /**
@@ -113,16 +112,15 @@ extern "C"
      *
      * Parameters:
      *  - hash: Position hash to look up
-     *  - depth: Current search depth
      *  - alpha, beta: Current alpha-beta bounds
      *  - out_score: Output pointer for retrieved score (if found)
      *  - out_type: Output pointer for node type (if found)
      *
      * Returns:
      *  - 1 if a usable entry was found (out_score/out_type are valid)
-     *  - 0 otherwise (cache miss, collision, or insufficient depth)
+     *  - 0 otherwise (cache miss or collision)
      */
-    int transposition_table_probe(uint64_t hash, int depth, int alpha, int beta,
+    int transposition_table_probe(uint64_t hash, int alpha, int beta,
                                   int *out_score, TranspositionTableNodeType *out_type);
 
     /**
@@ -130,11 +128,10 @@ extern "C"
      *
      * Parameters:
      *  - hash: Position hash
-     *  - depth: Search depth
      *  - score: Evaluated score
      *  - type: Node type (exact/lower/upper bound)
      */
-    void transposition_table_store(uint64_t hash, int depth, int score, TranspositionTableNodeType type);
+    void transposition_table_store(uint64_t hash, int score, TranspositionTableNodeType type);
 
     /**
      * Get transposition table statistics.
