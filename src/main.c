@@ -2,10 +2,11 @@
  * Program entry and CLI modes
  * ---------------------------
  * - Interactive game loop (human vs AI)
- * - Self-play mode via --selfplay|-s [games] [--quiet|-q] [--tt-size|-t SIZE]
+ * - Self-play mode via --selfplay|-s [games] [--quiet|-q] [--tt-size|-t SIZE] [--seed SEED]
  *   * Default games: 1000 when omitted
  *   * --quiet/-q suppresses all self-play output
  *   * --tt-size/-t overrides transposition table size
+ *   * --seed sets PRNG seed for Zobrist keys (deterministic by default)
  */
 
 #include <stdio.h>
@@ -260,6 +261,32 @@ int main(int argc, char **argv)
     /* Initialize win masks for bitboard operations */
     init_win_masks();
 
+    /* Early parse for --seed flag to allow seeding Zobrist key generation */
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--seed") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                char *endptr;
+                unsigned long long val = strtoull(argv[i + 1], &endptr, 10);
+                if (*endptr == '\0')
+                {
+                    zobrist_set_seed((uint64_t)val);
+                }
+                else
+                {
+                    fprintf(stderr, "Warning: Invalid --seed value '%s'\n", argv[i + 1]);
+                }
+            }
+            else
+            {
+                fprintf(stderr, "Warning: --seed requires a value\n");
+            }
+            break;
+        }
+    }
+
     /* Initialize Zobrist hashing and transposition table */
     zobrist_init();
 
@@ -377,7 +404,8 @@ int main(int argc, char **argv)
                 games = (int)val;
             }
             else if (!((strcmp(argv[selfplay_idx + 1], "--quiet") == 0 || strcmp(argv[selfplay_idx + 1], "-q") == 0) ||
-                       (strcmp(argv[selfplay_idx + 1], "--tt-size") == 0 || strcmp(argv[selfplay_idx + 1], "-t") == 0)))
+                       (strcmp(argv[selfplay_idx + 1], "--tt-size") == 0 || strcmp(argv[selfplay_idx + 1], "-t") == 0) ||
+                       strcmp(argv[selfplay_idx + 1], "--seed") == 0))
             {
                 /* Not a valid game count and not a recognized flag, warn */
                 fprintf(stderr, "Warning: Invalid --selfplay value '%s', using default %d\n",
