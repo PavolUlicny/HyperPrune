@@ -84,12 +84,14 @@ CLI flags:
 - `--selfplay`, `-s` optional game count (default 1000)
 - `--quiet`, `-q` suppress all self-play output (outcomes, timing, and transposition table stats)
 - `--tt-size SIZE`, `-t SIZE` override transposition table size in entries (default: auto-sized, max 100M)
+- `--seed SEED` set PRNG seed for Zobrist key generation (default: deterministic)
 
 CLI examples:
 
 ```sh
 ./ttt --selfplay 5000
 ./ttt --selfplay 20000 --quiet
+./ttt --seed 12345 --selfplay 1000
 ```
 
 ## Configure board size
@@ -107,7 +109,7 @@ make BOARD_SIZE=4
 - Search: full-depth minimax with alpha-beta pruning
 - Evaluation: terminal-only scoring (win/loss/tie)
 - Determinism: stable move ordering and consistent tie-breaking
-- Transposition table: Zobrist keys, node type storage (exact, lower, upper)
+- Transposition table: Zobrist keys (SplitMix64 PRNG), node type storage (exact, lower, upper)
 
 ## Project layout
 
