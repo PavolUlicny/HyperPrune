@@ -150,7 +150,7 @@ int transposition_table_probe(uint64_t hash, int depth, int alpha, int beta,
     TranspositionTableEntry *entry = &transposition_table[index];
 
     /* Empty slot */
-    if (entry->hash == 0)
+    if (entry->occupied == 0)
     {
         transposition_table_misses++;
         return 0;
@@ -216,6 +216,7 @@ void transposition_table_store(uint64_t hash, int depth, int score, Transpositio
     entry->score = (int16_t)score;
     entry->depth = (uint16_t)depth;
     entry->type = (uint8_t)type;
+    entry->occupied = 1;
 }
 
 void transposition_table_get_stats(size_t *hits, size_t *misses, size_t *collisions)

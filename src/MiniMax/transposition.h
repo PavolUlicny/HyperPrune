@@ -75,14 +75,21 @@ extern "C"
     /**
      * Transposition table entry.
      * Stores search results for a single position.
+     *
+     * Uses explicit 'occupied' flag instead of hash==0 sentinel to avoid
+     * collision with legitimate zero-hash positions (1 in 2^64 probability).
+     * This preserves full 64-bit hash entropy and prevents artificial collisions.
+     *
+     * Total size: 16 bytes (naturally aligned for cache efficiency)
      */
     typedef struct
     {
-        uint64_t hash;      /* Zobrist hash (0 = empty slot) */
+        uint64_t hash;      /* Zobrist hash (full 64-bit, no encoding needed) */
         int16_t score;      /* Stored score */
         uint16_t depth;     /* Search depth */
         uint8_t type;       /* TranspositionTableNodeType */
-        uint8_t padding[3]; /* Padding for alignment */
+        uint8_t occupied;   /* 0 = empty slot, 1 = occupied */
+        uint8_t padding[2]; /* Padding for alignment */
     } TranspositionTableEntry;
 
     /**
