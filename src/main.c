@@ -2,15 +2,17 @@
  * Program entry and CLI modes
  * ---------------------------
  * - Interactive game loop (human vs AI)
- * - Self-play mode via --selfplay|-s [games] [--quiet|-q]
+ * - Self-play mode via --selfplay|-s [games] [--quiet|-q] [--tt-size|-t SIZE]
  *   * Default games: 1000 when omitted
- *   * --quiet/-q suppresses timing output
+ *   * --quiet/-q suppresses all self-play output
+ *   * --tt-size/-t overrides transposition table size
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <ctype.h>
 #include <time.h>
 #include <math.h>
 #include "TicTacToe/tic_tac_toe.h"
@@ -261,6 +263,48 @@ int main(int argc, char **argv)
     /* Initialize Zobrist hashing and transposition table */
     zobrist_init();
 
+    /* Early parse for --tt-size flag to allow overriding transposition table size */
+    int tt_size_override = -1;
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--tt-size") == 0 || strcmp(argv[i], "-t") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                char *endptr;
+                long val = strtol(argv[i + 1], &endptr, 10);
+                /* Check if it's a valid number (not just a flag like --quiet) */
+                if (*endptr == '\0')
+                {
+                    /* It's a number, validate range */
+                    if (val > 0 && val <= MAX_TRANSPOSITION_TABLE_SIZE)
+                    {
+                        tt_size_override = (int)val;
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Warning: Invalid --tt-size value '%s', must be 1-%d\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
+                    }
+                }
+                else if (argv[i + 1][0] == '-' && !isdigit((unsigned char)argv[i + 1][1]))
+                {
+                    /* Starts with - but not a negative number, probably a flag */
+                    fprintf(stderr, "Warning: --tt-size requires a value\n");
+                }
+                else
+                {
+                    /* Not a valid number */
+                    fprintf(stderr, "Warning: Invalid --tt-size value '%s', must be 1-%d\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
+                }
+            }
+            else
+            {
+                fprintf(stderr, "Warning: --tt-size requires a value\n");
+            }
+            break;
+        }
+    }
+
     /*
      * Dynamic transposition table sizing.
      * Formula: size = 1,500,000 × (BOARD_SIZE / 4)^9.4
@@ -289,21 +333,40 @@ int main(int argc, char **argv)
         }
     }
 
+    /* Apply user override if --tt-size was specified */
+    if (tt_size_override > 0)
+    {
+        transposition_table_size = (size_t)tt_size_override;
+    }
+
     transposition_table_init(transposition_table_size);
 
     int ret_code = 0;
 
-    if (argc >= 2 && (strcmp(argv[1], "--selfplay") == 0 || strcmp(argv[1], "-s") == 0))
+    /* Check if --selfplay is present anywhere in argv (order-independent) */
+    int selfplay_mode = 0;
+    int selfplay_idx = -1;
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--selfplay") == 0 || strcmp(argv[i], "-s") == 0)
+        {
+            selfplay_mode = 1;
+            selfplay_idx = i;
+            break;
+        }
+    }
+
+    if (selfplay_mode)
     {
         int games = 1000;
         int quiet = 0;
-        int flag_start = 2;
 
-        if (argc >= 3)
+        /* Try to parse game count from the argument after --selfplay */
+        if (selfplay_idx + 1 < argc)
         {
             char *endp;
-            long val = strtol(argv[2], &endp, 10);
-            if (endp != argv[2] && *endp == '\0')
+            long val = strtol(argv[selfplay_idx + 1], &endp, 10);
+            if (endp != argv[selfplay_idx + 1] && *endp == '\0')
             {
                 if (val < 1 || val > INT_MAX)
                 {
@@ -312,14 +375,35 @@ int main(int argc, char **argv)
                     return 1;
                 }
                 games = (int)val;
-                flag_start = 3;
+            }
+            else if (!((strcmp(argv[selfplay_idx + 1], "--quiet") == 0 || strcmp(argv[selfplay_idx + 1], "-q") == 0) ||
+                       (strcmp(argv[selfplay_idx + 1], "--tt-size") == 0 || strcmp(argv[selfplay_idx + 1], "-t") == 0)))
+            {
+                /* Not a valid game count and not a recognized flag, warn */
+                fprintf(stderr, "Warning: Invalid --selfplay value '%s', using default %d\n",
+                        argv[selfplay_idx + 1], games);
             }
         }
 
-        for (int i = flag_start; i < argc; ++i)
+        /* Scan all arguments for flags */
+        for (int i = 1; i < argc; ++i)
         {
             if (strcmp(argv[i], "--quiet") == 0 || strcmp(argv[i], "-q") == 0)
+            {
                 quiet = 1;
+            }
+            else if (strcmp(argv[i], "--tt-size") == 0 || strcmp(argv[i], "-t") == 0)
+            {
+                /* Already parsed earlier, skip it and its value if present */
+                if (i + 1 < argc)
+                {
+                    /* Only skip next arg if it's not a flag (or is a negative number) */
+                    if (argv[i + 1][0] != '-' || (argv[i + 1][0] == '-' && isdigit((unsigned char)argv[i + 1][1])))
+                    {
+                        i++; /* Skip the value argument */
+                    }
+                }
+            }
         }
         ret_code = selfPlay(games, quiet);
     }
