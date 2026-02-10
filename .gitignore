@@ -42,6 +42,13 @@
 *.idb
 *.pdb
 
+# Profiling and coverage
+gmon.out
+*.profraw
+*.profdata
+*.gcda
+*.gcno
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
