@@ -14,6 +14,7 @@
 #include "mini_max.h"
 #include "transposition.h"
 #include <limits.h>
+#include <stdint.h>
 
 /* A single board coordinate (row, col). */
 typedef struct
@@ -38,6 +39,12 @@ typedef enum
     CONTINUE_SCORE = 1,
     INF = INT_MAX
 } HelperScores;
+
+/* Compile-time validation: terminal scores must fit in int16_t (transposition table storage) */
+_Static_assert(AI_WIN_SCORE <= INT16_MAX && AI_WIN_SCORE >= INT16_MIN,
+               "AI_WIN_SCORE must fit in int16_t");
+_Static_assert(PLAYER_WIN_SCORE <= INT16_MAX && PLAYER_WIN_SCORE >= INT16_MIN,
+               "PLAYER_WIN_SCORE must fit in int16_t");
 
 /*
  * Safe mask for valid board positions.
