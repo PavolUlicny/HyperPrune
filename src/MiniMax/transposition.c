@@ -138,7 +138,7 @@ void transposition_table_free(void)
     transposition_table_size = 0;
 }
 
-int transposition_table_probe(uint64_t hash, int depth, int alpha, int beta,
+int transposition_table_probe(uint64_t hash, int alpha, int beta,
                               int *out_score, TranspositionTableNodeType *out_type)
 {
     if (transposition_table == NULL || transposition_table_size == 0)
@@ -163,12 +163,7 @@ int transposition_table_probe(uint64_t hash, int depth, int alpha, int beta,
         return 0;
     }
 
-    /* Depth-based cutoff: only use if stored depth >= current depth */
-    if (entry->depth < depth)
-    {
-        transposition_table_misses++;
-        return 0;
-    }
+    /* No depth check needed - scores are now depth-independent */
 
     int score = entry->score;
 
@@ -201,7 +196,7 @@ int transposition_table_probe(uint64_t hash, int depth, int alpha, int beta,
     return 0;
 }
 
-void transposition_table_store(uint64_t hash, int depth, int score, TranspositionTableNodeType type)
+void transposition_table_store(uint64_t hash, int score, TranspositionTableNodeType type)
 {
     if (transposition_table == NULL || transposition_table_size == 0)
     {
@@ -214,7 +209,6 @@ void transposition_table_store(uint64_t hash, int depth, int score, Transpositio
     /* Replacement strategy: always replace */
     entry->hash = hash;
     entry->score = (int16_t)score;
-    entry->depth = (uint16_t)depth;
     entry->type = (uint8_t)type;
     entry->occupied = 1;
 }
