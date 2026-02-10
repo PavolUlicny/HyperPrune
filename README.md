@@ -15,7 +15,7 @@ This repository provides:
 - A transposition table backed by Zobrist hashing
 - Bitboard utilities for fast win detection and move generation
 
-The engine evaluates terminal states only (win/loss/tie) and adjusts scores by depth to prefer faster wins and slower losses. On an empty board it plays the center square without searching.
+The engine evaluates terminal states only (win/loss/tie). On an empty board it plays the center square without searching.
 
 ## Build
 
@@ -105,7 +105,7 @@ make BOARD_SIZE=4
 - Board representation: two `uint64_t` bitboards (`x` and `o`), supporting up to 64 cells
 - Move generation: bit scanning of empty squares
 - Search: full-depth minimax with alpha-beta pruning
-- Evaluation: terminal-only scoring with depth adjustments
+- Evaluation: terminal-only scoring (win/loss/tie)
 - Determinism: stable move ordering and consistent tie-breaking
 - Transposition table: Zobrist keys, node type storage (exact, lower, upper)
 
