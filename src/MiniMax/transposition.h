@@ -30,8 +30,19 @@ extern "C"
 #endif
 
     /**
+     * Set the seed for Zobrist key generation.
+     * Call this before zobrist_init() to use a specific seed.
+     * Default seed: 0x9e3779b97f4a7c15 (deterministic)
+     *
+     * Parameters:
+     *  - seed: 64-bit seed value
+     */
+    void zobrist_set_seed(uint64_t seed);
+
+    /**
      * Initialize Zobrist random keys.
      * Must be called once at program start before any hashing operations.
+     * Uses SplitMix64 PRNG for high-quality, deterministic key generation.
      */
     void zobrist_init(void);
 

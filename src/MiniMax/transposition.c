@@ -7,7 +7,6 @@
 #include "transposition.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 
 /*
  * Zobrist keys: [row][col][player_index]
@@ -28,31 +27,49 @@ static size_t transposition_table_hits = 0;
 static size_t transposition_table_misses = 0;
 static size_t transposition_table_collisions = 0;
 
+/* SplitMix64 PRNG state for Zobrist key generation */
+static uint64_t splitmix64_state = 0x9e3779b97f4a7c15ULL; /* Default seed (golden ratio) */
+
+/*
+ * SplitMix64: High-quality 64-bit PRNG
+ * Reference: https://xoshiro.di.unimi.it/splitmix64.c
+ */
+static uint64_t splitmix64_next(void)
+{
+    uint64_t z = (splitmix64_state += 0x9e3779b97f4a7c15ULL);
+    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
+    z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
+    return z ^ (z >> 31);
+}
+
 /* Map player symbol to index for Zobrist key lookup */
 static inline int player_to_index(char player)
 {
     return (player == 'x') ? 0 : 1;
 }
 
+void zobrist_set_seed(uint64_t seed)
+{
+    splitmix64_state = seed;
+}
+
 void zobrist_init(void)
 {
-    srand((unsigned int)time(NULL));
-
-    /* Initialize piece keys */
+    /* Initialize piece keys using SplitMix64 */
     for (int r = 0; r < BOARD_SIZE; r++)
     {
         for (int c = 0; c < BOARD_SIZE; c++)
         {
             for (int p = 0; p < 2; p++)
             {
-                zobrist_keys[r][c][p] = ((uint64_t)rand() << 32) | (uint64_t)rand();
+                zobrist_keys[r][c][p] = splitmix64_next();
             }
         }
     }
 
     /* Initialize player perspective keys */
-    zobrist_player_keys[0] = ((uint64_t)rand() << 32) | (uint64_t)rand();
-    zobrist_player_keys[1] = ((uint64_t)rand() << 32) | (uint64_t)rand();
+    zobrist_player_keys[0] = splitmix64_next();
+    zobrist_player_keys[1] = splitmix64_next();
 }
 
 uint64_t zobrist_hash(Bitboard board, char aiPlayer)
