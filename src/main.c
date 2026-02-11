@@ -45,7 +45,12 @@ static void playGame(void)
 
             if (player_turn == human_symbol)
             {
-                getMove(&row, &col);
+                if (getMove(&row, &col) == -1)
+                {
+                    printf("\nEOF received. Exiting game.\n");
+                    return; /* Clean exit on EOF */
+                }
+
                 makeMove(row, col);
                 GameResult result = checkWinner(row, col);
 
