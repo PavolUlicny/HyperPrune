@@ -87,8 +87,11 @@ extern "C"
      * Read a legal move from stdin as (col,row) in 1-based input.
      * Blocks until a valid empty cell is provided or EOF is encountered.
      * Returns 0-based coordinates via out_row/out_col.
+     * Returns:
+     *   0 on success (move stored in output parameters)
+     *  -1 on EOF (user wants to quit)
      */
-    void getMove(int *out_row, int *out_col);
+    int getMove(int *out_row, int *out_col);
 
     /** Apply a move for current player_turn and flip the turn. */
     void makeMove(int row, int col);
