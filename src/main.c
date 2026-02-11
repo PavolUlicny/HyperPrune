@@ -26,8 +26,9 @@
 /*
  * Maximum transposition table size (entry count).
  * This caps the allocation when BOARD_SIZE is large.
+ * At 16 bytes per entry: 250M entries = 4 GB memory
  */
-#define MAX_TRANSPOSITION_TABLE_SIZE 100000000
+#define MAX_TRANSPOSITION_TABLE_SIZE 250000000
 
 /*
  * Interactive human vs AI loop. Prompts the user to choose a symbol, then
