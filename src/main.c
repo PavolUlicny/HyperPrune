@@ -100,7 +100,7 @@ static void playGame(void)
  *
  * Parameters:
  *  - gameCount: number of games to run
- *  - quiet:     when non-zero, suppress timing output
+ *  - quiet:     when non-zero, suppress all self-play output
  */
 static int selfPlay(int gameCount, int quiet)
 {
