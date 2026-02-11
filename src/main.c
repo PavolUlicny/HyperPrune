@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <math.h>
+#include <errno.h>
 #include "TicTacToe/tic_tac_toe.h"
 #include "MiniMax/mini_max.h"
 #include "MiniMax/transposition.h"
@@ -305,20 +306,42 @@ int main(int argc, char **argv)
         {
             if (i + 1 < argc)
             {
-                char *endptr;
-                unsigned long long val = strtoull(argv[i + 1], &endptr, 10);
-                if (*endptr == '\0')
+                const char *seed_str = argv[i + 1];
+
+                /* Check for empty string or another flag */
+                if (seed_str[0] == '\0' || seed_str[0] == '-')
                 {
-                    zobrist_set_seed((uint64_t)val);
+                    fprintf(stderr, "Error: --seed requires a value (0 to %llu)\n",
+                            (unsigned long long)ULLONG_MAX);
+                    exit(EXIT_FAILURE);
+                }
+
+                char *endptr;
+                errno = 0;  /* Must reset errno before strtoull */
+                unsigned long long val = strtoull(seed_str, &endptr, 10);
+
+                /* Check for parsing errors */
+                if (endptr == seed_str || *endptr != '\0')
+                {
+                    /* No conversion occurred or trailing garbage */
+                    fprintf(stderr, "Error: Invalid --seed value '%s' (not a valid number)\n", seed_str);
+                    exit(EXIT_FAILURE);
+                }
+                else if (errno == ERANGE)
+                {
+                    fprintf(stderr, "Error: --seed value '%s' out of range (max: %llu)\n",
+                            seed_str, (unsigned long long)ULLONG_MAX);
+                    exit(EXIT_FAILURE);
                 }
                 else
                 {
-                    fprintf(stderr, "Warning: Invalid --seed value '%s'\n", argv[i + 1]);
+                    zobrist_set_seed((uint64_t)val);
                 }
             }
             else
             {
-                fprintf(stderr, "Warning: --seed requires a value\n");
+                fprintf(stderr, "Error: --seed requires a value\n");
+                exit(EXIT_FAILURE);
             }
             break;
         }
