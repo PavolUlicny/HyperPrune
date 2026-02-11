@@ -9,6 +9,8 @@
  *   * --seed sets PRNG seed for Zobrist keys (deterministic by default)
  */
 
+#define _POSIX_C_SOURCE 199309L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -107,15 +109,14 @@ static int selfPlay(int gameCount, int quiet)
     int ai1Wins = 0;
     int ai2Wins = 0;
     int ties = 0;
-    clock_t startTime = 0;
+    struct timespec startTime = {0};
     int timing_available = 0;
 
     if (!quiet)
     {
-        startTime = clock();
-        if (startTime == (clock_t)-1)
+        if (clock_gettime(CLOCK_MONOTONIC, &startTime) != 0)
         {
-            fprintf(stderr, "Warning: clock() failed, timing stats will be unavailable\n");
+            fprintf(stderr, "Warning: clock_gettime() failed, timing stats will be unavailable\n");
             timing_available = 0;
         }
         else
@@ -167,15 +168,18 @@ static int selfPlay(int gameCount, int quiet)
         /* Try to get timing data if clock was available at start */
         if (timing_available)
         {
-            clock_t endTime = clock();
-            if (endTime == (clock_t)-1)
+            struct timespec endTime;
+            if (clock_gettime(CLOCK_MONOTONIC, &endTime) != 0)
             {
-                fprintf(stderr, "Warning: clock() failed at end, timing stats unavailable\n");
+                fprintf(stderr, "Warning: clock_gettime() failed at end, timing stats unavailable\n");
                 timing_available = 0;
             }
             else
             {
-                elapsed = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+                /* Calculate elapsed time in seconds */
+                elapsed = (endTime.tv_sec - startTime.tv_sec) +
+                          (endTime.tv_nsec - startTime.tv_nsec) / 1e9;
+
                 if (elapsed < 0)
                 {
                     fprintf(stderr, "Warning: negative elapsed time, timing stats unavailable\n");
