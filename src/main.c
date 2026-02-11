@@ -263,6 +263,34 @@ static int selfPlay(int gameCount, int quiet)
  */
 int main(int argc, char **argv)
 {
+    /* Check for help flag first (before any initialization) */
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
+        {
+            printf("Usage: ttt [OPTIONS]\n\n");
+            printf("Play Tic-Tac-Toe against a perfect minimax AI or run self-play simulations.\n\n");
+            printf("OPTIONS:\n");
+            printf("  Interactive Mode (default):\n");
+            printf("    Start an interactive game against the AI.\n\n");
+            printf("  Self-Play Mode:\n");
+            printf("    --selfplay, -s [GAMES]    Run self-play simulations (default: 1000 games)\n");
+            printf("    --quiet, -q               Suppress output\n\n");
+            printf("  Configuration:\n");
+            printf("    --tt-size SIZE, -t SIZE   Transposition table size in entries\n");
+            printf("                              (default: auto-sized, max: %d)\n", MAX_TRANSPOSITION_TABLE_SIZE);
+            printf("    --seed SEED               PRNG seed for Zobrist keys (default: deterministic)\n\n");
+            printf("  Help:\n");
+            printf("    --help, -h                Show this help message and exit\n\n");
+            printf("EXAMPLES:\n");
+            printf("  ttt                          # Interactive game\n");
+            printf("  ttt --selfplay 5000          # Run 5000 self-play games\n");
+            printf("  ttt --selfplay 10000 -q      # Run 10000 games, quiet output\n");
+            printf("  ttt --seed 42 -s 1000        # Deterministic game with seed 42\n");
+            return 0;
+        }
+    }
+
     /* Initialize win masks for bitboard operations */
     init_win_masks();
 
