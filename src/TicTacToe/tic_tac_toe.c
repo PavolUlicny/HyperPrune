@@ -189,8 +189,13 @@ void printGameResult(GameResult result)
     }
 }
 
-/* Read and validate a single board coordinate from stdin. Returns 0-based index. */
-static int getValidCoord(const char *prompt)
+/*
+ * Read and validate a single board coordinate from stdin.
+ * Returns:
+ *   0 on success (coordinate stored in *out_value as 0-based index)
+ *  -1 on EOF (user wants to quit)
+ */
+static int getValidCoord(const char *prompt, int *out_value)
 {
     int value;
 
@@ -203,8 +208,7 @@ static int getValidCoord(const char *prompt)
         {
             if (rc == EOF)
             {
-                printf("\nEOF received. Exiting game.\n");
-                exit(0);
+                return -1; /* Signal EOF to caller */
             }
 
             printf("Invalid input. Enter a number 1-%d.\n", BOARD_SIZE);
@@ -220,21 +224,33 @@ static int getValidCoord(const char *prompt)
             continue;
         }
 
-        return value - 1;
+        *out_value = value - 1;
+        return 0; /* Success */
     }
 }
 
 /*
  * Prompt the user for a move as 1-based (column, row), validate input, and
  * return 0-based (row, col). Re-prompts on invalid or out-of-range input.
- * On EOF, exits gracefully.
+ * Returns:
+ *   0 on success (move stored in *out_row, *out_col)
+ *  -1 on EOF (user pressed Ctrl+D to quit)
  */
-void getMove(int *out_row, int *out_col)
+int getMove(int *out_row, int *out_col)
 {
     while (1)
     {
-        int col = getValidCoord("Input column: ");
-        int row = getValidCoord("Input row: ");
+        int col, row;
+
+        if (getValidCoord("Input column: ", &col) == -1)
+        {
+            return -1; /* EOF received */
+        }
+
+        if (getValidCoord("Input row: ", &row) == -1)
+        {
+            return -1; /* EOF received */
+        }
 
         if (!bitboard_is_empty(board_state, row, col))
         {
@@ -244,7 +260,7 @@ void getMove(int *out_row, int *out_col)
 
         *out_row = row;
         *out_col = col;
-        return;
+        return 0; /* Success */
     }
 }
 
