@@ -195,9 +195,9 @@ static int selfPlay(int gameCount, int quiet)
 
         /* Print results header */
         printf("\n");
-        printf("═══════════════════════════════════════════════════════════════\n");
+        printf("===============================================================\n");
         printf("  Self-Play Results: %d games\n", gameCount);
-        printf("═══════════════════════════════════════════════════════════════\n");
+        printf("===============================================================\n");
 
         /* Print game outcomes (always available) */
         printf("  Outcomes\n");
@@ -249,7 +249,7 @@ static int selfPlay(int gameCount, int quiet)
         printf("    Hits:        %12zu  (%5.1f%%)\n", hits, hit_rate);
         printf("    Misses:      %12zu  (%5.1f%%)\n", misses, miss_rate);
         printf("    Collisions:  %12zu  (%5.1f%%)\n", collisions, collision_rate);
-        printf("═══════════════════════════════════════════════════════════════\n");
+        printf("===============================================================\n");
         printf("\n");
     }
 
