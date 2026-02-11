@@ -317,7 +317,7 @@ int main(int argc, char **argv)
                 }
 
                 char *endptr;
-                errno = 0;  /* Must reset errno before strtoull */
+                errno = 0; /* Must reset errno before strtoull */
                 unsigned long long val = strtoull(seed_str, &endptr, 10);
 
                 /* Check for parsing errors */
