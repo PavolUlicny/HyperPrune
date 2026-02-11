@@ -1,4 +1,4 @@
-# MiniMax Tic-Tac-Toe Makefile
+# HyperPrune Makefile
 # Provides debug/release builds and a PGO target for the ttt binary.
 
 CC ?= gcc

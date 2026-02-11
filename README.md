@@ -1,6 +1,6 @@
-# MiniMax Tic-Tac-Toe
+# HyperPrune
 
-A highly optimized Tic-Tac-Toe engine with a perfect-play minimax AI. Features bitboard representation, alpha-beta pruning, Zobrist-hashed transposition table, and configurable board sizes (3×3 to 8×8).
+A highly optimized Tic-Tac-Toe engine with perfect-play AI. Features aggressive alpha-beta pruning, bitboard representation, Zobrist-hashed transposition table, and configurable board sizes (3×3 to 8×8).
 
 ## Features
 
