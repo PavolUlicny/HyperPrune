@@ -249,11 +249,20 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
 /*
  * Public entry: select the best move for aiPlayer.
  * Short-circuits:
+ *  - Invalid board (overlapping pieces) -> (-1, -1)
  *  - Terminal board -> (-1, -1)
  *  - Empty board    -> center (BOARD_SIZE/2, BOARD_SIZE/2) without searching
  */
 void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
 {
+    /* Validate: no overlapping pieces */
+    if (board.x_pieces & board.o_pieces)
+    {
+        *out_row = -1;
+        *out_col = -1;
+        return;
+    }
+
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
     {
