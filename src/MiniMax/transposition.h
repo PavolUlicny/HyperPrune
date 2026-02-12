@@ -74,6 +74,17 @@ extern "C"
     uint64_t zobrist_toggle(uint64_t hash, int row, int col, char player);
 
     /**
+     * Toggle the side-to-move component in the hash.
+     * Call this when transitioning between maximizing and minimizing plies.
+     *
+     * Parameters:
+     *  - hash: Current position hash
+     *
+     * Returns: Hash with turn component toggled
+     */
+    uint64_t zobrist_toggle_turn(uint64_t hash);
+
+    /**
      * Transposition table entry types (bound classification)
      */
     typedef enum
