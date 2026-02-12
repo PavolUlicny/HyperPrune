@@ -20,6 +20,12 @@ static uint64_t zobrist_keys[BOARD_SIZE][BOARD_SIZE][2];
  */
 static uint64_t zobrist_player_keys[2];
 
+/*
+ * Zobrist key for side-to-move.
+ * XORed into hash when it's the opponent's turn (miniMaxLow).
+ */
+static uint64_t zobrist_turn_key;
+
 /* Transposition table and statistics */
 static TranspositionTableEntry *transposition_table = NULL;
 static size_t transposition_table_size = 0;
@@ -70,6 +76,9 @@ void zobrist_init(void)
     /* Initialize player perspective keys */
     zobrist_player_keys[0] = splitmix64_next();
     zobrist_player_keys[1] = splitmix64_next();
+
+    /* Initialize side-to-move key */
+    zobrist_turn_key = splitmix64_next();
 }
 
 uint64_t zobrist_hash(Bitboard board, char aiPlayer)
@@ -125,6 +134,11 @@ uint64_t zobrist_hash(Bitboard board, char aiPlayer)
 uint64_t zobrist_toggle(uint64_t hash, int row, int col, char player)
 {
     return hash ^ zobrist_keys[row][col][player_to_index(player)];
+}
+
+uint64_t zobrist_toggle_turn(uint64_t hash)
+{
+    return hash ^ zobrist_turn_key;
 }
 
 void transposition_table_init(size_t size)
