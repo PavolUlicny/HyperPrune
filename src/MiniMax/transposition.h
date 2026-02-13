@@ -155,16 +155,6 @@ extern "C"
      */
     void transposition_table_store(uint64_t hash, int score, TranspositionTableNodeType type);
 
-    /**
-     * Get transposition table statistics.
-     *
-     * Parameters:
-     *  - hits: Number of successful probes
-     *  - misses: Number of failed probes
-     *  - collisions: Number of hash collisions
-     */
-    void transposition_table_get_stats(size_t *hits, size_t *misses, size_t *collisions);
-
 #ifdef __cplusplus
 }
 #endif
