@@ -52,7 +52,7 @@ WARNINGS := -Wall -Wextra
 BASE_CFLAGS := -std=c11 -MMD -MP -pipe -DBOARD_SIZE=$(BOARD_SIZE)
 
 DEBUG_CFLAGS := -O0 -g
-RELEASE_CFLAGS := -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG
+RELEASE_CFLAGS := -O3 -march=native -flto -fomit-frame-pointer -fno-semantic-interposition -DNDEBUG
 
 ifeq ($(BUILD),debug)
 MODE_CFLAGS := $(DEBUG_CFLAGS)
