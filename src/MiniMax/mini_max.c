@@ -157,6 +157,10 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
             bestScore = score;
         }
 
+        /* Early win return: stop searching if we found a winning move */
+        if (bestScore == AI_WIN_SCORE)
+            break;
+
         if (score > alpha)
             alpha = score;
         if (beta <= alpha)
@@ -222,6 +226,10 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
         {
             bestScore = score;
         }
+
+        /* Early win return: stop searching if opponent found a winning move */
+        if (bestScore == PLAYER_WIN_SCORE)
+            break;
 
         if (score < beta)
             beta = score;
