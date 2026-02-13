@@ -26,13 +26,10 @@ static uint64_t zobrist_player_keys[2];
  */
 static uint64_t zobrist_turn_key;
 
-/* Transposition table and statistics */
+/* Transposition table */
 static TranspositionTableEntry *transposition_table = NULL;
 static size_t transposition_table_size = 0;
 static size_t transposition_table_mask = 0; /* Bitmask for fast modulo (size - 1) */
-static size_t transposition_table_hits = 0;
-static size_t transposition_table_misses = 0;
-static size_t transposition_table_collisions = 0;
 
 /* SplitMix64 PRNG state for Zobrist key generation */
 static uint64_t splitmix64_state = 0x9e3779b97f4a7c15ULL; /* Default seed (golden ratio) */
@@ -190,10 +187,6 @@ void transposition_table_init(size_t size)
         transposition_table_size = 0;
         transposition_table_mask = 0;
     }
-
-    transposition_table_hits = 0;
-    transposition_table_misses = 0;
-    transposition_table_collisions = 0;
 }
 
 void transposition_table_free(void)
@@ -221,14 +214,12 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
     /* Empty slot */
     if (entry->occupied == 0)
     {
-        transposition_table_misses++;
         return 0;
     }
 
     /* Hash collision */
     if (entry->hash != hash)
     {
-        transposition_table_collisions++;
         return 0;
     }
 
@@ -241,7 +232,6 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
     {
         *out_score = score;
         *out_type = TRANSPOSITION_TABLE_EXACT;
-        transposition_table_hits++;
         return 1;
     }
     else if (entry->type == TRANSPOSITION_TABLE_LOWERBOUND && score >= beta)
@@ -249,7 +239,6 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
         /* We stored a lower bound that's >= beta, so we can cut off */
         *out_score = score;
         *out_type = TRANSPOSITION_TABLE_LOWERBOUND;
-        transposition_table_hits++;
         return 1;
     }
     else if (entry->type == TRANSPOSITION_TABLE_UPPERBOUND && score <= alpha)
@@ -257,11 +246,9 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
         /* We stored an upper bound that's <= alpha, so we can cut off */
         *out_score = score;
         *out_type = TRANSPOSITION_TABLE_UPPERBOUND;
-        transposition_table_hits++;
         return 1;
     }
 
-    transposition_table_misses++;
     return 0;
 }
 
@@ -282,12 +269,3 @@ void transposition_table_store(uint64_t hash, int score, TranspositionTableNodeT
     entry->occupied = 1;
 }
 
-void transposition_table_get_stats(size_t *hits, size_t *misses, size_t *collisions)
-{
-    if (hits != NULL)
-        *hits = transposition_table_hits;
-    if (misses != NULL)
-        *misses = transposition_table_misses;
-    if (collisions != NULL)
-        *collisions = transposition_table_collisions;
-}
