@@ -25,8 +25,9 @@ typedef struct
 /* A trivial fixed-size container for generated legal moves. */
 typedef struct
 {
-    Move moves[MAX_MOVES];
     int count;
+    int _padding; /* Explicit padding for cache alignment */
+    Move moves[MAX_MOVES];
 } MoveList;
 
 /* Helper constants used by the evaluation and search. */
@@ -93,7 +94,7 @@ static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
  *  -  0 for tie
  *  -  1 (CONTINUE_SCORE) if the game is not terminal
  */
-static int boardScore(Bitboard board, char aiPlayer)
+static inline int boardScore(Bitboard board, char aiPlayer)
 {
     /* Check if AI has won */
     uint64_t ai_pieces = (aiPlayer == 'x') ? board.x_pieces : board.o_pieces;
