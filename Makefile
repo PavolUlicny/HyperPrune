@@ -4,19 +4,14 @@
 CC ?= gcc
 
 # Detect compiler type for PGO flags
-ifeq ($(CC),clang)
+# Check for clang-cl first (unsupported), then clang variants, then GCC
+ifneq ($(findstring clang-cl,$(CC)),)
+	$(error clang-cl is not supported. Use clang or GCC instead.)
+else ifneq ($(findstring clang,$(CC)),)
+	# Clang-based compiler (clang, /usr/bin/clang, clang-14, etc.)
 	PGO_GENERATE := -fprofile-instr-generate
 	PGO_USE := -fprofile-instr-use=default.profdata
 	PGO_MERGE := llvm-profdata merge -output=default.profdata default.profraw
-else ifeq ($(findstring clang,$(CC)),clang)
-	# Clang variants (but not clang-cl)
-	ifneq ($(findstring clang-cl,$(CC)),clang-cl)
-		PGO_GENERATE := -fprofile-instr-generate
-		PGO_USE := -fprofile-instr-use=default.profdata
-		PGO_MERGE := llvm-profdata merge -output=default.profdata default.profraw
-	else
-		$(error clang-cl is not supported. Use clang or GCC instead.)
-	endif
 else
 	# GCC or compatible
 	PGO_GENERATE := -fprofile-generate
