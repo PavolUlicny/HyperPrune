@@ -29,6 +29,7 @@ static uint64_t zobrist_turn_key;
 /* Transposition table and statistics */
 static TranspositionTableEntry *transposition_table = NULL;
 static size_t transposition_table_size = 0;
+static size_t transposition_table_mask = 0; /* Bitmask for fast modulo (size - 1) */
 static size_t transposition_table_hits = 0;
 static size_t transposition_table_misses = 0;
 static size_t transposition_table_collisions = 0;
@@ -46,6 +47,36 @@ static uint64_t splitmix64_next(void)
     z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
     z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
     return z ^ (z >> 31);
+}
+
+/*
+ * Round up to next power of 2 for efficient modulo-free indexing.
+ * Uses bit manipulation to avoid expensive modulo operation.
+ */
+static size_t round_up_power_of_2(size_t n)
+{
+    if (n == 0)
+        return 1;
+
+    /* Guard against overflow: if n > SIZE_MAX/2, can't safely round up */
+    if (n > (SIZE_MAX >> 1))
+        return (SIZE_MAX >> 1) + 1; /* Return largest power of 2 */
+
+    /* Already a power of 2? */
+    if ((n & (n - 1)) == 0)
+        return n;
+
+    /* Round up using bit manipulation */
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+#if SIZE_MAX > 0xFFFFFFFF
+    n |= n >> 32; /* Only on 64-bit platforms */
+#endif
+    return n + 1;
 }
 
 /* Map player symbol to index for Zobrist key lookup */
@@ -143,15 +174,21 @@ uint64_t zobrist_toggle_turn(uint64_t hash)
 
 void transposition_table_init(size_t size)
 {
-    transposition_table_size = size;
-    transposition_table = (TranspositionTableEntry *)calloc(size, sizeof(TranspositionTableEntry));
+    /* Round up to power of 2 for efficient indexing */
+    size_t requested_size = size;
+    transposition_table_size = round_up_power_of_2(size);
+    transposition_table_mask = transposition_table_size - 1;
+
+    transposition_table = (TranspositionTableEntry *)calloc(transposition_table_size, sizeof(TranspositionTableEntry));
 
     if (transposition_table == NULL)
     {
-        fprintf(stderr, "Warning: Failed to allocate transposition table (%zu entries, %.1f MB)\n",
-                size, (size * sizeof(TranspositionTableEntry)) / (1024.0 * 1024.0));
+        fprintf(stderr, "Warning: Failed to allocate transposition table (%zu entries requested, %zu actual, %.1f MB)\n",
+                requested_size, transposition_table_size,
+                (transposition_table_size * sizeof(TranspositionTableEntry)) / (1024.0 * 1024.0));
         fprintf(stderr, "Continuing without transposition table.\n");
         transposition_table_size = 0;
+        transposition_table_mask = 0;
     }
 
     transposition_table_hits = 0;
@@ -167,6 +204,7 @@ void transposition_table_free(void)
         transposition_table = NULL;
     }
     transposition_table_size = 0;
+    transposition_table_mask = 0;
 }
 
 int transposition_table_probe(uint64_t hash, int alpha, int beta,
@@ -177,7 +215,7 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
         return 0;
     }
 
-    size_t index = hash % transposition_table_size;
+    size_t index = hash & transposition_table_mask;
     TranspositionTableEntry *entry = &transposition_table[index];
 
     /* Empty slot */
@@ -234,7 +272,7 @@ void transposition_table_store(uint64_t hash, int score, TranspositionTableNodeT
         return;
     }
 
-    size_t index = hash % transposition_table_size;
+    size_t index = hash & transposition_table_mask;
     TranspositionTableEntry *entry = &transposition_table[index];
 
     /* Replacement strategy: always replace */
