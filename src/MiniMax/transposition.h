@@ -143,7 +143,7 @@ extern "C"
      *  - 0 otherwise (cache miss or collision)
      */
     int transposition_table_probe(uint64_t hash, int alpha, int beta,
-                                  int *out_score, TranspositionTableNodeType *out_type);
+                                  int *restrict out_score, TranspositionTableNodeType *restrict out_type);
 
     /**
      * Store position evaluation in transposition table.

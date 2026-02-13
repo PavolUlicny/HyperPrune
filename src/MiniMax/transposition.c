@@ -170,7 +170,7 @@ void transposition_table_free(void)
 }
 
 int transposition_table_probe(uint64_t hash, int alpha, int beta,
-                              int *out_score, TranspositionTableNodeType *out_type)
+                              int *restrict out_score, TranspositionTableNodeType *restrict out_type)
 {
     if (transposition_table == NULL || transposition_table_size == 0)
     {
