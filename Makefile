@@ -60,7 +60,7 @@ endif
 CFLAGS := $(WARNINGS) $(BASE_CFLAGS) $(MODE_CFLAGS)
 LDFLAGS := $(MODE_LDFLAGS) -lm
 
-.PHONY: all clean run rebuild debug release pgo pgo-clean
+.PHONY: all clean run rebuild debug release pgo pgo-clean install uninstall
 
 all: $(TARGET)
 
@@ -87,6 +87,19 @@ release:
 clean:
 	@echo "[CLEAN] removing build artifacts"
 	@rm -rf build $(TARGET)
+
+# Installation
+PREFIX ?= /usr/local
+DESTDIR ?=
+
+install: $(TARGET)
+	@echo "[INSTALL] installing to $(DESTDIR)$(PREFIX)/bin"
+	@mkdir -p $(DESTDIR)$(PREFIX)/bin
+	@install -m 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/
+
+uninstall:
+	@echo "[UNINSTALL] removing from $(DESTDIR)$(PREFIX)/bin"
+	@rm -f $(DESTDIR)$(PREFIX)/bin/$(TARGET)
 
 # Profile-Guided Optimization (PGO)
 # Usage: make pgo [BOARD_SIZE=N]
