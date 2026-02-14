@@ -48,9 +48,13 @@ BASE_CFLAGS := -std=c11 -MMD -MP -pipe -DBOARD_SIZE=$(BOARD_SIZE)
 
 DEBUG_CFLAGS := -O0 -g
 RELEASE_CFLAGS := -O3 -march=native -flto -fomit-frame-pointer -fno-semantic-interposition -DNDEBUG
+PORTABLE_CFLAGS := -O3 -fomit-frame-pointer -DNDEBUG
 
 ifeq ($(BUILD),debug)
 MODE_CFLAGS := $(DEBUG_CFLAGS)
+MODE_LDFLAGS :=
+else ifeq ($(BUILD),portable)
+MODE_CFLAGS := $(PORTABLE_CFLAGS)
 MODE_LDFLAGS :=
 else
 MODE_CFLAGS := $(RELEASE_CFLAGS)
@@ -60,7 +64,7 @@ endif
 CFLAGS := $(WARNINGS) $(BASE_CFLAGS) $(MODE_CFLAGS)
 LDFLAGS := $(MODE_LDFLAGS) -lm
 
-.PHONY: all clean run rebuild debug release pgo pgo-clean install uninstall test
+.PHONY: all clean run rebuild debug release portable pgo pgo-clean install uninstall test
 
 all: $(TARGET)
 
@@ -83,6 +87,9 @@ debug:
 
 release:
 	@$(MAKE) BUILD=release all
+
+portable:
+	@$(MAKE) BUILD=portable all
 
 clean:
 	@echo "[CLEAN] removing build artifacts"
