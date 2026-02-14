@@ -10,15 +10,18 @@ void test_transposition_table_suite(void);
 void test_game_scenarios_suite(void);
 void test_edge_cases_suite(void);
 
-void setUp(void) {
+void setUp(void)
+{
     // Called before each test
 }
 
-void tearDown(void) {
+void tearDown(void)
+{
     // Called after each test
 }
 
-int main(void) {
+int main(void)
+{
     UNITY_BEGIN();
 
     printf("\n=== Bitboard Tests ===\n");

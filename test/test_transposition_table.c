@@ -3,7 +3,8 @@
 #include "../src/TicTacToe/tic_tac_toe.h"
 
 // Test transposition table store and probe
-void test_tt_store_and_probe(void) {
+void test_tt_store_and_probe(void)
+{
     zobrist_set_seed(42);
     zobrist_init();
     transposition_table_init(1000);
@@ -28,7 +29,8 @@ void test_tt_store_and_probe(void) {
 }
 
 // Test transposition table with NULL table
-void test_tt_null_table(void) {
+void test_tt_null_table(void)
+{
     // Initialize zobrist but don't initialize table
     zobrist_init();
     transposition_table_free();
@@ -48,7 +50,8 @@ void test_tt_null_table(void) {
 }
 
 // Test transposition table with size 0
-void test_tt_zero_size(void) {
+void test_tt_zero_size(void)
+{
     zobrist_init();
     transposition_table_init(0);
 
@@ -72,7 +75,8 @@ void test_tt_zero_size(void) {
 }
 
 // Test transposition table reinitialization
-void test_tt_reinitialization(void) {
+void test_tt_reinitialization(void)
+{
     zobrist_init();
     transposition_table_init(1000);
 
@@ -93,7 +97,8 @@ void test_tt_reinitialization(void) {
 }
 
 // Test transposition table lowerbound cutoff
-void test_tt_lowerbound_cutoff(void) {
+void test_tt_lowerbound_cutoff(void)
+{
     zobrist_init();
     transposition_table_init(1000);
 
@@ -119,7 +124,8 @@ void test_tt_lowerbound_cutoff(void) {
 }
 
 // Test transposition table upperbound cutoff
-void test_tt_upperbound_cutoff(void) {
+void test_tt_upperbound_cutoff(void)
+{
     zobrist_init();
     transposition_table_init(1000);
 
@@ -145,7 +151,8 @@ void test_tt_upperbound_cutoff(void) {
 }
 
 // Test hash collision handling
-void test_tt_hash_collision(void) {
+void test_tt_hash_collision(void)
+{
     zobrist_init();
     transposition_table_init(1000);
 
@@ -175,7 +182,8 @@ void test_tt_hash_collision(void) {
 }
 
 // Test zobrist_set_seed produces different keys
-void test_zobrist_different_seeds(void) {
+void test_zobrist_different_seeds(void)
+{
     zobrist_set_seed(42);
     zobrist_init();
 
@@ -193,7 +201,8 @@ void test_zobrist_different_seeds(void) {
 }
 
 // Test different aiPlayer produces different hashes
-void test_zobrist_different_aiplayer(void) {
+void test_zobrist_different_aiplayer(void)
+{
     zobrist_set_seed(42);
     zobrist_init();
 
@@ -208,7 +217,8 @@ void test_zobrist_different_aiplayer(void) {
     TEST_ASSERT_NOT_EQUAL_UINT64(hash_x, hash_o);
 }
 
-void test_transposition_table_suite(void) {
+void test_transposition_table_suite(void)
+{
     RUN_TEST(test_tt_store_and_probe);
     RUN_TEST(test_tt_null_table);
     RUN_TEST(test_tt_zero_size);

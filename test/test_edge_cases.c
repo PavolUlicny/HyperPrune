@@ -4,12 +4,14 @@
 #include "../src/MiniMax/transposition.h"
 
 // Test bitboard_did_last_move_win for row win
-void test_did_last_move_win_row(void) {
+void test_did_last_move_win_row(void)
+{
     init_win_masks();
     Bitboard board = {0, 0};
 
     // Create row win at row 0
-    for (int c = 0; c < BOARD_SIZE; c++) {
+    for (int c = 0; c < BOARD_SIZE; c++)
+    {
         bitboard_make_move(&board, 0, c, 'x');
     }
 
@@ -21,12 +23,14 @@ void test_did_last_move_win_row(void) {
 }
 
 // Test bitboard_did_last_move_win for column win
-void test_did_last_move_win_col(void) {
+void test_did_last_move_win_col(void)
+{
     init_win_masks();
     Bitboard board = {0, 0};
 
     // Create column win at col 0
-    for (int r = 0; r < BOARD_SIZE; r++) {
+    for (int r = 0; r < BOARD_SIZE; r++)
+    {
         bitboard_make_move(&board, r, 0, 'o');
     }
 
@@ -35,12 +39,14 @@ void test_did_last_move_win_col(void) {
 }
 
 // Test bitboard_did_last_move_win for main diagonal
-void test_did_last_move_win_main_diagonal(void) {
+void test_did_last_move_win_main_diagonal(void)
+{
     init_win_masks();
     Bitboard board = {0, 0};
 
     // Create main diagonal win
-    for (int i = 0; i < BOARD_SIZE; i++) {
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
         bitboard_make_move(&board, i, i, 'x');
     }
 
@@ -49,8 +55,9 @@ void test_did_last_move_win_main_diagonal(void) {
 }
 
 // Test bitboard_did_last_move_win for anti-diagonal (comprehensive - all positions)
-void test_did_last_move_win_anti_diagonal(void) {
-    #if BOARD_SIZE == 3
+void test_did_last_move_win_anti_diagonal(void)
+{
+#if BOARD_SIZE == 3
     init_win_masks();
     Bitboard board = {0, 0};
 
@@ -63,11 +70,12 @@ void test_did_last_move_win_anti_diagonal(void) {
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, 2));
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 1, 1));
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 2, 0));
-    #endif
+#endif
 }
 
 // Test bitboard_did_last_move_win returns false for non-winning board
-void test_did_last_move_win_no_win(void) {
+void test_did_last_move_win_no_win(void)
+{
     init_win_masks();
     Bitboard board = {0, 0};
 
@@ -79,7 +87,8 @@ void test_did_last_move_win_no_win(void) {
 }
 
 // Test bitboard_has_won returns false for empty board
-void test_has_won_empty_board(void) {
+void test_has_won_empty_board(void)
+{
     init_win_masks();
     Bitboard board = {0, 0};
 
@@ -88,7 +97,8 @@ void test_has_won_empty_board(void) {
 }
 
 // Test bitboard_has_won returns false for partial board
-void test_has_won_partial_board(void) {
+void test_has_won_partial_board(void)
+{
     init_win_masks();
     Bitboard board = {0, 0};
 
@@ -101,7 +111,8 @@ void test_has_won_partial_board(void) {
 }
 
 // Test multiple make moves without unmake
-void test_multiple_makes(void) {
+void test_multiple_makes(void)
+{
     Bitboard board = {0, 0};
 
     // Make multiple moves
@@ -116,7 +127,8 @@ void test_multiple_makes(void) {
 }
 
 // Test unmake without prior make (should result in no change)
-void test_unmake_empty_cell(void) {
+void test_unmake_empty_cell(void)
+{
     Bitboard board = {0, 0};
     bitboard_make_move(&board, 0, 0, 'x');
 
@@ -129,7 +141,8 @@ void test_unmake_empty_cell(void) {
 }
 
 // Test both players having pieces
-void test_both_players_pieces(void) {
+void test_both_players_pieces(void)
+{
     Bitboard board = {0, 0};
 
     bitboard_make_move(&board, 0, 0, 'x');
@@ -144,11 +157,14 @@ void test_both_players_pieces(void) {
 }
 
 // Test all cells on empty board are empty
-void test_all_cells_empty(void) {
+void test_all_cells_empty(void)
+{
     Bitboard board = {0, 0};
 
-    for (int r = 0; r < BOARD_SIZE; r++) {
-        for (int c = 0; c < BOARD_SIZE; c++) {
+    for (int r = 0; r < BOARD_SIZE; r++)
+    {
+        for (int c = 0; c < BOARD_SIZE; c++)
+        {
             TEST_ASSERT_TRUE(bitboard_is_empty(board, r, c));
             TEST_ASSERT_EQUAL(' ', bitboard_get_cell(board, r, c));
         }
@@ -156,7 +172,8 @@ void test_all_cells_empty(void) {
 }
 
 // Test corner cells
-void test_corner_cells(void) {
+void test_corner_cells(void)
+{
     Bitboard board = {0, 0};
 
     // Top-left
@@ -177,7 +194,8 @@ void test_corner_cells(void) {
 }
 
 // Test make/unmake cycle preserves hash
-void test_make_unmake_hash_cycle(void) {
+void test_make_unmake_hash_cycle(void)
+{
     zobrist_set_seed(42);
     zobrist_init();
 
@@ -196,7 +214,8 @@ void test_make_unmake_hash_cycle(void) {
 }
 
 // Test zobrist hash is zero only when explicitly all keys sum to zero (extremely rare)
-void test_zobrist_hash_nonzero(void) {
+void test_zobrist_hash_nonzero(void)
+{
     zobrist_set_seed(42);
     zobrist_init();
 
@@ -208,7 +227,8 @@ void test_zobrist_hash_nonzero(void) {
     TEST_ASSERT_NOT_EQUAL_UINT64(0, hash);
 }
 
-void test_edge_cases_suite(void) {
+void test_edge_cases_suite(void)
+{
     RUN_TEST(test_did_last_move_win_row);
     RUN_TEST(test_did_last_move_win_col);
     RUN_TEST(test_did_last_move_win_main_diagonal);

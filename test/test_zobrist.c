@@ -3,7 +3,8 @@
 #include "../src/TicTacToe/tic_tac_toe.h"
 
 // Test incremental hash matches full hash
-void test_incremental_hash_matches_full(void) {
+void test_incremental_hash_matches_full(void)
+{
     zobrist_set_seed(42);
     zobrist_init();
 
@@ -25,7 +26,8 @@ void test_incremental_hash_matches_full(void) {
 }
 
 // Test turn toggle produces different hashes
-void test_turn_toggle_changes_hash(void) {
+void test_turn_toggle_changes_hash(void)
+{
     zobrist_set_seed(42);
     zobrist_init();
 
@@ -41,7 +43,8 @@ void test_turn_toggle_changes_hash(void) {
 }
 
 // Test same position produces same hash
-void test_same_position_same_hash(void) {
+void test_same_position_same_hash(void)
+{
     zobrist_set_seed(42);
     zobrist_init();
 
@@ -50,7 +53,7 @@ void test_same_position_same_hash(void) {
     bitboard_make_move(&board1, 1, 1, 'o');
 
     Bitboard board2 = {0, 0};
-    bitboard_make_move(&board2, 1, 1, 'o');  // Different order
+    bitboard_make_move(&board2, 1, 1, 'o'); // Different order
     bitboard_make_move(&board2, 0, 0, 'x');
 
     uint64_t hash1 = zobrist_hash(board1, 'x');
@@ -59,7 +62,8 @@ void test_same_position_same_hash(void) {
     TEST_ASSERT_EQUAL_UINT64(hash1, hash2);
 }
 
-void test_zobrist_suite(void) {
+void test_zobrist_suite(void)
+{
     RUN_TEST(test_incremental_hash_matches_full);
     RUN_TEST(test_turn_toggle_changes_hash);
     RUN_TEST(test_same_position_same_hash);

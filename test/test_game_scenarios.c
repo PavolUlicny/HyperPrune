@@ -4,8 +4,9 @@
 #include "../src/TicTacToe/tic_tac_toe.h"
 
 // Test AI takes immediate winning move
-void test_ai_takes_winning_move(void) {
-    #if BOARD_SIZE == 3
+void test_ai_takes_winning_move(void)
+{
+#if BOARD_SIZE == 3
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
@@ -28,12 +29,13 @@ void test_ai_takes_winning_move(void) {
     TEST_ASSERT_EQUAL(2, col);
 
     transposition_table_free();
-    #endif
+#endif
 }
 
 // Test AI blocks opponent's winning move
-void test_ai_blocks_opponent_win(void) {
-    #if BOARD_SIZE == 3
+void test_ai_blocks_opponent_win(void)
+{
+#if BOARD_SIZE == 3
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
@@ -56,20 +58,25 @@ void test_ai_blocks_opponent_win(void) {
     TEST_ASSERT_EQUAL(2, col);
 
     transposition_table_free();
-    #endif
+#endif
 }
 
 // Test single empty cell scenario
-void test_single_empty_cell(void) {
+void test_single_empty_cell(void)
+{
+#if BOARD_SIZE == 3
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
     // Create board with only one empty cell at (1,1)
     Bitboard board = {0, 0};
-    for (int r = 0; r < BOARD_SIZE; r++) {
-        for (int c = 0; c < BOARD_SIZE; c++) {
-            if (r == 1 && c == 1) continue;  // Leave (1,1) empty
+    for (int r = 0; r < BOARD_SIZE; r++)
+    {
+        for (int c = 0; c < BOARD_SIZE; c++)
+        {
+            if (r == 1 && c == 1)
+                continue; // Leave (1,1) empty
             char player = ((r + c) % 2 == 0) ? 'x' : 'o';
             bitboard_make_move(&board, r, c, player);
         }
@@ -83,10 +90,54 @@ void test_single_empty_cell(void) {
     TEST_ASSERT_EQUAL(1, col);
 
     transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Create 4x4 board with only one empty cell at (2,2)
+    // Layout (no 4-in-a-row):
+    // X O X O
+    // O X O X
+    // X X _ O
+    // O X O X
+    Bitboard board = {0, 0};
+
+    // Place X pieces (8 pieces)
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 1, 1, 'x');
+    bitboard_make_move(&board, 1, 3, 'x');
+    bitboard_make_move(&board, 2, 0, 'x');
+    bitboard_make_move(&board, 2, 1, 'x');
+    bitboard_make_move(&board, 3, 1, 'x');
+    bitboard_make_move(&board, 3, 3, 'x');
+
+    // Place O pieces (7 pieces)
+    bitboard_make_move(&board, 0, 1, 'o');
+    bitboard_make_move(&board, 0, 3, 'o');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 2, 'o');
+    bitboard_make_move(&board, 2, 3, 'o');
+    bitboard_make_move(&board, 3, 0, 'o');
+    bitboard_make_move(&board, 3, 2, 'o');
+
+    // (2,2) is the only empty cell
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    // AI should play the only available move
+    TEST_ASSERT_EQUAL(2, row);
+    TEST_ASSERT_EQUAL(2, col);
+
+    transposition_table_free();
+#endif
 }
 
 // Test AI with 'o' as maximizing player
-void test_ai_as_o_player(void) {
+void test_ai_as_o_player(void)
+{
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
@@ -105,8 +156,9 @@ void test_ai_as_o_player(void) {
 }
 
 // Test tie scenario (full board)
-void test_tie_scenario(void) {
-    #if BOARD_SIZE == 3
+void test_tie_scenario(void)
+{
+#if BOARD_SIZE == 3
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
@@ -134,12 +186,13 @@ void test_tie_scenario(void) {
     TEST_ASSERT_EQUAL(-1, col);
 
     transposition_table_free();
-    #endif
+#endif
 }
 
 // Test fork scenario (AI should create winning opportunity)
-void test_fork_creation(void) {
-    #if BOARD_SIZE == 3
+void test_fork_creation(void)
+{
+#if BOARD_SIZE == 3
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
@@ -164,12 +217,13 @@ void test_fork_creation(void) {
     TEST_ASSERT_TRUE(bitboard_is_empty(board, row, col));
 
     transposition_table_free();
-    #endif
+#endif
 }
 
 // Test AI can win via diagonal
-void test_diagonal_win(void) {
-    #if BOARD_SIZE == 3
+void test_diagonal_win(void)
+{
+#if BOARD_SIZE == 3
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
@@ -179,8 +233,8 @@ void test_diagonal_win(void) {
     // _ X _
     // X O O
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 1, 1, 'x');  // Center
-    bitboard_make_move(&board, 2, 0, 'x');  // Bottom-left (part of anti-diag)
+    bitboard_make_move(&board, 1, 1, 'x'); // Center
+    bitboard_make_move(&board, 2, 0, 'x'); // Bottom-left (part of anti-diag)
     bitboard_make_move(&board, 2, 1, 'o');
     bitboard_make_move(&board, 2, 2, 'o');
 
@@ -193,10 +247,11 @@ void test_diagonal_win(void) {
     TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
 
     transposition_table_free();
-    #endif
+#endif
 }
 
-void test_game_scenarios_suite(void) {
+void test_game_scenarios_suite(void)
+{
     RUN_TEST(test_ai_takes_winning_move);
     RUN_TEST(test_ai_blocks_opponent_win);
     RUN_TEST(test_single_empty_cell);

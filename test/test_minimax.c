@@ -4,7 +4,8 @@
 #include "../src/TicTacToe/tic_tac_toe.h"
 
 // Test empty board plays center
-void test_empty_board_plays_center(void) {
+void test_empty_board_plays_center(void)
+{
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
@@ -21,14 +22,16 @@ void test_empty_board_plays_center(void) {
 }
 
 // Test terminal board returns invalid
-void test_terminal_board_returns_invalid(void) {
+void test_terminal_board_returns_invalid(void)
+{
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
     // Create winning board for X (row 0)
     Bitboard board = {0, 0};
-    for (int c = 0; c < BOARD_SIZE; c++) {
+    for (int c = 0; c < BOARD_SIZE; c++)
+    {
         bitboard_make_move(&board, 0, c, 'x');
     }
 
@@ -42,7 +45,8 @@ void test_terminal_board_returns_invalid(void) {
 }
 
 // Test overlapping pieces rejected
-void test_overlapping_pieces_rejected(void) {
+void test_overlapping_pieces_rejected(void)
+{
     init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
@@ -50,7 +54,7 @@ void test_overlapping_pieces_rejected(void) {
     // Create invalid board (overlapping at 0,0)
     Bitboard board = {0, 0};
     bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 0, 0, 'o');  // Overlap!
+    bitboard_make_move(&board, 0, 0, 'o'); // Overlap!
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -61,7 +65,8 @@ void test_overlapping_pieces_rejected(void) {
     transposition_table_free();
 }
 
-void test_minimax_suite(void) {
+void test_minimax_suite(void)
+{
     RUN_TEST(test_empty_board_plays_center);
     RUN_TEST(test_terminal_board_returns_invalid);
     RUN_TEST(test_overlapping_pieces_rejected);
