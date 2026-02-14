@@ -171,6 +171,13 @@ uint64_t zobrist_toggle_turn(uint64_t hash)
 
 void transposition_table_init(size_t size)
 {
+    /* Free existing table if reinitializing */
+    if (transposition_table != NULL)
+    {
+        free(transposition_table);
+        transposition_table = NULL;
+    }
+
     /* Round up to power of 2 for efficient indexing */
     size_t requested_size = size;
     transposition_table_size = round_up_power_of_2(size);
@@ -268,4 +275,3 @@ void transposition_table_store(uint64_t hash, int score, TranspositionTableNodeT
     entry->type = (uint8_t)type;
     entry->occupied = 1;
 }
-
