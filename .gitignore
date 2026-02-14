@@ -69,5 +69,11 @@ dkms.conf
 ttt
 build/
 
+# Test binaries
+test/test_runner
+
+# Keep Unity framework
+!test/unity/
+
 # .claude folder
 .claude/
