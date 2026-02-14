@@ -36,7 +36,6 @@ static uint64_t splitmix64_state = 0x9e3779b97f4a7c15ULL; /* Default seed (golde
 
 /*
  * SplitMix64: High-quality 64-bit PRNG
- * Reference: https://xoshiro.di.unimi.it/splitmix64.c
  */
 static uint64_t splitmix64_next(void)
 {
