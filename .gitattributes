@@ -1,0 +1,3 @@
+# Mark Unity test framework as vendored (third-party code)
+# This excludes it from GitHub language statistics
+test/unity/* linguist-vendored
