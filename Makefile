@@ -60,7 +60,7 @@ endif
 CFLAGS := $(WARNINGS) $(BASE_CFLAGS) $(MODE_CFLAGS)
 LDFLAGS := $(MODE_LDFLAGS) -lm
 
-.PHONY: all clean run rebuild debug release pgo pgo-clean install uninstall
+.PHONY: all clean run rebuild debug release pgo pgo-clean install uninstall test
 
 all: $(TARGET)
 
@@ -127,5 +127,38 @@ pgo:
 pgo-clean:
 	@echo "[CLEAN] removing PGO profile data"
 	@rm -f *.gcda *.gcno default.profraw default.profdata
+
+# Testing
+TEST_DIR := test
+TEST_UNITY_DIR := $(TEST_DIR)/unity
+TEST_SOURCES := \
+	$(TEST_DIR)/test_runner.c \
+	$(TEST_DIR)/test_bitboard.c \
+	$(TEST_DIR)/test_minimax.c \
+	$(TEST_DIR)/test_zobrist.c \
+	$(TEST_DIR)/test_transposition_table.c \
+	$(TEST_DIR)/test_game_scenarios.c \
+	$(TEST_DIR)/test_edge_cases.c \
+	$(TEST_DIR)/test_correctness.c
+
+# Core objects (excluding main.o)
+CORE_SOURCES := \
+	$(SRCDIR)/TicTacToe/tic_tac_toe.c \
+	$(SRCDIR)/MiniMax/mini_max.c \
+	$(SRCDIR)/MiniMax/transposition.c
+
+TEST_TARGET := $(TEST_DIR)/test_runner
+
+.PHONY: test
+test: $(TEST_TARGET)
+	@echo "[TEST ] Running test suite..."
+	@$(TEST_TARGET)
+	@echo "[TEST ] All tests passed ✓"
+
+$(TEST_TARGET): $(TEST_SOURCES) $(CORE_SOURCES) $(TEST_UNITY_DIR)/unity.c
+	@echo "[BUILD] Test suite..."
+	@$(CC) $(WARNINGS) -std=c11 -DBOARD_SIZE=$(BOARD_SIZE) -I$(TEST_UNITY_DIR) \
+		$(TEST_SOURCES) $(CORE_SOURCES) $(TEST_UNITY_DIR)/unity.c \
+		-o $(TEST_TARGET) -lm
 
 -include $(DEPS)
