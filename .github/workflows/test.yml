@@ -1,0 +1,68 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        board_size: [3, 4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download Unity framework
+        run: |
+          mkdir -p test/unity
+          wget -q https://raw.githubusercontent.com/ThrowTheSwitch/Unity/master/src/unity.c -O test/unity/unity.c
+          wget -q https://raw.githubusercontent.com/ThrowTheSwitch/Unity/master/src/unity.h -O test/unity/unity.h
+          wget -q https://raw.githubusercontent.com/ThrowTheSwitch/Unity/master/src/unity_internals.h -O test/unity/unity_internals.h
+
+      - name: Build
+        run: make CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
+
+      - name: Run tests
+        run: make test CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
+
+      - name: Self-play verification (3x3 only)
+        if: matrix.board_size == 3
+        run: |
+          echo "Running self-play verification for perfect play..."
+          OUTPUT=$(./ttt -s 1000000 --seed 42)
+          echo "$OUTPUT"
+
+          # Extract win/tie counts from output
+          X_WINS=$(echo "$OUTPUT" | grep "X wins:" | awk '{print $3}')
+          O_WINS=$(echo "$OUTPUT" | grep "O wins:" | awk '{print $3}')
+          TIES=$(echo "$OUTPUT" | grep "Ties:" | awk '{print $2}')
+
+          echo ""
+          echo "=== Perfect Play Verification ==="
+          echo "X wins: $X_WINS (expected: 0)"
+          echo "O wins: $O_WINS (expected: 0)"
+          echo "Ties: $TIES (expected: 1000000)"
+
+          # Verify perfect play (all ties, no wins)
+          if [ "$X_WINS" != "0" ]; then
+            echo "FAILED: X should never win with perfect play (got $X_WINS wins)"
+            exit 1
+          fi
+
+          if [ "$O_WINS" != "0" ]; then
+            echo "FAILED: O should never win with perfect play (got $O_WINS wins)"
+            exit 1
+          fi
+
+          if [ "$TIES" != "1000000" ]; then
+            echo "FAILED: All games should be ties with perfect play (got $TIES ties)"
+            exit 1
+          fi
+
+          echo "PASSED: Perfect play verified (100% ties)"
