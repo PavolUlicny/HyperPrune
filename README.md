@@ -1,6 +1,6 @@
 # HyperPrune
 
-An extremely optimized Tic-Tac-Toe engine with perfect-play AI. It uses alpha-beta pruning, a compact bitboard, and a Zobrist-hashed transposition table, with board sizes configurable from 3x3 to 8x8. The goal is maximum speed without precomputing moves at startup.
+> HyperPrune — an ultra-optimized, perfect-play Tic-Tac-Toe engine. Uses alpha-beta pruning, bitboards, and a Zobrist-hashed transposition table to achieve millions of self-play games per second on 3×3 boards—without any precomputed move tables. Configurable from 3×3 to 8×8, deterministic, and designed for maximum performance.
 
 ## Highlights
 
