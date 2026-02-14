@@ -7,6 +7,19 @@ on:
     branches: [main]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install clang-tidy
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy
+
+      - name: Run clang-tidy
+        run: |
+          clang-tidy src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -- -DBOARD_SIZE=3 -std=c11 -I.
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
