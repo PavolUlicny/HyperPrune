@@ -125,7 +125,13 @@ static void bitboard_to_array(Bitboard board, char out_array[BOARD_SIZE][BOARD_S
             out_array[r][c] = bitboard_get_cell(board, r, c);
 }
 
-/* Initialize all board cells to ' ' (empty). */
+/*
+ * Initialize all board cells to empty.
+ *
+ * NOTE: This only resets the bitboard state. It does NOT reset move_count
+ * or player_turn, which are used by checkWinner() for tie detection.
+ * For a complete game reset, use restartGame() instead.
+ */
 void initializeBoard(void)
 {
     board_state.x_pieces = 0;

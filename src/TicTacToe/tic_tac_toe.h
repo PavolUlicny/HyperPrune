@@ -74,7 +74,11 @@ extern "C"
      */
     void init_win_masks(void);
 
-    /** Set all board cells to ' ' (empty). */
+    /**
+     * Set all board cells to empty.
+     * NOTE: Only resets bitboard state. Does NOT reset move_count or player_turn.
+     * For complete game reset, use restartGame() instead.
+     */
     void initializeBoard(void);
 
     /** Pretty-print the current board to stdout with row/column indices. */
