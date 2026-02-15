@@ -134,7 +134,8 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
     {
-        /* terminal: return raw score (no depth adjustment) */
+        /* terminal: cache and return raw score */
+        transposition_table_store(hash, state, TRANSPOSITION_TABLE_EXACT);
         return state;
     }
 
@@ -203,7 +204,8 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
     int state = boardScore(board, aiPlayer);
     if (state != CONTINUE_SCORE)
     {
-        /* terminal: return raw score (no depth adjustment) */
+        /* terminal: cache and return raw score */
+        transposition_table_store(hash, state, TRANSPOSITION_TABLE_EXACT);
         return state;
     }
 
