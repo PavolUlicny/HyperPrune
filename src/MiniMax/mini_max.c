@@ -320,6 +320,10 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
             bestMove = move;
             alpha = score;
         }
+
+        /* Early exit: stop searching if we found a winning move */
+        if (bestScore == AI_WIN_SCORE)
+            break;
     }
 
     *out_row = bestMove.row;
