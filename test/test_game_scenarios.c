@@ -286,15 +286,27 @@ void test_getAiMove_two_empty_cells(void)
     zobrist_init();
     transposition_table_init(10000);
 
-    // Create 4x4 board with exactly 2 empty cells
+    // Create 4x4 board with exactly 2 empty cells at (3,2) and (3,3)
+    // Layout avoids 4-in-a-row (anti-diagonal broken at 1,2):
+    // X O X O
+    // O X X X
+    // X O X O
+    // O X _ _
     Bitboard board = {0, 0};
-    for (int i = 0; i < 14; i++)
-    {
-        int r = i / 4;
-        int c = i % 4;
-        char player = (i % 2) ? 'o' : 'x';
-        bitboard_make_move(&board, r, c, player);
-    }
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'o');
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 0, 3, 'o');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'x');
+    bitboard_make_move(&board, 1, 2, 'x'); // Changed from 'o' to break anti-diagonal
+    bitboard_make_move(&board, 1, 3, 'x');
+    bitboard_make_move(&board, 2, 0, 'x');
+    bitboard_make_move(&board, 2, 1, 'o');
+    bitboard_make_move(&board, 2, 2, 'x');
+    bitboard_make_move(&board, 2, 3, 'o');
+    bitboard_make_move(&board, 3, 0, 'o');
+    bitboard_make_move(&board, 3, 1, 'x');
     // (3,2) and (3,3) are empty
 
     int row, col;
