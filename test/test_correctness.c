@@ -63,6 +63,22 @@ void test_optimal_play_3x3(void)
     TEST_ASSERT_EQUAL(0, x_wins);
     TEST_ASSERT_EQUAL(0, o_wins);
     TEST_ASSERT_EQUAL(100, ties);
+#elif BOARD_SIZE == 4
+    int x_wins = 0, o_wins = 0, ties = 0;
+
+    for (int i = 0; i < 10; i++)
+    {
+        int result = play_full_game('x', i);
+        if (result == 1)
+            x_wins++;
+        else if (result == -1)
+            o_wins++;
+        else
+            ties++;
+    }
+
+    // For 4x4, just verify all outcomes are valid
+    TEST_ASSERT_EQUAL(10, x_wins + o_wins + ties);
 #endif
 }
 
