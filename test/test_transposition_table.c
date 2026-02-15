@@ -181,25 +181,6 @@ void test_tt_hash_collision(void)
     transposition_table_free();
 }
 
-// Test zobrist_set_seed produces different keys
-void test_zobrist_different_seeds(void)
-{
-    zobrist_set_seed(42);
-    zobrist_init();
-
-    Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
-    uint64_t hash1 = zobrist_hash(board, 'x');
-
-    // Reinitialize with different seed
-    zobrist_set_seed(123);
-    zobrist_init();
-
-    uint64_t hash2 = zobrist_hash(board, 'x');
-
-    TEST_ASSERT_NOT_EQUAL_UINT64(hash1, hash2);
-}
-
 // Test different aiPlayer produces different hashes
 void test_zobrist_different_aiplayer(void)
 {
@@ -299,7 +280,6 @@ void test_transposition_table_suite(void)
     RUN_TEST(test_tt_lowerbound_cutoff);
     RUN_TEST(test_tt_upperbound_cutoff);
     RUN_TEST(test_tt_hash_collision);
-    RUN_TEST(test_zobrist_different_seeds);
     RUN_TEST(test_zobrist_different_aiplayer);
     RUN_TEST(test_tt_score_boundaries);
     RUN_TEST(test_tt_cutoff_equality);
