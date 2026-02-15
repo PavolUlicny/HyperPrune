@@ -217,6 +217,79 @@ void test_zobrist_different_aiplayer(void)
     TEST_ASSERT_NOT_EQUAL_UINT64(hash_x, hash_o);
 }
 
+// Test INT16_MIN/MAX score boundaries (cast truncation check)
+void test_tt_score_boundaries(void)
+{
+    zobrist_init();
+    transposition_table_init(1000);
+
+    uint64_t hash = 12345;
+
+    // Test INT16_MIN boundary
+    transposition_table_store(hash, INT16_MIN, TRANSPOSITION_TABLE_EXACT);
+    int score;
+    TranspositionTableNodeType type;
+    int found = transposition_table_probe(hash, INT16_MIN - 1000, INT16_MAX, &score, &type);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(INT16_MIN, score);
+
+    // Test INT16_MAX boundary
+    transposition_table_store(hash + 1, INT16_MAX, TRANSPOSITION_TABLE_EXACT);
+    found = transposition_table_probe(hash + 1, INT16_MIN, INT16_MAX + 1000, &score, &type);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(INT16_MAX, score);
+
+    transposition_table_free();
+}
+
+// Test alpha/beta equality in cutoff conditions (off-by-one check)
+void test_tt_cutoff_equality(void)
+{
+    zobrist_init();
+    transposition_table_init(1000);
+
+    uint64_t hash = 12345;
+    int score;
+    TranspositionTableNodeType type;
+
+    // LOWERBOUND with score == beta should cutoff
+    transposition_table_store(hash, 50, TRANSPOSITION_TABLE_LOWERBOUND);
+    int found = transposition_table_probe(hash, -100, 50, &score, &type);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(50, score);
+
+    // UPPERBOUND with score == alpha should cutoff
+    transposition_table_store(hash + 1, 30, TRANSPOSITION_TABLE_UPPERBOUND);
+    found = transposition_table_probe(hash + 1, 30, 100, &score, &type);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(30, score);
+
+    transposition_table_free();
+}
+
+// Test multiple consecutive reinitializations (stress test)
+void test_tt_multiple_reinit(void)
+{
+    zobrist_init();
+
+    for (int i = 0; i < 10; i++)
+    {
+        transposition_table_init(1000);
+
+        // Store something
+        transposition_table_store(12345, i * 10, TRANSPOSITION_TABLE_EXACT);
+
+        // Verify it's there
+        int score;
+        TranspositionTableNodeType type;
+        int found = transposition_table_probe(12345, -100, 100, &score, &type);
+        TEST_ASSERT_EQUAL(1, found);
+        TEST_ASSERT_EQUAL(i * 10, score);
+    }
+
+    transposition_table_free();
+}
+
 void test_transposition_table_suite(void)
 {
     RUN_TEST(test_tt_store_and_probe);
@@ -228,4 +301,7 @@ void test_transposition_table_suite(void)
     RUN_TEST(test_tt_hash_collision);
     RUN_TEST(test_zobrist_different_seeds);
     RUN_TEST(test_zobrist_different_aiplayer);
+    RUN_TEST(test_tt_score_boundaries);
+    RUN_TEST(test_tt_cutoff_equality);
+    RUN_TEST(test_tt_multiple_reinit);
 }
