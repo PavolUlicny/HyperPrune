@@ -70,6 +70,21 @@ void test_did_last_move_win_anti_diagonal(void)
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, 2));
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 1, 1));
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 2, 0));
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    Bitboard board = {0, 0};
+
+    // Create anti-diagonal win
+    bitboard_make_move(&board, 0, 3, 'x');
+    bitboard_make_move(&board, 1, 2, 'x');
+    bitboard_make_move(&board, 2, 1, 'x');
+    bitboard_make_move(&board, 3, 0, 'x');
+
+    // All four positions should detect the anti-diagonal win
+    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, 3));
+    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 1, 2));
+    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 2, 1));
+    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 3, 0));
 #endif
 }
 
@@ -271,6 +286,26 @@ void test_both_players_won_invalid_state(void)
     bitboard_make_move(&board, 1, 0, 'o');
     bitboard_make_move(&board, 1, 1, 'o');
     bitboard_make_move(&board, 1, 2, 'o');
+
+    TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
+    TEST_ASSERT_TRUE(bitboard_has_won(board.o_pieces));
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    Bitboard board = {0, 0};
+
+    // Create impossible board where both have winning lines
+    // X X X X
+    // O O O O
+    // _ _ _ _
+    // _ _ _ _
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 0, 3, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move(&board, 1, 2, 'o');
+    bitboard_make_move(&board, 1, 3, 'o');
 
     TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
     TEST_ASSERT_TRUE(bitboard_has_won(board.o_pieces));
