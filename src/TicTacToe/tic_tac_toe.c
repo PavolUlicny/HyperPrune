@@ -20,8 +20,8 @@ char human_symbol = 'x';
 char ai_symbol = 'o';
 
 /* Win detection masks for rows, columns, and diagonals */
-static uint64_t win_masks[2 * BOARD_SIZE + 2];
-static int win_mask_count = 0;
+#define WIN_MASK_COUNT (2 * BOARD_SIZE + 2)
+static uint64_t win_masks[WIN_MASK_COUNT];
 
 /* Consume the rest of the current input line (including newline). */
 static void discardLine(void)
@@ -79,14 +79,12 @@ void init_win_masks(void)
     for (int i = 0; i < BOARD_SIZE; i++)
         mask |= BIT_MASK(i, BOARD_SIZE - 1 - i);
     win_masks[idx++] = mask;
-
-    win_mask_count = idx;
 }
 
 /* Check if a player has won using pre-computed masks */
 int bitboard_has_won(uint64_t player_pieces)
 {
-    for (int i = 0; i < win_mask_count; i++)
+    for (int i = 0; i < WIN_MASK_COUNT; i++)
     {
         if ((player_pieces & win_masks[i]) == win_masks[i])
             return 1;
