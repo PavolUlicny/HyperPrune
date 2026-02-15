@@ -227,6 +227,56 @@ void test_zobrist_hash_nonzero(void)
     TEST_ASSERT_NOT_EQUAL_UINT64(0, hash);
 }
 
+// Test overlapping bitboard pieces (invalid state)
+void test_overlapping_bitboard_pieces(void)
+{
+    Bitboard board = {0, 0};
+
+    // Manually create invalid state (overlap at 0,0)
+    board.x_pieces = BIT_MASK(0, 0);
+    board.o_pieces = BIT_MASK(0, 0);
+
+    // bitboard_get_cell returns 'x' first (documents priority behavior)
+    char cell = bitboard_get_cell(board, 0, 0);
+    TEST_ASSERT_EQUAL('x', cell);
+}
+
+// Test win detection called on empty cell
+void test_did_last_move_win_empty_cell(void)
+{
+    init_win_masks();
+    Bitboard board = {0, 0};
+
+    // Call on empty cell (no piece there)
+    int result = bitboard_did_last_move_win(board.x_pieces, 0, 0);
+
+    // Should return false (no pieces to form line)
+    TEST_ASSERT_FALSE(result);
+}
+
+// Test both players won (invalid state - documents priority)
+void test_both_players_won_invalid_state(void)
+{
+#if BOARD_SIZE == 3
+    init_win_masks();
+    Bitboard board = {0, 0};
+
+    // Create impossible board where both have winning lines
+    // X X X
+    // O O O
+    // _ _ _
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move(&board, 1, 2, 'o');
+
+    TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
+    TEST_ASSERT_TRUE(bitboard_has_won(board.o_pieces));
+#endif
+}
+
 void test_edge_cases_suite(void)
 {
     RUN_TEST(test_did_last_move_win_row);
@@ -243,4 +293,7 @@ void test_edge_cases_suite(void)
     RUN_TEST(test_corner_cells);
     RUN_TEST(test_make_unmake_hash_cycle);
     RUN_TEST(test_zobrist_hash_nonzero);
+    RUN_TEST(test_overlapping_bitboard_pieces);
+    RUN_TEST(test_did_last_move_win_empty_cell);
+    RUN_TEST(test_both_players_won_invalid_state);
 }
