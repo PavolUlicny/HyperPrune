@@ -29,6 +29,31 @@ void test_ai_takes_winning_move(void)
     TEST_ASSERT_EQUAL(2, col);
 
     transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Setup: X has three in a row, needs (0,3) to win
+    // X X X _
+    // O O _ _
+    // _ _ _ _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    // AI should play (0,3) to complete the row
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(3, col);
+
+    transposition_table_free();
 #endif
 }
 
@@ -56,6 +81,31 @@ void test_ai_blocks_opponent_win(void)
     // AI should block at (0,2)
     TEST_ASSERT_EQUAL(0, row);
     TEST_ASSERT_EQUAL(2, col);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Setup: O has three in a row, X must block at (0,3)
+    // O O O _
+    // X X _ _
+    // _ _ _ _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'o');
+    bitboard_make_move(&board, 0, 1, 'o');
+    bitboard_make_move(&board, 0, 2, 'o');
+    bitboard_make_move(&board, 1, 0, 'x');
+    bitboard_make_move(&board, 1, 1, 'x');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    // AI should block at (0,3)
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(3, col);
 
     transposition_table_free();
 #endif
@@ -186,6 +236,33 @@ void test_tie_scenario(void)
     TEST_ASSERT_EQUAL(-1, col);
 
     transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Create a tie board (no 4-in-a-row)
+    // X O X O
+    // O X O X
+    // X O X O
+    // O X O X
+    Bitboard board = {0, 0};
+    for (int i = 0; i < 16; i++)
+    {
+        int r = i / 4;
+        int c = i % 4;
+        char player = ((r + c) % 2 == 0) ? 'x' : 'o';
+        bitboard_make_move(&board, r, c, player);
+    }
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    // Should return invalid (-1, -1) for terminal board
+    TEST_ASSERT_EQUAL(-1, row);
+    TEST_ASSERT_EQUAL(-1, col);
+
+    transposition_table_free();
 #endif
 }
 
@@ -211,6 +288,31 @@ void test_fork_creation(void)
     getAiMove(board, 'x', &row, &col);
 
     // AI should block or create optimal position
+    // Just verify it returns a valid move
+    TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
+    TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
+    TEST_ASSERT_TRUE(bitboard_is_empty(board, row, col));
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Setup: X has strategic positions
+    // X _ _ _
+    // _ X _ _
+    // O O _ _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 1, 1, 'x');
+    bitboard_make_move(&board, 2, 0, 'o');
+    bitboard_make_move(&board, 2, 1, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
     // Just verify it returns a valid move
     TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
     TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
@@ -243,6 +345,32 @@ void test_diagonal_win(void)
 
     // AI should play (0,2) to complete anti-diagonal and win
     // (or make another optimal move)
+    TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
+    TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Create scenario with diagonal potential
+    // X _ _ _
+    // _ X _ _
+    // _ _ X _
+    // O O O _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'x'); // Main diagonal
+    bitboard_make_move(&board, 1, 1, 'x'); // Main diagonal
+    bitboard_make_move(&board, 2, 2, 'x'); // Main diagonal
+    bitboard_make_move(&board, 3, 0, 'o');
+    bitboard_make_move(&board, 3, 1, 'o');
+    bitboard_make_move(&board, 3, 2, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    // AI should play (3,3) to complete diagonal OR block O
     TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
     TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
 
@@ -336,6 +464,27 @@ void test_hash_consistency_full_game(void)
     char players[] = {'x', 'o', 'x', 'o', 'x'};
 
     for (int i = 0; i < 5; i++)
+    {
+        bitboard_make_move(&board, moves[i][0], moves[i][1], players[i]);
+        hash = zobrist_toggle(hash, moves[i][0], moves[i][1], players[i]);
+
+        // Verify incremental matches full
+        uint64_t full_hash = zobrist_hash(board, 'x');
+        TEST_ASSERT_EQUAL_UINT64(full_hash, hash);
+    }
+#elif BOARD_SIZE == 4
+    zobrist_set_seed(42);
+    zobrist_init();
+    init_win_masks();
+
+    Bitboard board = {0, 0};
+    uint64_t hash = zobrist_hash(board, 'x');
+
+    // Play predetermined sequence for 4x4
+    int moves[][2] = {{1, 1}, {0, 0}, {0, 2}, {2, 0}, {1, 0}, {3, 3}, {2, 2}};
+    char players[] = {'x', 'o', 'x', 'o', 'x', 'o', 'x'};
+
+    for (int i = 0; i < 7; i++)
     {
         bitboard_make_move(&board, moves[i][0], moves[i][1], players[i]);
         hash = zobrist_toggle(hash, moves[i][0], moves[i][1], players[i]);
