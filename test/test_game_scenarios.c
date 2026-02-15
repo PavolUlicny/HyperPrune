@@ -250,6 +250,91 @@ void test_diagonal_win(void)
 #endif
 }
 
+// Test getAiMove with exactly two empty cells
+void test_getAiMove_two_empty_cells(void)
+{
+#if BOARD_SIZE == 3
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Create board with exactly 2 empty cells
+    // X X O
+    // O X _
+    // X O _  <- (1,2) and (2,2) empty
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 0, 2, 'o');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'x');
+    bitboard_make_move(&board, 2, 0, 'x');
+    bitboard_make_move(&board, 2, 1, 'o');
+    // (1,2) and (2,2) are empty
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    // Should return valid move (not -1, -1)
+    TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
+    TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
+    TEST_ASSERT_TRUE((row == 1 && col == 2) || (row == 2 && col == 2));
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Create 4x4 board with exactly 2 empty cells
+    Bitboard board = {0, 0};
+    for (int i = 0; i < 14; i++)
+    {
+        int r = i / 4;
+        int c = i % 4;
+        char player = (i % 2) ? 'o' : 'x';
+        bitboard_make_move(&board, r, c, player);
+    }
+    // (3,2) and (3,3) are empty
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    // Should return valid move
+    TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
+    TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
+
+    transposition_table_free();
+#endif
+}
+
+// Test hash consistency over full game (end-to-end)
+void test_hash_consistency_full_game(void)
+{
+#if BOARD_SIZE == 3
+    zobrist_set_seed(42);
+    zobrist_init();
+    init_win_masks();
+
+    Bitboard board = {0, 0};
+    uint64_t hash = zobrist_hash(board, 'x');
+
+    // Play predetermined sequence
+    int moves[][2] = {{1, 1}, {0, 0}, {0, 2}, {2, 0}, {1, 0}};
+    char players[] = {'x', 'o', 'x', 'o', 'x'};
+
+    for (int i = 0; i < 5; i++)
+    {
+        bitboard_make_move(&board, moves[i][0], moves[i][1], players[i]);
+        hash = zobrist_toggle(hash, moves[i][0], moves[i][1], players[i]);
+
+        // Verify incremental matches full
+        uint64_t full_hash = zobrist_hash(board, 'x');
+        TEST_ASSERT_EQUAL_UINT64(full_hash, hash);
+    }
+#endif
+}
+
 void test_game_scenarios_suite(void)
 {
     RUN_TEST(test_ai_takes_winning_move);
@@ -259,4 +344,6 @@ void test_game_scenarios_suite(void)
     RUN_TEST(test_tie_scenario);
     RUN_TEST(test_fork_creation);
     RUN_TEST(test_diagonal_win);
+    RUN_TEST(test_getAiMove_two_empty_cells);
+    RUN_TEST(test_hash_consistency_full_game);
 }
