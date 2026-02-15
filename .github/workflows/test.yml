@@ -45,11 +45,10 @@ jobs:
       - name: Run tests
         run: make test CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
 
-      - name: Self-play verification (3x3 only)
-        if: matrix.board_size == 3
+      - name: Self-play verification
         run: |
           echo "Running self-play verification for perfect play..."
-          OUTPUT=$(./ttt -s 1000000 --seed 42)
+          OUTPUT=$(./ttt -s 1000000)
           echo "$OUTPUT"
 
           # Extract win/tie counts from output
