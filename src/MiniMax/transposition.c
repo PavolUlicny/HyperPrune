@@ -192,6 +192,15 @@ void transposition_table_init(size_t size)
         transposition_table = NULL;
     }
 
+    /* Handle size 0: disable TT entirely */
+    if (size == 0)
+    {
+        transposition_table = NULL;
+        transposition_table_size = 0;
+        transposition_table_mask = 0;
+        return;
+    }
+
     /* Round up to power of 2 for efficient indexing */
     size_t requested_size = size;
     transposition_table_size = round_up_power_of_2(size);
