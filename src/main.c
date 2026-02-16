@@ -55,8 +55,9 @@ static int timer_get(HiResTimer *t)
 
 static double timer_diff_seconds(HiResTimer *start, HiResTimer *end)
 {
-    return (end->tv_sec - start->tv_sec) +
-           (end->tv_nsec - start->tv_nsec) / 1e9;
+    double sec = (double)(end->tv_sec - start->tv_sec);
+    double nsec = (double)(end->tv_nsec - start->tv_nsec);
+    return sec + (nsec / 1e9);
 }
 #endif
 
