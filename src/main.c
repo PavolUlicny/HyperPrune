@@ -291,7 +291,7 @@ int main(int argc, char **argv)
             printf("    --quiet, -q               Suppress output\n\n");
             printf("  Configuration:\n");
             printf("    --tt-size SIZE, -t SIZE   Transposition table size in entries\n");
-            printf("                              (default: auto-sized, max: %d)\n", MAX_TRANSPOSITION_TABLE_SIZE);
+            printf("                              (0 disables TT, default: auto-sized, max: %d)\n", MAX_TRANSPOSITION_TABLE_SIZE);
             printf("    --seed SEED               PRNG seed for Zobrist keys (default: deterministic)\n\n");
             printf("  Help:\n");
             printf("    --help, -h                Show this help message and exit\n\n");
@@ -372,13 +372,13 @@ int main(int argc, char **argv)
                 if (*endptr == '\0')
                 {
                     /* It's a number, validate range */
-                    if (val > 0 && val <= MAX_TRANSPOSITION_TABLE_SIZE)
+                    if (val >= 0 && val <= MAX_TRANSPOSITION_TABLE_SIZE)
                     {
                         tt_size_override = (int)val;
                     }
                     else
                     {
-                        fprintf(stderr, "Warning: Invalid --tt-size value '%s', must be 1-%d\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
+                        fprintf(stderr, "Warning: Invalid --tt-size value '%s', must be 0-%d (0 disables TT)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
                     }
                 }
                 else if (argv[i + 1][0] == '-' && !isdigit((unsigned char)argv[i + 1][1]))
@@ -389,7 +389,7 @@ int main(int argc, char **argv)
                 else
                 {
                     /* Not a valid number */
-                    fprintf(stderr, "Warning: Invalid --tt-size value '%s', must be 1-%d\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
+                    fprintf(stderr, "Warning: Invalid --tt-size value '%s', must be 0-%d (0 disables TT)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
                 }
             }
             else
@@ -429,7 +429,7 @@ int main(int argc, char **argv)
     }
 
     /* Apply user override if --tt-size was specified */
-    if (tt_size_override > 0)
+    if (tt_size_override >= 0)
     {
         transposition_table_size = (size_t)tt_size_override;
     }
