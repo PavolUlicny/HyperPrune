@@ -18,12 +18,10 @@ void test_tt_store_and_probe(void)
 
     // Probe should succeed
     int score;
-    TranspositionTableNodeType type;
-    int found = transposition_table_probe(hash, -100, 100, &score, &type);
+    int found = transposition_table_probe(hash, -100, 100, &score);
 
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(50, score);
-    TEST_ASSERT_EQUAL(TRANSPOSITION_TABLE_EXACT, type);
 
     transposition_table_free();
 }
@@ -43,8 +41,7 @@ void test_tt_null_table(void)
 
     // Probe should return 0 (miss)
     int score;
-    TranspositionTableNodeType type;
-    int found = transposition_table_probe(hash, -100, 100, &score, &type);
+    int found = transposition_table_probe(hash, -100, 100, &score);
 
     TEST_ASSERT_EQUAL(0, found);
 }
@@ -64,8 +61,7 @@ void test_tt_zero_size(void)
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_EXACT);
 
     int score;
-    TranspositionTableNodeType type;
-    int found = transposition_table_probe(hash, -100, 100, &score, &type);
+    int found = transposition_table_probe(hash, -100, 100, &score);
 
     // With size rounded to 1, the probe should succeed
     TEST_ASSERT_EQUAL(1, found);
@@ -88,8 +84,7 @@ void test_tt_reinitialization(void)
     transposition_table_init(1000);
 
     int score;
-    TranspositionTableNodeType type;
-    int found = transposition_table_probe(hash, -100, 100, &score, &type);
+    int found = transposition_table_probe(hash, -100, 100, &score);
 
     TEST_ASSERT_EQUAL(0, found);
 
@@ -110,14 +105,13 @@ void test_tt_lowerbound_cutoff(void)
 
     // Probe with beta=50: should cutoff (score >= beta)
     int score;
-    TranspositionTableNodeType type;
-    int found = transposition_table_probe(hash, -100, 50, &score, &type);
+    int found = transposition_table_probe(hash, -100, 50, &score);
 
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(60, score);
 
     // Probe with beta=70: should NOT cutoff (score < beta)
-    found = transposition_table_probe(hash, -100, 70, &score, &type);
+    found = transposition_table_probe(hash, -100, 70, &score);
     TEST_ASSERT_EQUAL(0, found);
 
     transposition_table_free();
@@ -137,14 +131,13 @@ void test_tt_upperbound_cutoff(void)
 
     // Probe with alpha=40: should cutoff (score <= alpha)
     int score;
-    TranspositionTableNodeType type;
-    int found = transposition_table_probe(hash, 40, 100, &score, &type);
+    int found = transposition_table_probe(hash, 40, 100, &score);
 
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(30, score);
 
     // Probe with alpha=20: should NOT cutoff (score > alpha)
-    found = transposition_table_probe(hash, 20, 100, &score, &type);
+    found = transposition_table_probe(hash, 20, 100, &score);
     TEST_ASSERT_EQUAL(0, found);
 
     transposition_table_free();
@@ -172,8 +165,7 @@ void test_tt_hash_collision(void)
 
     // Probe second should always work
     int score;
-    TranspositionTableNodeType type;
-    int found = transposition_table_probe(hash2, -100, 100, &score, &type);
+    int found = transposition_table_probe(hash2, -100, 100, &score);
 
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(75, score);
@@ -209,14 +201,13 @@ void test_tt_score_boundaries(void)
     // Test INT16_MIN boundary
     transposition_table_store(hash, INT16_MIN, TRANSPOSITION_TABLE_EXACT);
     int score;
-    TranspositionTableNodeType type;
-    int found = transposition_table_probe(hash, INT16_MIN - 1000, INT16_MAX, &score, &type);
+    int found = transposition_table_probe(hash, INT16_MIN - 1000, INT16_MAX, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(INT16_MIN, score);
 
     // Test INT16_MAX boundary
     transposition_table_store(hash + 1, INT16_MAX, TRANSPOSITION_TABLE_EXACT);
-    found = transposition_table_probe(hash + 1, INT16_MIN, INT16_MAX + 1000, &score, &type);
+    found = transposition_table_probe(hash + 1, INT16_MIN, INT16_MAX + 1000, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(INT16_MAX, score);
 
@@ -231,17 +222,16 @@ void test_tt_cutoff_equality(void)
 
     uint64_t hash = 12345;
     int score;
-    TranspositionTableNodeType type;
 
     // LOWERBOUND with score == beta should cutoff
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_LOWERBOUND);
-    int found = transposition_table_probe(hash, -100, 50, &score, &type);
+    int found = transposition_table_probe(hash, -100, 50, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(50, score);
 
     // UPPERBOUND with score == alpha should cutoff
     transposition_table_store(hash + 1, 30, TRANSPOSITION_TABLE_UPPERBOUND);
-    found = transposition_table_probe(hash + 1, 30, 100, &score, &type);
+    found = transposition_table_probe(hash + 1, 30, 100, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(30, score);
 
@@ -262,8 +252,7 @@ void test_tt_multiple_reinit(void)
 
         // Verify it's there
         int score;
-        TranspositionTableNodeType type;
-        int found = transposition_table_probe(12345, -100, 100, &score, &type);
+        int found = transposition_table_probe(12345, -100, 100, &score);
         TEST_ASSERT_EQUAL(1, found);
         TEST_ASSERT_EQUAL(i * 10, score);
     }
