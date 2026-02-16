@@ -51,7 +51,7 @@ void test_optimal_play_3x3(void)
 
     for (int i = 0; i < 100; i++)
     {
-        int result = play_full_game('x', i);
+        int result = play_full_game('x', (uint64_t)i);
         if (result == 1)
             x_wins++;
         else if (result == -1)
@@ -68,7 +68,7 @@ void test_optimal_play_3x3(void)
 
     for (int i = 0; i < 10; i++)
     {
-        int result = play_full_game('x', i);
+        int result = play_full_game('x', (uint64_t)i);
         if (result == 1)
             x_wins++;
         else if (result == -1)
@@ -85,8 +85,8 @@ void test_optimal_play_3x3(void)
 // Test determinism
 void test_determinism(void)
 {
-    int result1 = play_full_game('x', 42);
-    int result2 = play_full_game('x', 42);
+    int result1 = play_full_game('x', UINT64_C(42));
+    int result2 = play_full_game('x', UINT64_C(42));
 
     TEST_ASSERT_EQUAL(result1, result2);
 }
