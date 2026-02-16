@@ -9,19 +9,56 @@
  *   * --seed sets PRNG seed for Zobrist keys (deterministic by default)
  */
 
+/* Platform-specific high-resolution timer */
+#ifdef _MSC_VER
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
 #define _POSIX_C_SOURCE 199309L
+#include <time.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
 #include <ctype.h>
-#include <time.h>
 #include <math.h>
 #include <errno.h>
 #include "TicTacToe/tic_tac_toe.h"
 #include "MiniMax/mini_max.h"
 #include "MiniMax/transposition.h"
+
+/* Portable high-resolution timer */
+#ifdef _MSC_VER
+typedef LARGE_INTEGER HiResTimer;
+
+static int timer_get(HiResTimer *t)
+{
+    return QueryPerformanceCounter(t) ? 0 : -1;
+}
+
+static double timer_diff_seconds(HiResTimer *start, HiResTimer *end)
+{
+    LARGE_INTEGER freq;
+    if (!QueryPerformanceFrequency(&freq))
+        return -1.0;
+    return (double)(end->QuadPart - start->QuadPart) / (double)freq.QuadPart;
+}
+#else
+typedef struct timespec HiResTimer;
+
+static int timer_get(HiResTimer *t)
+{
+    return clock_gettime(CLOCK_MONOTONIC, t);
+}
+
+static double timer_diff_seconds(HiResTimer *start, HiResTimer *end)
+{
+    return (end->tv_sec - start->tv_sec) +
+           (end->tv_nsec - start->tv_nsec) / 1e9;
+}
+#endif
 
 /*
  * Maximum transposition table size (entry count).
@@ -111,14 +148,14 @@ static int selfPlay(int gameCount, int quiet)
     int ai1Wins = 0;
     int ai2Wins = 0;
     int ties = 0;
-    struct timespec startTime = {0};
+    HiResTimer startTime = {0};
     int timing_available = 0;
 
     if (!quiet)
     {
-        if (clock_gettime(CLOCK_MONOTONIC, &startTime) != 0)
+        if (timer_get(&startTime) != 0)
         {
-            fprintf(stderr, "Warning: clock_gettime() failed, timing stats will be unavailable\n");
+            fprintf(stderr, "Warning: timer initialization failed, timing stats will be unavailable\n");
             timing_available = 0;
         }
         else
@@ -170,17 +207,16 @@ static int selfPlay(int gameCount, int quiet)
         /* Try to get timing data if clock was available at start */
         if (timing_available)
         {
-            struct timespec endTime;
-            if (clock_gettime(CLOCK_MONOTONIC, &endTime) != 0)
+            HiResTimer endTime;
+            if (timer_get(&endTime) != 0)
             {
-                fprintf(stderr, "Warning: clock_gettime() failed at end, timing stats unavailable\n");
+                fprintf(stderr, "Warning: timer read failed, timing stats unavailable\n");
                 timing_available = 0;
             }
             else
             {
                 /* Calculate elapsed time in seconds */
-                elapsed = (endTime.tv_sec - startTime.tv_sec) +
-                          (endTime.tv_nsec - startTime.tv_nsec) / 1e9;
+                elapsed = timer_diff_seconds(&startTime, &endTime);
 
                 if (elapsed < 0)
                 {
