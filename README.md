@@ -11,9 +11,9 @@
 
 ## Requirements
 
-- C11 compiler (GCC or Clang)
-- POSIX environment (Linux, macOS, BSD, WSL)
-- Make (optional, recommended)
+- C11 compiler (GCC, Clang, or MSVC)
+- Platform: Linux, macOS, Windows, BSD, WSL
+- Build system: Make (Unix) or CMake (cross-platform)
 
 ## Quick start
 
@@ -24,6 +24,8 @@ make
 
 ## Build
 
+### Unix (Linux, macOS, BSD) - Makefile
+
 ```sh
 make              # Default release build
 make debug        # Debug build with symbols
@@ -31,20 +33,41 @@ make release      # Optimized release build
 make pgo          # Profile-guided optimization
 ```
 
-### Board size (3-8)
+Board size (3-8):
 
 ```sh
 make BOARD_SIZE=4
 make pgo BOARD_SIZE=5
 ```
 
+### Cross-platform - CMake
+
+```sh
+# Linux/macOS
+cmake -B build -DBOARD_SIZE=3 -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/ttt
+
+# Windows (MSVC)
+cmake -B build -DBOARD_SIZE=3 -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+.\build\Release\ttt.exe
+```
+
 ### Manual build
 
 ```sh
+# Unix (GCC/Clang)
 gcc -std=c11 -O3 -march=native -flto -DBOARD_SIZE=3 \
   src/main.c src/TicTacToe/tic_tac_toe.c \
   src/MiniMax/mini_max.c src/MiniMax/transposition.c \
   -o ttt -lm
+
+# Windows (MSVC)
+cl /std:c11 /O2 /DBOARD_SIZE=3 \
+  src\main.c src\TicTacToe\tic_tac_toe.c \
+  src\MiniMax\mini_max.c src\MiniMax\transposition.c \
+  /Fe:ttt.exe
 ```
 
 ## Usage
@@ -91,12 +114,22 @@ gcc -std=c11 -O3 -march=native -flto -DBOARD_SIZE=3 \
 
 The test suite uses Unity and ships with the repo.
 
+**Makefile (Unix):**
+
 ```sh
 make test
 make BOARD_SIZE=4 test
 ```
 
-The test runner is built at `test/test_runner`.
+**CMake (cross-platform):**
+
+```sh
+cmake -B build -DBOARD_SIZE=3
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+The test runner is built at `test/test_runner` (Makefile) or `build/test_runner` (CMake).
 
 ## API usage (library-style)
 
