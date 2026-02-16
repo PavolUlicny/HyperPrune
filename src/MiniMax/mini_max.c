@@ -125,8 +125,7 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
 {
     /* Transposition table probe */
     int transposition_table_score;
-    TranspositionTableNodeType transposition_table_type;
-    if (transposition_table_probe(hash, alpha, beta, &transposition_table_score, &transposition_table_type))
+    if (transposition_table_probe(hash, alpha, beta, &transposition_table_score))
     {
         return transposition_table_score;
     }
@@ -195,8 +194,7 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
 {
     /* Transposition table probe */
     int transposition_table_score;
-    TranspositionTableNodeType transposition_table_type;
-    if (transposition_table_probe(hash, alpha, beta, &transposition_table_score, &transposition_table_type))
+    if (transposition_table_probe(hash, alpha, beta, &transposition_table_score))
     {
         return transposition_table_score;
     }
