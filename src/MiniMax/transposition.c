@@ -234,20 +234,10 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
     int score = entry->score;
 
     /* Use stored score based on node type and bounds */
-    if (entry->type == TRANSPOSITION_TABLE_EXACT)
+    if (entry->type == TRANSPOSITION_TABLE_EXACT ||
+        (entry->type == TRANSPOSITION_TABLE_LOWERBOUND && score >= beta) ||
+        (entry->type == TRANSPOSITION_TABLE_UPPERBOUND && score <= alpha))
     {
-        *out_score = score;
-        return 1;
-    }
-    else if (entry->type == TRANSPOSITION_TABLE_LOWERBOUND && score >= beta)
-    {
-        /* We stored a lower bound that's >= beta, so we can cut off */
-        *out_score = score;
-        return 1;
-    }
-    else if (entry->type == TRANSPOSITION_TABLE_UPPERBOUND && score <= alpha)
-    {
-        /* We stored an upper bound that's <= alpha, so we can cut off */
         *out_score = score;
         return 1;
     }
