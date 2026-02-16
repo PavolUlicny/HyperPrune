@@ -73,7 +73,7 @@ jobs:
 
           echo "PASSED: Perfect play verified (100% ties)"
 
-      - name: Self-play verification (TT disabled)
+      - name: Self-play verification (TT disabled, 3x3 only)
         if: matrix.board_size == 3
         run: |
           echo "Running self-play verification with TT disabled..."
@@ -150,7 +150,7 @@ jobs:
 
           Write-Host "PASSED: Perfect play verified (100% ties)"
 
-      - name: Self-play verification (TT disabled)
+      - name: Self-play verification (TT disabled, 3x3 only)
         if: matrix.board_size == 3
         shell: pwsh
         run: |
