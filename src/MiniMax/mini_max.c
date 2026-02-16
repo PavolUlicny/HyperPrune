@@ -15,6 +15,21 @@
 #include "transposition.h"
 #include <stdint.h>
 
+/* Portable count-trailing-zeros for 64-bit integers */
+#if defined(__GNUC__) || defined(__clang__)
+#define HAS_CTZ64
+#define CTZ64(x) __builtin_ctzll(x)
+#elif defined(_MSC_VER) && defined(_WIN64)
+#include <intrin.h>
+#define HAS_CTZ64
+static inline int CTZ64(uint64_t x)
+{
+    unsigned long index;
+    _BitScanForward64(&index, x);
+    return (int)index;
+}
+#endif
+
 /* A single board coordinate (row, col). */
 typedef struct
 {
@@ -63,18 +78,18 @@ static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
     uint64_t empty = ~(board.x_pieces | board.o_pieces);
     empty &= valid_positions_mask(); /* Mask valid positions */
 
-#ifdef __GNUC__
-    /* Use compiler builtin for bit scanning */
+#ifdef HAS_CTZ64
+    /* Use bit scanning intrinsic */
     while (empty)
     {
-        int bit = __builtin_ctzll(empty); /* Count trailing zeros */
+        int bit = CTZ64(empty);
         out_emptySpots->moves[out_emptySpots->count++] = (Move){
             .row = BIT_TO_ROW(bit),
             .col = BIT_TO_COL(bit)};
         empty &= empty - 1; /* Clear least significant bit */
     }
 #else
-    /* Fallback for non-GCC compilers */
+    /* Fallback: iterate all positions */
     for (int i = 0; i < MAX_MOVES; i++)
     {
         if (empty & (1ULL << i))
