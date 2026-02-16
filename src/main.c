@@ -68,6 +68,20 @@ static double timer_diff_seconds(HiResTimer *start, HiResTimer *end)
  */
 #define MAX_TRANSPOSITION_TABLE_SIZE 250000000
 
+/* Return non-zero if arg is a recognized CLI option flag. */
+static int isKnownOption(const char *arg)
+{
+    return strcmp(arg, "--help") == 0 ||
+           strcmp(arg, "-h") == 0 ||
+           strcmp(arg, "--selfplay") == 0 ||
+           strcmp(arg, "-s") == 0 ||
+           strcmp(arg, "--quiet") == 0 ||
+           strcmp(arg, "-q") == 0 ||
+           strcmp(arg, "--tt-size") == 0 ||
+           strcmp(arg, "-t") == 0 ||
+           strcmp(arg, "--seed") == 0;
+}
+
 /*
  * Interactive human vs AI loop. Prompts the user to choose a symbol, then
  * alternates between human input and AI selection until the game ends.
@@ -303,6 +317,35 @@ int main(int argc, char **argv)
             printf("  ttt --seed 42 -s 1000        # Deterministic game with seed 42\n");
             printf("  ttt --tt-size 0 -s 1000      # Benchmark without transposition table\n");
             return 0;
+        }
+    }
+
+    /* Reject unknown option flags early to avoid silently ignoring user input. */
+    for (int i = 1; i < argc; ++i)
+    {
+        const char *arg = argv[i];
+
+        if (strcmp(arg, "--seed") == 0 || strcmp(arg, "--tt-size") == 0 ||
+            strcmp(arg, "-t") == 0 || strcmp(arg, "--selfplay") == 0 ||
+            strcmp(arg, "-s") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                const char *next = argv[i + 1];
+                if (next[0] != '-' ||
+                    (next[0] == '-' && isdigit((unsigned char)next[1])))
+                {
+                    ++i;
+                }
+            }
+            continue;
+        }
+
+        if (arg[0] == '-' && !isKnownOption(arg))
+        {
+            fprintf(stderr, "Error: Unknown option '%s'\n", arg);
+            fprintf(stderr, "Use --help to see available options.\n");
+            return EXIT_FAILURE;
         }
     }
 
