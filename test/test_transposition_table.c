@@ -55,17 +55,15 @@ void test_tt_zero_size(void)
     Bitboard board = {0, 0};
     uint64_t hash = zobrist_hash(board, 'x');
 
-    // Operations should not crash
-    // Note: round_up_power_of_2(0) returns 1, so table has 1 entry
-    // Store and probe should work (but with many collisions)
+    // Operations should not crash when TT is disabled
+    // Size 0 now properly disables TT (no allocation)
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_EXACT);
 
     int score;
     int found = transposition_table_probe(hash, -100, 100, &score);
 
-    // With size rounded to 1, the probe should succeed
-    TEST_ASSERT_EQUAL(1, found);
-    TEST_ASSERT_EQUAL(50, score);
+    // With size 0, TT is disabled, so probe should return 0 (not found)
+    TEST_ASSERT_EQUAL(0, found);
 
     transposition_table_free();
 }
