@@ -32,13 +32,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download Unity framework
-        run: |
-          mkdir -p test/unity
-          wget -q https://raw.githubusercontent.com/ThrowTheSwitch/Unity/master/src/unity.c -O test/unity/unity.c
-          wget -q https://raw.githubusercontent.com/ThrowTheSwitch/Unity/master/src/unity.h -O test/unity/unity.h
-          wget -q https://raw.githubusercontent.com/ThrowTheSwitch/Unity/master/src/unity_internals.h -O test/unity/unity_internals.h
-
       - name: Build
         run: make CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
 
@@ -79,3 +72,44 @@ jobs:
           fi
 
           echo "PASSED: Perfect play verified (100% ties)"
+
+  test-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        board_size: [3, 4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure CMake
+        run: cmake -B build -DBOARD_SIZE=${{ matrix.board_size }} -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Run tests
+        run: ctest --test-dir build --build-config Release --output-on-failure
+
+      - name: Self-play verification
+        shell: pwsh
+        run: |
+          $output = & ./build/Release/ttt.exe -s 1000000
+          $output | ForEach-Object { Write-Host $_ }
+
+          $xWins = ($output | Select-String "X wins:\s+(\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+          $oWins = ($output | Select-String "O wins:\s+(\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+          $ties = ($output | Select-String "Ties:\s+(\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+
+          Write-Host ""
+          Write-Host "=== Perfect Play Verification ==="
+          Write-Host "X wins: $xWins (expected: 0)"
+          Write-Host "O wins: $oWins (expected: 0)"
+          Write-Host "Ties: $ties (expected: 1000000)"
+
+          if ($xWins -ne "0") { Write-Host "FAILED: X wins"; exit 1 }
+          if ($oWins -ne "0") { Write-Host "FAILED: O wins"; exit 1 }
+          if ($ties -ne "1000000") { Write-Host "FAILED: Not all ties"; exit 1 }
+
+          Write-Host "PASSED: Perfect play verified (100% ties)"
