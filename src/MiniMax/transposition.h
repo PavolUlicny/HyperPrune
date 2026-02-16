@@ -136,14 +136,13 @@ extern "C"
      *  - hash: Position hash to look up
      *  - alpha, beta: Current alpha-beta bounds
      *  - out_score: Output pointer for retrieved score (if found)
-     *  - out_type: Output pointer for node type (if found)
      *
      * Returns:
-     *  - 1 if a usable entry was found (out_score/out_type are valid)
+     *  - 1 if a usable entry was found (out_score is valid)
      *  - 0 otherwise (cache miss or collision)
      */
     int transposition_table_probe(uint64_t hash, int alpha, int beta,
-                                  int *restrict out_score, TranspositionTableNodeType *restrict out_type);
+                                  int *restrict out_score);
 
     /**
      * Store position evaluation in transposition table.
