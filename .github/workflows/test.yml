@@ -73,6 +73,41 @@ jobs:
 
           echo "PASSED: Perfect play verified (100% ties)"
 
+      - name: Self-play verification (TT disabled)
+        run: |
+          echo "Running self-play verification with TT disabled..."
+          OUTPUT=$(./ttt --tt-size 0 -s 100000)
+          echo "$OUTPUT"
+
+          # Extract win/tie counts from output
+          X_WINS=$(echo "$OUTPUT" | grep "X wins:" | awk '{print $3}')
+          O_WINS=$(echo "$OUTPUT" | grep "O wins:" | awk '{print $3}')
+          TIES=$(echo "$OUTPUT" | grep "Ties:" | awk '{print $2}')
+
+          echo ""
+          echo "=== TT Disabled Verification ==="
+          echo "X wins: $X_WINS (expected: 0)"
+          echo "O wins: $O_WINS (expected: 0)"
+          echo "Ties: $TIES (expected: 100000)"
+
+          # Verify perfect play without TT (all ties, no wins)
+          if [ "$X_WINS" != "0" ]; then
+            echo "FAILED: X should never win with perfect play (got $X_WINS wins)"
+            exit 1
+          fi
+
+          if [ "$O_WINS" != "0" ]; then
+            echo "FAILED: O should never win with perfect play (got $O_WINS wins)"
+            exit 1
+          fi
+
+          if [ "$TIES" != "100000" ]; then
+            echo "FAILED: All games should be ties with perfect play (got $TIES ties)"
+            exit 1
+          fi
+
+          echo "PASSED: Perfect play verified without TT (100% ties)"
+
   test-windows:
     runs-on: windows-latest
     strategy:
@@ -113,3 +148,26 @@ jobs:
           if ($ties -ne "1000000") { Write-Host "FAILED: Not all ties"; exit 1 }
 
           Write-Host "PASSED: Perfect play verified (100% ties)"
+
+      - name: Self-play verification (TT disabled)
+        shell: pwsh
+        run: |
+          Write-Host "Running self-play verification with TT disabled..."
+          $output = & ./build/Release/ttt.exe --tt-size 0 -s 100000
+          $output | ForEach-Object { Write-Host $_ }
+
+          $xWins = ($output | Select-String "X wins:\s+(\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+          $oWins = ($output | Select-String "O wins:\s+(\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+          $ties = ($output | Select-String "Ties:\s+(\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+
+          Write-Host ""
+          Write-Host "=== TT Disabled Verification ==="
+          Write-Host "X wins: $xWins (expected: 0)"
+          Write-Host "O wins: $oWins (expected: 0)"
+          Write-Host "Ties: $ties (expected: 100000)"
+
+          if ($xWins -ne "0") { Write-Host "FAILED: X wins"; exit 1 }
+          if ($oWins -ne "0") { Write-Host "FAILED: O wins"; exit 1 }
+          if ($ties -ne "100000") { Write-Host "FAILED: Not all ties"; exit 1 }
+
+          Write-Host "PASSED: Perfect play verified without TT (100% ties)"
