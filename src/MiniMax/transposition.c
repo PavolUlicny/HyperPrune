@@ -8,6 +8,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* Portable count-trailing-zeros for 64-bit integers */
+#if defined(__GNUC__) || defined(__clang__)
+#define HAS_CTZ64
+#define CTZ64(x) __builtin_ctzll(x)
+#elif defined(_MSC_VER) && defined(_WIN64)
+#include <intrin.h>
+#define HAS_CTZ64
+static inline int CTZ64(uint64_t x)
+{
+    unsigned long index;
+    _BitScanForward64(&index, x);
+    return (int)index;
+}
+#endif
+
 /*
  * Zobrist keys: [row][col][player_index]
  * player_index: 0='x', 1='o'
@@ -118,12 +133,12 @@ uint64_t zobrist_hash(Bitboard board, char aiPlayer)
      */
     uint64_t hash = zobrist_player_keys[player_to_index(aiPlayer)];
 
-#ifdef __GNUC__
+#ifdef HAS_CTZ64
     /* Hash X pieces using bit scanning */
     uint64_t x_pieces = board.x_pieces;
     while (x_pieces)
     {
-        int bit = __builtin_ctzll(x_pieces);
+        int bit = CTZ64(x_pieces);
         int row = BIT_TO_ROW(bit);
         int col = BIT_TO_COL(bit);
         hash ^= zobrist_keys[row][col][0];
@@ -134,14 +149,14 @@ uint64_t zobrist_hash(Bitboard board, char aiPlayer)
     uint64_t o_pieces = board.o_pieces;
     while (o_pieces)
     {
-        int bit = __builtin_ctzll(o_pieces);
+        int bit = CTZ64(o_pieces);
         int row = BIT_TO_ROW(bit);
         int col = BIT_TO_COL(bit);
         hash ^= zobrist_keys[row][col][1];
         o_pieces &= o_pieces - 1;
     }
 #else
-    /* Fallback for non-GCC compilers */
+    /* Fallback: iterate all cells */
     for (int r = 0; r < BOARD_SIZE; r++)
     {
         for (int c = 0; c < BOARD_SIZE; c++)
