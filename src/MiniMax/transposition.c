@@ -207,7 +207,7 @@ void transposition_table_free(void)
 }
 
 int transposition_table_probe(uint64_t hash, int alpha, int beta,
-                              int *restrict out_score, TranspositionTableNodeType *restrict out_type)
+                              int *restrict out_score)
 {
     if (transposition_table == NULL || transposition_table_size == 0)
     {
@@ -237,21 +237,18 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
     if (entry->type == TRANSPOSITION_TABLE_EXACT)
     {
         *out_score = score;
-        *out_type = TRANSPOSITION_TABLE_EXACT;
         return 1;
     }
     else if (entry->type == TRANSPOSITION_TABLE_LOWERBOUND && score >= beta)
     {
         /* We stored a lower bound that's >= beta, so we can cut off */
         *out_score = score;
-        *out_type = TRANSPOSITION_TABLE_LOWERBOUND;
         return 1;
     }
     else if (entry->type == TRANSPOSITION_TABLE_UPPERBOUND && score <= alpha)
     {
         /* We stored an upper bound that's <= alpha, so we can cut off */
         *out_score = score;
-        *out_type = TRANSPOSITION_TABLE_UPPERBOUND;
         return 1;
     }
 
