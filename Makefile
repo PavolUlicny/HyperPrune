@@ -93,7 +93,7 @@ portable:
 
 clean:
 	@echo "[CLEAN] removing build artifacts"
-	@rm -rf build $(TARGET)
+	@rm -rf build $(TARGET) test/test_runner
 
 # Installation
 PREFIX ?= /usr/local
