@@ -156,7 +156,6 @@ CORE_SOURCES := \
 
 TEST_TARGET := $(TEST_DIR)/test_runner
 
-.PHONY: test
 test: $(TEST_TARGET)
 	@echo "[TEST ] Running test suite..."
 	@$(TEST_TARGET)
