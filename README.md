@@ -171,6 +171,16 @@ int main(void)
 }
 ```
 
+Compile with `-Isrc` to include the headers:
+
+```sh
+gcc -std=c11 -Isrc -DBOARD_SIZE=3 your_program.c \
+  src/TicTacToe/tic_tac_toe.c \
+  src/MiniMax/mini_max.c \
+  src/MiniMax/transposition.c \
+  -o your_program -lm
+```
+
 Notes:
 
 - Call `zobrist_set_seed()` before `zobrist_init()` if you want a custom seed.
