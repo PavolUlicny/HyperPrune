@@ -430,23 +430,27 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        fprintf(stderr, "Warning: Invalid --tt-size value '%s', must be 0-%d (0 disables TT)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
+                        fprintf(stderr, "Error: Invalid --tt-size value '%s' (must be 0 to %d)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
+                        exit(EXIT_FAILURE);
                     }
                 }
                 else if (argv[i + 1][0] == '-' && !isdigit((unsigned char)argv[i + 1][1]))
                 {
                     /* Starts with - but not a negative number, probably a flag */
-                    fprintf(stderr, "Warning: --tt-size requires a value\n");
+                    fprintf(stderr, "Error: --tt-size requires a value\n");
+                    exit(EXIT_FAILURE);
                 }
                 else
                 {
                     /* Not a valid number */
-                    fprintf(stderr, "Warning: Invalid --tt-size value '%s', must be 0-%d (0 disables TT)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
+                    fprintf(stderr, "Error: Invalid --tt-size value '%s' (must be 0 to %d)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
+                    exit(EXIT_FAILURE);
                 }
             }
             else
             {
-                fprintf(stderr, "Warning: --tt-size requires a value\n");
+                fprintf(stderr, "Error: --tt-size requires a value\n");
+                exit(EXIT_FAILURE);
             }
             break;
         }
