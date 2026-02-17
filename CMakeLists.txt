@@ -17,6 +17,9 @@ else()
     add_compile_options(-Wall -Wextra)
 endif()
 
+# Native optimizations (opt-in for maximum performance)
+option(ENABLE_NATIVE_OPTIMIZATIONS "Enable -march=native, -flto, and aggressive optimizations" OFF)
+
 # Main executable
 add_executable(ttt
     src/main.c
@@ -28,6 +31,12 @@ target_compile_definitions(ttt PRIVATE BOARD_SIZE=${BOARD_SIZE})
 
 if(NOT MSVC)
     target_link_libraries(ttt m)
+endif()
+
+if(ENABLE_NATIVE_OPTIMIZATIONS AND NOT MSVC)
+    target_compile_options(ttt PRIVATE -march=native -funroll-loops -fomit-frame-pointer -fno-semantic-interposition)
+    target_link_options(ttt PRIVATE -flto)
+    set_target_properties(ttt PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
 # Test executable
@@ -50,6 +59,12 @@ target_include_directories(test_runner PRIVATE test/unity)
 
 if(NOT MSVC)
     target_link_libraries(test_runner m)
+endif()
+
+if(ENABLE_NATIVE_OPTIMIZATIONS AND NOT MSVC)
+    target_compile_options(test_runner PRIVATE -march=native -funroll-loops -fomit-frame-pointer -fno-semantic-interposition)
+    target_link_options(test_runner PRIVATE -flto)
+    set_target_properties(test_runner PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
 enable_testing()
