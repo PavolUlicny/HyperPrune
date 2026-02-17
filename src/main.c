@@ -361,11 +361,18 @@ int main(int argc, char **argv)
             {
                 const char *seed_str = argv[i + 1];
 
-                /* Check for empty string or another flag */
-                if (seed_str[0] == '\0' || seed_str[0] == '-')
+                /* Check for empty string */
+                if (seed_str[0] == '\0')
                 {
-                    fprintf(stderr, "Error: --seed requires a value (0 to %llu)\n",
-                            (unsigned long long)ULLONG_MAX);
+                    fprintf(stderr, "Error: --seed requires a value\n");
+                    exit(EXIT_FAILURE);
+                }
+
+                /* Check for negative values (starts with '-') */
+                if (seed_str[0] == '-')
+                {
+                    fprintf(stderr, "Error: Invalid --seed value '%s' (must be 0 to %llu)\n",
+                            seed_str, (unsigned long long)ULLONG_MAX);
                     exit(EXIT_FAILURE);
                 }
 
