@@ -109,6 +109,98 @@ jobs:
 
           echo "PASSED: Perfect play verified without TT (100% ties)"
 
+  test-cmake:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        board_size: [3, 4]
+        native_opt: [ON, OFF]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -B build -DBOARD_SIZE=${{ matrix.board_size }} -DCMAKE_BUILD_TYPE=Release -DENABLE_NATIVE_OPTIMIZATIONS=${{ matrix.native_opt }}
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Run tests
+        run: ctest --test-dir build --build-config Release --output-on-failure
+
+      - name: Self-play verification
+        run: |
+          echo "Running self-play verification for perfect play..."
+          OUTPUT=$(./build/ttt -s 1000000)
+          echo "$OUTPUT"
+
+          # Extract win/tie counts from output
+          X_WINS=$(echo "$OUTPUT" | grep "X wins:" | awk '{print $3}')
+          O_WINS=$(echo "$OUTPUT" | grep "O wins:" | awk '{print $3}')
+          TIES=$(echo "$OUTPUT" | grep "Ties:" | awk '{print $2}')
+
+          echo ""
+          echo "=== Perfect Play Verification ==="
+          echo "X wins: $X_WINS (expected: 0)"
+          echo "O wins: $O_WINS (expected: 0)"
+          echo "Ties: $TIES (expected: 1000000)"
+
+          # Verify perfect play (all ties, no wins)
+          if [ "$X_WINS" != "0" ]; then
+            echo "FAILED: X should never win with perfect play (got $X_WINS wins)"
+            exit 1
+          fi
+
+          if [ "$O_WINS" != "0" ]; then
+            echo "FAILED: O should never win with perfect play (got $O_WINS wins)"
+            exit 1
+          fi
+
+          if [ "$TIES" != "1000000" ]; then
+            echo "FAILED: All games should be ties with perfect play (got $TIES ties)"
+            exit 1
+          fi
+
+          echo "PASSED: Perfect play verified (100% ties)"
+
+      - name: Self-play verification (TT disabled, 3x3 only)
+        if: matrix.board_size == 3
+        run: |
+          echo "Running self-play verification with TT disabled..."
+          OUTPUT=$(./build/ttt --tt-size 0 -s 100000)
+          echo "$OUTPUT"
+
+          # Extract win/tie counts from output
+          X_WINS=$(echo "$OUTPUT" | grep "X wins:" | awk '{print $3}')
+          O_WINS=$(echo "$OUTPUT" | grep "O wins:" | awk '{print $3}')
+          TIES=$(echo "$OUTPUT" | grep "Ties:" | awk '{print $2}')
+
+          echo ""
+          echo "=== TT Disabled Verification ==="
+          echo "X wins: $X_WINS (expected: 0)"
+          echo "O wins: $O_WINS (expected: 0)"
+          echo "Ties: $TIES (expected: 100000)"
+
+          # Verify perfect play without TT (all ties, no wins)
+          if [ "$X_WINS" != "0" ]; then
+            echo "FAILED: X should never win with perfect play (got $X_WINS wins)"
+            exit 1
+          fi
+
+          if [ "$O_WINS" != "0" ]; then
+            echo "FAILED: O should never win with perfect play (got $O_WINS wins)"
+            exit 1
+          fi
+
+          if [ "$TIES" != "100000" ]; then
+            echo "FAILED: All games should be ties with perfect play (got $TIES ties)"
+            exit 1
+          fi
+
+          echo "PASSED: Perfect play verified without TT (100% ties)"
+
   test-windows:
     runs-on: windows-latest
     strategy:
