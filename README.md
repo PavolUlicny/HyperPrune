@@ -43,8 +43,13 @@ make pgo BOARD_SIZE=5
 ### Cross-platform - CMake
 
 ```sh
-# Linux/macOS
+# Linux/macOS (default portable build)
 cmake -B build -DBOARD_SIZE=3 -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/ttt
+
+# Linux/macOS (optimized for native CPU)
+cmake -B build -DBOARD_SIZE=3 -DCMAKE_BUILD_TYPE=Release -DENABLE_NATIVE_OPTIMIZATIONS=ON
 cmake --build build
 ./build/ttt
 
@@ -53,6 +58,10 @@ cmake -B build -DBOARD_SIZE=3 -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 .\build\Release\ttt.exe
 ```
+
+**Native optimizations:**
+
+The `ENABLE_NATIVE_OPTIMIZATIONS` CMake option enables aggressive optimizations (`-march=native`, `-flto`, `-funroll-loops`, etc.) for maximum performance on the build machine. Use `ON` for local builds, `OFF` (default) for portable binaries.
 
 ### Manual build
 
