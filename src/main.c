@@ -419,12 +419,13 @@ int main(int argc, char **argv)
             if (i + 1 < argc)
             {
                 char *endptr;
+                errno = 0;
                 long val = strtol(argv[i + 1], &endptr, 10);
                 /* Check if it's a valid number (not just a flag like --quiet) */
                 if (*endptr == '\0')
                 {
                     /* It's a number, validate range */
-                    if (val >= 0 && val <= MAX_TRANSPOSITION_TABLE_SIZE)
+                    if (errno != ERANGE && val >= 0 && val <= MAX_TRANSPOSITION_TABLE_SIZE)
                     {
                         tt_size_override = (int)val;
                     }
@@ -516,10 +517,11 @@ int main(int argc, char **argv)
         if (selfplay_idx + 1 < argc)
         {
             char *endp;
+            errno = 0;
             long val = strtol(argv[selfplay_idx + 1], &endp, 10);
             if (endp != argv[selfplay_idx + 1] && *endp == '\0')
             {
-                if (val < 1 || val > INT_MAX)
+                if (errno == ERANGE || val < 1 || val > INT_MAX)
                 {
                     fprintf(stderr, "Game count must be a positive integer.\n");
                     transposition_table_free();
