@@ -38,7 +38,7 @@ static int timer_get(HiResTimer *t)
     return QueryPerformanceCounter(t) ? 0 : -1;
 }
 
-static double timer_diff_seconds(HiResTimer *start, HiResTimer *end)
+static double timer_diff_seconds(const HiResTimer *start, const HiResTimer *end)
 {
     LARGE_INTEGER freq;
     if (!QueryPerformanceFrequency(&freq))
@@ -53,7 +53,7 @@ static int timer_get(HiResTimer *t)
     return clock_gettime(CLOCK_MONOTONIC, t);
 }
 
-static double timer_diff_seconds(HiResTimer *start, HiResTimer *end)
+static double timer_diff_seconds(const HiResTimer *start, const HiResTimer *end)
 {
     double sec = (double)(end->tv_sec - start->tv_sec);
     double nsec = (double)(end->tv_nsec - start->tv_nsec);
@@ -332,8 +332,7 @@ int main(int argc, char **argv)
             if (i + 1 < argc)
             {
                 const char *next = argv[i + 1];
-                if (next[0] != '-' ||
-                    (next[0] == '-' && isdigit((unsigned char)next[1])))
+                if (next[0] != '-' || isdigit((unsigned char)next[1]))
                 {
                     ++i;
                 }
@@ -552,7 +551,7 @@ int main(int argc, char **argv)
                 if (i + 1 < argc)
                 {
                     /* Only skip next arg if it's not a flag (or is a negative number) */
-                    if (argv[i + 1][0] != '-' || (argv[i + 1][0] == '-' && isdigit((unsigned char)argv[i + 1][1])))
+                    if (argv[i + 1][0] != '-' || isdigit((unsigned char)argv[i + 1][1]))
                     {
                         i++; /* Skip the value argument */
                     }

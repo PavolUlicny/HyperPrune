@@ -27,7 +27,6 @@ typedef struct
 typedef struct
 {
     int count;
-    int _padding; /* Padding to ensure moves[] starts at 8-byte boundary */
     Move moves[MAX_MOVES];
 } MoveList;
 

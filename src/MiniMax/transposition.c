@@ -188,7 +188,6 @@ void transposition_table_init(size_t size)
     }
 
     /* Round up to power of 2 for efficient indexing */
-    size_t requested_size = size;
     transposition_table_size = round_up_power_of_2(size);
     transposition_table_mask = transposition_table_size - 1;
 
@@ -196,6 +195,7 @@ void transposition_table_init(size_t size)
 
     if (transposition_table == NULL)
     {
+        const size_t requested_size = size;
         double table_size_mb = ((double)transposition_table_size * (double)sizeof(TranspositionTableEntry)) / (1024.0 * 1024.0);
         fprintf(stderr, "Warning: Failed to allocate transposition table (%zu entries requested, %zu actual, %.1f MB)\n",
                 requested_size, transposition_table_size,
@@ -226,7 +226,7 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
     }
 
     size_t index = hash & transposition_table_mask;
-    TranspositionTableEntry *entry = &transposition_table[index];
+    const TranspositionTableEntry *entry = &transposition_table[index];
 
     /* Empty slot */
     if (entry->occupied == 0)
