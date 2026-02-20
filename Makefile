@@ -19,6 +19,14 @@ else
 	PGO_MERGE := @true
 endif
 
+# -fno-semantic-interposition is unsupported on macOS (Apple Clang ignores it with a warning)
+UNAME_S := $(shell uname -s)
+ifneq ($(UNAME_S),Darwin)
+	SEMANTIC_INTERPOSITION_FLAG := -fno-semantic-interposition
+else
+	SEMANTIC_INTERPOSITION_FLAG :=
+endif
+
 BUILD ?= release
 
 SRCDIR := src
@@ -47,7 +55,7 @@ WARNINGS := -Wall -Wextra
 BASE_CFLAGS := -std=c11 -MMD -MP -pipe -DBOARD_SIZE=$(BOARD_SIZE)
 
 DEBUG_CFLAGS := -O0 -g
-RELEASE_CFLAGS := -O3 -march=native -flto -funroll-loops -fomit-frame-pointer -fno-semantic-interposition -DNDEBUG
+RELEASE_CFLAGS := -O3 -march=native -flto -funroll-loops -fomit-frame-pointer $(SEMANTIC_INTERPOSITION_FLAG) -DNDEBUG
 PORTABLE_CFLAGS := -O3 -funroll-loops -fomit-frame-pointer -DNDEBUG
 
 ifeq ($(BUILD),debug)
@@ -117,7 +125,7 @@ pgo:
 	@$(MAKE) pgo-clean > /dev/null 2>&1
 	@$(MAKE) clean > /dev/null
 	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native $(PGO_GENERATE) \
-		-funroll-loops -fno-semantic-interposition -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
+		-funroll-loops $(SEMANTIC_INTERPOSITION_FLAG) -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
 		$(SOURCES) -o $(TARGET) -lm
 	@PROFILE_GAMES=$$((1000000 / (($(BOARD_SIZE) - 2) * ($(BOARD_SIZE) - 2)))); \
 	if [ $$PROFILE_GAMES -lt 10000 ]; then PROFILE_GAMES=10000; fi; \
@@ -126,7 +134,7 @@ pgo:
 	@$(PGO_MERGE)
 	@echo "[PGO  ] Step 3/3: Rebuilding with profile-guided optimizations..."
 	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native $(PGO_USE) -flto \
-		-funroll-loops -fno-semantic-interposition -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
+		-funroll-loops $(SEMANTIC_INTERPOSITION_FLAG) -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
 		$(SOURCES) -o $(TARGET) -lm
 	@$(MAKE) pgo-clean > /dev/null 2>&1
 	@echo "[PGO  ] PGO-optimized binary ready"
