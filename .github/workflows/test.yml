@@ -337,7 +337,7 @@ jobs:
           COMMON="$COMMON -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wundef"
           COMMON="$COMMON -Wdouble-promotion -Wcast-qual -Wnull-dereference"
           COMMON="$COMMON -Wvla -Wwrite-strings -Wformat-security -Wswitch-enum"
-          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          if [ "${{ matrix.compiler }}" = "gcc" ] && [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             COMMON="$COMMON -Wlogical-op -Wduplicated-cond -Wduplicated-branches"
           fi
 
