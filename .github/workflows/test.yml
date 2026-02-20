@@ -384,13 +384,12 @@ jobs:
             -o test_runner_san -lm
           ./test_runner_san
 
-      - name: Run self-play under ASan+UBSan (3x3 only)
-        if: matrix.board_size == 3
+      - name: Run self-play under ASan+UBSan
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
-            -DBOARD_SIZE=3 \
+            -DBOARD_SIZE=${{ matrix.board_size }} \
             src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
             -o ttt_san -lm
           ./ttt_san -s 1000 -q
@@ -430,12 +429,11 @@ jobs:
             --errors-for-leak-kinds=all --error-exitcode=1 \
             ./test_runner_valgrind
 
-      - name: Run self-play under valgrind (3x3 only)
-        if: matrix.board_size == 3
+      - name: Run self-play under valgrind
         run: |
           set -euo pipefail
           gcc -std=c11 -O1 -g -Wall -Wextra -Werror \
-            -DBOARD_SIZE=3 \
+            -DBOARD_SIZE=${{ matrix.board_size }} \
             src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
             -o ttt_valgrind -lm
           valgrind --leak-check=full --show-leak-kinds=all \
