@@ -264,3 +264,92 @@ jobs:
           if ($ties -ne "100000") { Write-Host "FAILED: Not all ties"; exit 1 }
 
           Write-Host "PASSED: Perfect play verified without TT (100% ties)"
+
+  strict-warnings:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        board_size: [3, 4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build with strict warnings
+        run: |
+          STRICT="-Wall -Wextra -Wpedantic -Werror"
+          STRICT="$STRICT -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wundef"
+          STRICT="$STRICT -Wdouble-promotion -Wcast-qual -Wnull-dereference"
+          STRICT="$STRICT -Wstrict-prototypes -Wmissing-prototypes"
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            STRICT="$STRICT -Wlogical-op -Wduplicated-cond -Wduplicated-branches"
+          fi
+          ${{ matrix.compiler }} -std=c11 $STRICT -DBOARD_SIZE=${{ matrix.board_size }} \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            -o /dev/null -lm
+
+  sanitize:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        board_size: [3, 4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and run tests under ASan+UBSan
+        run: |
+          ${{ matrix.compiler }} -std=c11 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+            -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
+            -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
+            test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
+            test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
+            test/test_correctness.c test/unity/unity.c \
+            src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            -o test_runner_san -lm
+          ./test_runner_san
+
+      - name: Run self-play under ASan+UBSan (3x3 only)
+        if: matrix.board_size == 3
+        run: |
+          ${{ matrix.compiler }} -std=c11 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+            -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
+            -DBOARD_SIZE=3 \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            -o ttt_san -lm
+          ./ttt_san -s 1000 -q
+
+  msan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board_size: [3, 4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and run tests under MSan
+        run: |
+          clang -std=c11 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+            -fsanitize=memory -fsanitize-memory-track-origins=2 \
+            -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
+            test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
+            test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
+            test/test_correctness.c test/unity/unity.c \
+            src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            -o test_runner_msan -lm
+          ./test_runner_msan
+
+      - name: Run self-play under MSan (3x3 only)
+        if: matrix.board_size == 3
+        run: |
+          clang -std=c11 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+            -fsanitize=memory -fsanitize-memory-track-origins=2 \
+            -DBOARD_SIZE=3 \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            -o ttt_msan -lm
+          ./ttt_msan -s 1000 -q
