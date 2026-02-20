@@ -263,7 +263,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure CMake
-        run: cmake -B build -DBOARD_SIZE=${{ matrix.board_size }} -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -DBOARD_SIZE=${{ matrix.board_size }}
 
       - name: Build
         run: cmake --build build --config Release
