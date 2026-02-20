@@ -463,15 +463,11 @@ int main(int argc, char **argv)
      */
     size_t transposition_table_size;
 
-    if (BOARD_SIZE <= 3)
-    {
-        transposition_table_size = 100000;
-    }
-    else if (BOARD_SIZE == 4)
-    {
-        transposition_table_size = 1500000;
-    }
-    else
+#if BOARD_SIZE <= 3
+    transposition_table_size = 100000;
+#elif BOARD_SIZE == 4
+    transposition_table_size = 1500000;
+#else
     {
         /* Extrapolate for larger boards using exponential scaling. */
         double growth_factor = pow((double)BOARD_SIZE / 4.0, 9.4);
@@ -483,6 +479,7 @@ int main(int argc, char **argv)
             transposition_table_size = MAX_TRANSPOSITION_TABLE_SIZE;
         }
     }
+#endif
 
     /* Apply user override if --tt-size was specified */
     if (tt_size_override >= 0)
