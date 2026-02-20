@@ -16,19 +16,11 @@
 #include "bitops.h"
 #include <stdint.h>
 
-/* A single board coordinate (row, col). */
-typedef struct
-{
-    int row;
-    int col;
-} Move;
-
-/* A trivial fixed-size container for generated legal moves. */
-typedef struct
-{
-    int count;
-    Move moves[MAX_MOVES];
-} MoveList;
+#ifndef HAS_CTZ64
+// cppcheck-suppress preprocessorErrorDirective
+#error "mini_max.c requires a count-trailing-zeros intrinsic (HAS_CTZ64 not defined). \
+See src/MiniMax/bitops.h to add support for your compiler/platform."
+#endif
 
 /* Helper constants used by the evaluation and search. */
 typedef enum
@@ -55,38 +47,6 @@ static const uint64_t VALID_POSITIONS_MASK = ~0ULL;
 #else
 static const uint64_t VALID_POSITIONS_MASK = (1ULL << MAX_MOVES) - 1;
 #endif
-
-/* Collect all empty cells using bit scanning. */
-static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
-{
-    out_emptySpots->count = 0;
-
-    uint64_t empty = ~(board.x_pieces | board.o_pieces);
-    empty &= VALID_POSITIONS_MASK; /* Mask valid positions */
-
-#ifdef HAS_CTZ64
-    /* Use bit scanning intrinsic */
-    while (empty)
-    {
-        int bit = CTZ64(empty);
-        out_emptySpots->moves[out_emptySpots->count++] = (Move){
-            .row = BIT_TO_ROW(bit),
-            .col = BIT_TO_COL(bit)};
-        empty &= empty - 1; /* Clear least significant bit */
-    }
-#else
-    /* Fallback: iterate all positions */
-    for (int i = 0; i < MAX_MOVES; i++)
-    {
-        if (empty & (1ULL << i))
-        {
-            out_emptySpots->moves[out_emptySpots->count++] = (Move){
-                .row = BIT_TO_ROW(i),
-                .col = BIT_TO_COL(i)};
-        }
-    }
-#endif
-}
 
 /*
  * Terminal evaluation using bitboard win detection:
@@ -138,19 +98,21 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
         return state;
     }
 
-    MoveList emptySpots;
-    findEmptySpots(board, &emptySpots);
+    uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
     int bestScore = -INF;
     int original_alpha = alpha;
 
-    for (int i = 0; i < emptySpots.count; i++)
+    while (empty)
     {
-        Move move = emptySpots.moves[i];
-        bitboard_make_move(&board, move.row, move.col, aiPlayer);
-        uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
+        int bit = CTZ64(empty);
+        empty &= empty - 1;
+        int row = BIT_TO_ROW(bit);
+        int col = BIT_TO_COL(bit);
+        bitboard_make_move(&board, row, col, aiPlayer);
+        uint64_t new_hash = zobrist_toggle(hash, row, col, aiPlayer);
         new_hash = zobrist_toggle_turn(new_hash); /* Toggle turn: AI → Opponent */
         int score = miniMaxLow(board, aiPlayer, alpha, beta, new_hash);
-        bitboard_unmake_move(&board, move.row, move.col, aiPlayer);
+        bitboard_unmake_move(&board, row, col, aiPlayer);
 
         if (score > bestScore)
         {
@@ -207,20 +169,22 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
         return state;
     }
 
-    MoveList emptySpots;
-    findEmptySpots(board, &emptySpots);
+    uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
     int bestScore = INF;
     char opponent = (aiPlayer == 'x') ? 'o' : 'x';
     int original_beta = beta;
 
-    for (int i = 0; i < emptySpots.count; i++)
+    while (empty)
     {
-        Move move = emptySpots.moves[i];
-        bitboard_make_move(&board, move.row, move.col, opponent);
-        uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, opponent);
+        int bit = CTZ64(empty);
+        empty &= empty - 1;
+        int row = BIT_TO_ROW(bit);
+        int col = BIT_TO_COL(bit);
+        bitboard_make_move(&board, row, col, opponent);
+        uint64_t new_hash = zobrist_toggle(hash, row, col, opponent);
         new_hash = zobrist_toggle_turn(new_hash); /* Toggle turn: Opponent → AI */
         int score = miniMaxHigh(board, aiPlayer, alpha, beta, new_hash);
-        bitboard_unmake_move(&board, move.row, move.col, opponent);
+        bitboard_unmake_move(&board, row, col, opponent);
 
         if (score < bestScore)
         {
@@ -281,51 +245,57 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
         return;
     }
 
-    MoveList emptySpots;
-    findEmptySpots(board, &emptySpots);
+    uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
 
-    if (emptySpots.count == MAX_MOVES)
+    if (empty == VALID_POSITIONS_MASK)
     {
-        /* center square; for even boards, lower-right of the central 2×2 */
+        /* Empty board: play center (lower-right of central 2×2 for even boards) */
         *out_row = BOARD_SIZE / 2;
         *out_col = BOARD_SIZE / 2;
         return;
     }
 
-    if (emptySpots.count == 1)
+    if ((empty & (empty - 1)) == 0)
     {
-        *out_row = emptySpots.moves[0].row;
-        *out_col = emptySpots.moves[0].col;
+        /* Only one empty cell: play it immediately */
+        int bit = CTZ64(empty);
+        *out_row = BIT_TO_ROW(bit);
+        *out_col = BIT_TO_COL(bit);
         return;
     }
 
     int alpha = -INF;
     int beta = INF;
-    Move bestMove = {-1, -1};
+    int bestRow = -1;
+    int bestCol = -1;
     int bestScore = -INF;
     uint64_t hash = zobrist_hash(board, aiPlayer);
 
-    for (int i = 0; i < emptySpots.count; ++i)
+    while (empty)
     {
-        Move move = emptySpots.moves[i];
-        bitboard_make_move(&board, move.row, move.col, aiPlayer);
-        uint64_t new_hash = zobrist_toggle(hash, move.row, move.col, aiPlayer);
+        int bit = CTZ64(empty);
+        empty &= empty - 1;
+        int row = BIT_TO_ROW(bit);
+        int col = BIT_TO_COL(bit);
+        bitboard_make_move(&board, row, col, aiPlayer);
+        uint64_t new_hash = zobrist_toggle(hash, row, col, aiPlayer);
         new_hash = zobrist_toggle_turn(new_hash); /* Toggle turn: AI → Opponent */
         int score = miniMaxLow(board, aiPlayer, alpha, beta, new_hash);
-        bitboard_unmake_move(&board, move.row, move.col, aiPlayer);
+        bitboard_unmake_move(&board, row, col, aiPlayer);
 
         if (score > bestScore)
         {
             bestScore = score;
-            bestMove = move;
+            bestRow = row;
+            bestCol = col;
             alpha = score;
         }
 
-        /* Early exit: stop searching if we found a winning move */
+        /* Early win return: stop searching if we found a winning move */
         if (bestScore == AI_WIN_SCORE)
             break;
     }
 
-    *out_row = bestMove.row;
-    *out_col = bestMove.col;
+    *out_row = bestRow;
+    *out_col = bestCol;
 }
