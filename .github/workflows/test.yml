@@ -490,7 +490,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          gh run view "${{ github.run_id }}" --log > run.log
+            gh run view "${{ github.run_id }}" --repo "${{ github.repository }}" --log > run.log
 
           grep -E "warning:|##\[warning\]|CMake Warning" run.log > warnings.raw || true
 
