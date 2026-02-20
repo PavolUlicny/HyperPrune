@@ -496,6 +496,118 @@ void test_hash_consistency_full_game(void)
 #endif
 }
 
+// Test AI as 'o' takes immediate winning move.
+// Board is designed so the winning move is at the lowest bit index among empty
+// cells — ensuring the engine finds and plays it first (and exits early).
+void test_ai_o_takes_winning_move(void)
+{
+#if BOARD_SIZE == 3
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // O needs (0,0) to complete column 0 — lowest-bit empty cell.
+    // Any other O move lets X play (0,0) and win row 0.
+    // _ X X
+    // O X _
+    // O _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'x');
+    bitboard_make_move(&board, 2, 0, 'o');
+
+    int row, col;
+    getAiMove(board, 'o', &row, &col);
+
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(0, col);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // O needs (0,0) to complete column 0 — lowest-bit empty cell.
+    // Any other O move lets X play (0,0) and complete the main diagonal.
+    // _ X _ X
+    // O X _ _
+    // O _ X _
+    // O _ _ X
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 0, 3, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'x');
+    bitboard_make_move(&board, 2, 0, 'o');
+    bitboard_make_move(&board, 2, 2, 'x');
+    bitboard_make_move(&board, 3, 0, 'o');
+    bitboard_make_move(&board, 3, 3, 'x');
+
+    int row, col;
+    getAiMove(board, 'o', &row, &col);
+
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(0, col);
+
+    transposition_table_free();
+#endif
+}
+
+// Test AI as 'o' blocks opponent ('x') winning move
+void test_ai_o_blocks_x_win(void)
+{
+#if BOARD_SIZE == 3
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X has two in a row (row 0), O must block at (0,2)
+    // X X _
+    // O _ _
+    // O _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 2, 0, 'o');
+
+    int row, col;
+    getAiMove(board, 'o', &row, &col);
+
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(2, col);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    init_win_masks();
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X has three in a row (row 0), O must block at (0,3)
+    // X X X _
+    // O O _ _
+    // _ _ _ _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'o');
+
+    int row, col;
+    getAiMove(board, 'o', &row, &col);
+
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(3, col);
+
+    transposition_table_free();
+#endif
+}
+
 void test_game_scenarios_suite(void)
 {
     RUN_TEST(test_ai_takes_winning_move);
@@ -507,4 +619,6 @@ void test_game_scenarios_suite(void)
     RUN_TEST(test_diagonal_win);
     RUN_TEST(test_getAiMove_two_empty_cells);
     RUN_TEST(test_hash_consistency_full_game);
+    RUN_TEST(test_ai_o_takes_winning_move);
+    RUN_TEST(test_ai_o_blocks_x_win);
 }
