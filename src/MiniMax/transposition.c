@@ -9,6 +9,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifndef HAS_CTZ64
+// cppcheck-suppress preprocessorErrorDirective
+#error "transposition.c requires a count-trailing-zeros intrinsic (HAS_CTZ64 not defined). \
+See src/MiniMax/bitops.h to add support for your compiler/platform."
+#endif
+
 /*
  * Zobrist keys: [row][col][player_index]
  * player_index: 0='x', 1='o'
@@ -119,7 +125,6 @@ uint64_t zobrist_hash(Bitboard board, char aiPlayer)
      */
     uint64_t hash = zobrist_player_keys[player_to_index(aiPlayer)];
 
-#ifdef HAS_CTZ64
     /* Hash X pieces using bit scanning */
     uint64_t x_pieces = board.x_pieces;
     while (x_pieces)
@@ -141,20 +146,6 @@ uint64_t zobrist_hash(Bitboard board, char aiPlayer)
         hash ^= zobrist_keys[row][col][1];
         o_pieces &= o_pieces - 1;
     }
-#else
-    /* Fallback: iterate all cells */
-    for (int r = 0; r < BOARD_SIZE; r++)
-    {
-        for (int c = 0; c < BOARD_SIZE; c++)
-        {
-            char cell = bitboard_get_cell(board, r, c);
-            if (cell != ' ')
-            {
-                hash ^= zobrist_keys[r][c][player_to_index(cell)];
-            }
-        }
-    }
-#endif
 
     return hash;
 }
