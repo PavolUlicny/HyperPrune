@@ -52,7 +52,11 @@ _Static_assert(PLAYER_WIN_SCORE <= INT16_MAX && PLAYER_WIN_SCORE >= INT16_MIN,
  */
 static inline uint64_t valid_positions_mask(void)
 {
-    return (MAX_MOVES == 64) ? ~0ULL : ((1ULL << MAX_MOVES) - 1);
+#if MAX_MOVES == 64
+    return ~0ULL;
+#else
+    return (1ULL << MAX_MOVES) - 1;
+#endif
 }
 
 /* Collect all empty cells using bit scanning. */
