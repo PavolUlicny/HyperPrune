@@ -4,23 +4,59 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install clang-tidy
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy
-
-      - name: Run clang-tidy
+      - name: Install static analysis tools
         run: |
-          clang-tidy src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -- -DBOARD_SIZE=3 -std=c11 -I.
-          clang-tidy src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c -- -DBOARD_SIZE=4 -std=c11 -I.
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy cppcheck
+
+      - name: Configure CMake for clang-tidy (BOARD_SIZE=3)
+        run: |
+          set -euo pipefail
+          cmake -B build/tidy-3 -DBOARD_SIZE=3 -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Configure CMake for clang-tidy (BOARD_SIZE=4)
+        run: |
+          set -euo pipefail
+          cmake -B build/tidy-4 -DBOARD_SIZE=4 -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run clang-tidy (warnings as errors)
+        run: |
+          set -euo pipefail
+          SRC_FILES="src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c"
+          for f in $SRC_FILES; do
+            clang-tidy "$f" -p build/tidy-3 --warnings-as-errors='*'
+            clang-tidy "$f" -p build/tidy-4 --warnings-as-errors='*'
+          done
+
+      - name: Run cppcheck
+        run: |
+          set -euo pipefail
+          cppcheck --std=c11 --error-exitcode=1 --inline-suppr \
+            --enable=warning,style,performance,portability \
+            -DBOARD_SIZE=3 -I src src
+          cppcheck --std=c11 --error-exitcode=1 --inline-suppr \
+            --enable=warning,style,performance,portability \
+            -DBOARD_SIZE=4 -I src src
 
   test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -32,13 +68,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build
-        run: make CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
+        run: |
+          set -euo pipefail
+          make CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
 
       - name: Run tests
-        run: make test CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
+        run: |
+          set -euo pipefail
+          make test CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
 
       - name: Self-play verification
         run: |
+          set -euo pipefail
           echo "Running self-play verification for perfect play..."
           OUTPUT=$(./ttt -s 1000000)
           echo "$OUTPUT"
@@ -75,6 +116,7 @@ jobs:
       - name: Self-play verification (TT disabled, 3x3 only)
         if: matrix.board_size == 3
         run: |
+          set -euo pipefail
           echo "Running self-play verification with TT disabled..."
           OUTPUT=$(./ttt --tt-size 0 -s 100000)
           echo "$OUTPUT"
@@ -110,6 +152,7 @@ jobs:
 
   test-cmake:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -121,16 +164,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure CMake
-        run: cmake -B build -DBOARD_SIZE=${{ matrix.board_size }} -DCMAKE_BUILD_TYPE=Release -DENABLE_NATIVE_OPTIMIZATIONS=${{ matrix.native_opt }}
+        run: |
+          set -euo pipefail
+          cmake -B build -DBOARD_SIZE=${{ matrix.board_size }} -DCMAKE_BUILD_TYPE=Release -DENABLE_NATIVE_OPTIMIZATIONS=${{ matrix.native_opt }}
 
       - name: Build
-        run: cmake --build build --config Release
+        run: |
+          set -euo pipefail
+          cmake --build build --config Release
 
       - name: Run tests
-        run: ctest --test-dir build --build-config Release --output-on-failure
+        run: |
+          set -euo pipefail
+          ctest --test-dir build --build-config Release --output-on-failure
 
       - name: Self-play verification
         run: |
+          set -euo pipefail
           echo "Running self-play verification for perfect play..."
           OUTPUT=$(./build/ttt -s 1000000)
           echo "$OUTPUT"
@@ -167,6 +217,7 @@ jobs:
       - name: Self-play verification (TT disabled, 3x3 only)
         if: matrix.board_size == 3
         run: |
+          set -euo pipefail
           echo "Running self-play verification with TT disabled..."
           OUTPUT=$(./build/ttt --tt-size 0 -s 100000)
           echo "$OUTPUT"
@@ -202,6 +253,7 @@ jobs:
 
   test-windows:
     runs-on: windows-latest
+    timeout-minutes: 30
     strategy:
       matrix:
         board_size: [3, 4]
@@ -267,6 +319,7 @@ jobs:
 
   strict-warnings:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       matrix:
         compiler: [gcc, clang]
@@ -278,23 +331,41 @@ jobs:
 
       - name: Build with strict warnings
         run: |
-          STRICT="-Wall -Wextra -Wpedantic -Werror"
-          STRICT="$STRICT -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wundef"
-          STRICT="$STRICT -Wdouble-promotion -Wcast-qual -Wnull-dereference"
-          STRICT="$STRICT -Wstrict-prototypes -Wmissing-prototypes"
+          set -euo pipefail
+          COMMON="-Wall -Wextra -Wpedantic -Werror"
+          COMMON="$COMMON -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wundef"
+          COMMON="$COMMON -Wdouble-promotion -Wcast-qual -Wnull-dereference"
+          COMMON="$COMMON -Wvla -Wwrite-strings -Wformat-security -Wswitch-enum"
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            STRICT="$STRICT -Wlogical-op -Wduplicated-cond -Wduplicated-branches"
+            COMMON="$COMMON -Wlogical-op -Wduplicated-cond -Wduplicated-branches"
           fi
-          ${{ matrix.compiler }} -std=c11 $STRICT -DBOARD_SIZE=${{ matrix.board_size }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+
+          # Prototype warnings apply to production code but not Unity test functions
+          # (test functions are called via RUN_TEST() macro, no headers exist for them)
+          APP_STRICT="$COMMON -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition"
+          TEST_STRICT="$COMMON"
+
+          APP_SRC="src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c"
+          TEST_SRC="test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c test/test_correctness.c test/unity/unity.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c"
+
+          ${{ matrix.compiler }} -std=c11 $APP_STRICT -DBOARD_SIZE=${{ matrix.board_size }} \
+            $APP_SRC \
+            -o /dev/null -lm
+
+          ${{ matrix.compiler }} -std=c11 $TEST_STRICT -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
+            $TEST_SRC \
             -o /dev/null -lm
 
   sanitize:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     strategy:
       matrix:
         compiler: [gcc, clang]
         board_size: [3, 4]
+    env:
+      ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1:check_initialization_order=1
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
 
     steps:
       - name: Checkout code
@@ -302,7 +373,8 @@ jobs:
 
       - name: Build and run tests under ASan+UBSan
         run: |
-          ${{ matrix.compiler }} -std=c11 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+          set -euo pipefail
+          ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
             -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
             test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
@@ -315,15 +387,17 @@ jobs:
       - name: Run self-play under ASan+UBSan (3x3 only)
         if: matrix.board_size == 3
         run: |
-          ${{ matrix.compiler }} -std=c11 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+          set -euo pipefail
+          ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
             -DBOARD_SIZE=3 \
             src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
             -o ttt_san -lm
           ./ttt_san -s 1000 -q
 
-  msan:
+  valgrind:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       matrix:
         board_size: [3, 4]
@@ -332,24 +406,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build and run tests under MSan
+      - name: Install valgrind
         run: |
-          clang -std=c11 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
-            -fsanitize=memory -fsanitize-memory-track-origins=2 \
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y valgrind
+
+      - name: Build test runner for valgrind
+        run: |
+          set -euo pipefail
+          gcc -std=c11 -O1 -g -Wall -Wextra -Werror \
             -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
             test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
             test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
             test/test_correctness.c test/unity/unity.c \
             src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
-            -o test_runner_msan -lm
-          ./test_runner_msan
+            -o test_runner_valgrind -lm
 
-      - name: Run self-play under MSan (3x3 only)
+      - name: Run tests under valgrind
+        run: |
+          set -euo pipefail
+          valgrind --leak-check=full --show-leak-kinds=all \
+            --errors-for-leak-kinds=all --error-exitcode=1 \
+            ./test_runner_valgrind
+
+      - name: Run self-play under valgrind (3x3 only)
         if: matrix.board_size == 3
         run: |
-          clang -std=c11 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
-            -fsanitize=memory -fsanitize-memory-track-origins=2 \
+          set -euo pipefail
+          gcc -std=c11 -O1 -g -Wall -Wextra -Werror \
             -DBOARD_SIZE=3 \
             src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
-            -o ttt_msan -lm
-          ./ttt_msan -s 1000 -q
+            -o ttt_valgrind -lm
+          valgrind --leak-check=full --show-leak-kinds=all \
+            --errors-for-leak-kinds=all --error-exitcode=1 \
+            ./ttt_valgrind -s 1000 -q
