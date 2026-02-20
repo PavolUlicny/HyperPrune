@@ -25,34 +25,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang-tidy cppcheck
 
-      - name: Configure CMake for clang-tidy (BOARD_SIZE=3)
+      - name: Configure CMake for clang-tidy (BOARD_SIZE=3..8)
         run: |
           set -euo pipefail
-          cmake -B build/tidy-3 -DBOARD_SIZE=3 -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-      - name: Configure CMake for clang-tidy (BOARD_SIZE=4)
-        run: |
-          set -euo pipefail
-          cmake -B build/tidy-4 -DBOARD_SIZE=4 -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          for bs in 3 4 5 6 7 8; do
+            cmake -B build/tidy-$bs -DBOARD_SIZE=$bs -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          done
 
       - name: Run clang-tidy (warnings as errors)
         run: |
           set -euo pipefail
           SRC_FILES="src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c"
-          for f in $SRC_FILES; do
-            clang-tidy "$f" -p build/tidy-3 --warnings-as-errors='*'
-            clang-tidy "$f" -p build/tidy-4 --warnings-as-errors='*'
+          for bs in 3 4 5 6 7 8; do
+            for f in $SRC_FILES; do
+              clang-tidy "$f" -p build/tidy-$bs --warnings-as-errors='*'
+            done
           done
 
       - name: Run cppcheck
         run: |
           set -euo pipefail
-          cppcheck --std=c11 --error-exitcode=1 --inline-suppr \
-            --enable=warning,style,performance,portability \
-            -DBOARD_SIZE=3 -I src src
-          cppcheck --std=c11 --error-exitcode=1 --inline-suppr \
-            --enable=warning,style,performance,portability \
-            -DBOARD_SIZE=4 -I src src
+          for bs in 3 4 5 6 7 8; do
+            cppcheck --std=c11 --error-exitcode=1 --inline-suppr \
+              --enable=warning,style,performance,portability \
+              -DBOARD_SIZE=$bs -I src src
+          done
 
   test:
     runs-on: ${{ matrix.os }}
@@ -324,7 +321,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
-        board_size: [3, 4]
+        board_size: [3, 4, 5, 6, 7, 8]
 
     steps:
       - name: Checkout code
@@ -363,7 +360,7 @@ jobs:
     strategy:
       matrix:
         compiler: [gcc, clang]
-        board_size: [3, 4]
+        board_size: [3, 4, 5, 6, 7, 8]
     env:
       ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1:check_initialization_order=1
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
@@ -372,7 +369,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build and run tests under ASan+UBSan
+      - name: Build and run tests under ASan+UBSan (3x3/4x4)
+        if: contains(fromJSON('[3,4]'), matrix.board_size)
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
@@ -385,7 +383,8 @@ jobs:
             -o test_runner_san -lm
           ./test_runner_san
 
-      - name: Run self-play under ASan+UBSan
+      - name: Run self-play under ASan+UBSan (3x3/4x4)
+        if: contains(fromJSON('[3,4]'), matrix.board_size)
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
@@ -395,13 +394,31 @@ jobs:
             -o ttt_san -lm
           ./ttt_san -s 1000 -q
 
+      - name: Sanitizer build-only coverage (5x5+)
+        if: contains(fromJSON('[5,6,7,8]'), matrix.board_size)
+        run: |
+          set -euo pipefail
+          ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+            -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
+            -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
+            test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
+            test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
+            test/test_correctness.c test/unity/unity.c \
+            src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            -o test_runner_san -lm
+          ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+            -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
+            -DBOARD_SIZE=${{ matrix.board_size }} \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            -o ttt_san -lm
+
   valgrind:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       matrix:
         compiler: [gcc, clang]
-        board_size: [3, 4]
+        board_size: [3, 4, 5, 6, 7, 8]
 
     steps:
       - name: Checkout code
@@ -424,14 +441,16 @@ jobs:
             src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
             -o test_runner_valgrind -lm
 
-      - name: Run tests under valgrind
+      - name: Run tests under valgrind (3x3/4x4)
+        if: contains(fromJSON('[3,4]'), matrix.board_size)
         run: |
           set -euo pipefail
           valgrind --leak-check=full --show-leak-kinds=all \
             --errors-for-leak-kinds=all --error-exitcode=1 \
             ./test_runner_valgrind
 
-      - name: Run self-play under valgrind
+      - name: Run self-play under valgrind (3x3/4x4)
+        if: contains(fromJSON('[3,4]'), matrix.board_size)
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
@@ -441,3 +460,12 @@ jobs:
           valgrind --leak-check=full --show-leak-kinds=all \
             --errors-for-leak-kinds=all --error-exitcode=1 \
             ./ttt_valgrind -s 1000 -q
+
+      - name: Valgrind build-only coverage (5x5+)
+        if: contains(fromJSON('[5,6,7,8]'), matrix.board_size)
+        run: |
+          set -euo pipefail
+          ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
+            -DBOARD_SIZE=${{ matrix.board_size }} \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            -o ttt_valgrind -lm
