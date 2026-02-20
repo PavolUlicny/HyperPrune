@@ -318,10 +318,11 @@ jobs:
           Write-Host "PASSED: Perfect play verified without TT (100% ties)"
 
   strict-warnings:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
         board_size: [3, 4]
 
@@ -399,6 +400,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
+        compiler: [gcc, clang]
         board_size: [3, 4]
 
     steps:
@@ -414,7 +416,7 @@ jobs:
       - name: Build test runner for valgrind
         run: |
           set -euo pipefail
-          gcc -std=c11 -O1 -g -Wall -Wextra -Werror \
+          ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
             -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
             test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
             test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
@@ -432,7 +434,7 @@ jobs:
       - name: Run self-play under valgrind
         run: |
           set -euo pipefail
-          gcc -std=c11 -O1 -g -Wall -Wextra -Werror \
+          ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
             -DBOARD_SIZE=${{ matrix.board_size }} \
             src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
             -o ttt_valgrind -lm
