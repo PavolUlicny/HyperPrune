@@ -103,8 +103,7 @@ static inline int boardScore(Bitboard board, char aiPlayer)
         return AI_WIN_SCORE;
 
     /* Check if opponent has won */
-    char opponent = (aiPlayer == 'x') ? 'o' : 'x';
-    uint64_t opponent_pieces = (opponent == 'x') ? board.x_pieces : board.o_pieces;
+    uint64_t opponent_pieces = (aiPlayer == 'x') ? board.o_pieces : board.x_pieces;
     if (bitboard_has_won(opponent_pieces))
         return PLAYER_WIN_SCORE;
 
