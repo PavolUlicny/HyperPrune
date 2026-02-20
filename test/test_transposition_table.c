@@ -258,6 +258,38 @@ void test_tt_multiple_reinit(void)
     transposition_table_free();
 }
 
+// Test that non-power-of-2 sizes are correctly rounded up (tests round_up_power_of_2 indirectly)
+void test_tt_non_power_of_two_sizes(void)
+{
+    zobrist_init();
+    int score;
+    int found;
+
+    // Size 3 should round up to 4
+    transposition_table_init(3);
+    transposition_table_store(11111, 10, TRANSPOSITION_TABLE_EXACT);
+    found = transposition_table_probe(11111, -100, 100, &score);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(10, score);
+    transposition_table_free();
+
+    // Size 7 should round up to 8
+    transposition_table_init(7);
+    transposition_table_store(22222, 20, TRANSPOSITION_TABLE_EXACT);
+    found = transposition_table_probe(22222, -100, 100, &score);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(20, score);
+    transposition_table_free();
+
+    // Size 1023 should round up to 1024
+    transposition_table_init(1023);
+    transposition_table_store(33333, 30, TRANSPOSITION_TABLE_EXACT);
+    found = transposition_table_probe(33333, -100, 100, &score);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(30, score);
+    transposition_table_free();
+}
+
 void test_transposition_table_suite(void)
 {
     RUN_TEST(test_tt_store_and_probe);
@@ -271,4 +303,5 @@ void test_transposition_table_suite(void)
     RUN_TEST(test_tt_score_boundaries);
     RUN_TEST(test_tt_cutoff_equality);
     RUN_TEST(test_tt_multiple_reinit);
+    RUN_TEST(test_tt_non_power_of_two_sizes);
 }
