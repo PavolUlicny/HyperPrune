@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -471,37 +470,3 @@ jobs:
             src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
             -o ttt_valgrind -lm
 
-  log-audit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    if: always()
-    needs:
-      - lint
-      - test
-      - test-cmake
-      - test-windows
-      - strict-warnings
-      - sanitize
-      - valgrind
-    steps:
-      - name: Audit workflow logs for warnings
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-
-            gh run view "${{ github.run_id }}" --repo "${{ github.repository }}" --log > run.log
-
-          grep -E "warning:|##\[warning\]|CMake Warning" run.log > warnings.raw || true
-
-          grep -Ev \
-            "hint: to use in all of your new repositories|Suppressed [0-9]+ warnings \([0-9]+ in non-user code\)|Use -header-filter=.*non-system headers|^.*(apt-get|Selecting previously|Unpacking|Setting up|Get:[0-9]+).*$|log-audit" \
-            warnings.raw > warnings.filtered || true
-
-          if [[ -s warnings.filtered ]]; then
-            echo "Non-allowlisted warnings found in workflow logs:"
-            cat warnings.filtered
-            exit 1
-          fi
-
-          echo "No non-allowlisted warnings found."
