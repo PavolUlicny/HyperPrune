@@ -50,14 +50,11 @@ _Static_assert(PLAYER_WIN_SCORE <= INT16_MAX && PLAYER_WIN_SCORE >= INT16_MIN,
  * Safe mask for valid board positions.
  * Avoids undefined behavior when MAX_MOVES == 64 (1ULL << 64 is UB).
  */
-static inline uint64_t valid_positions_mask(void)
-{
 #if MAX_MOVES == 64
-    return ~0ULL;
+static const uint64_t VALID_POSITIONS_MASK = ~0ULL;
 #else
-    return (1ULL << MAX_MOVES) - 1;
+static const uint64_t VALID_POSITIONS_MASK = (1ULL << MAX_MOVES) - 1;
 #endif
-}
 
 /* Collect all empty cells using bit scanning. */
 static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
@@ -65,7 +62,7 @@ static void findEmptySpots(Bitboard board, MoveList *out_emptySpots)
     out_emptySpots->count = 0;
 
     uint64_t empty = ~(board.x_pieces | board.o_pieces);
-    empty &= valid_positions_mask(); /* Mask valid positions */
+    empty &= VALID_POSITIONS_MASK; /* Mask valid positions */
 
 #ifdef HAS_CTZ64
     /* Use bit scanning intrinsic */
@@ -112,7 +109,7 @@ static inline int boardScore(Bitboard board, char aiPlayer)
 
     /* Check if board is full (tie) */
     uint64_t occupied = board.x_pieces | board.o_pieces;
-    if (occupied == valid_positions_mask())
+    if (occupied == VALID_POSITIONS_MASK)
         return TIE_SCORE;
 
     return CONTINUE_SCORE;
