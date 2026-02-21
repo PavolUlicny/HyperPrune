@@ -76,9 +76,48 @@ void test_cell_operations(void)
     TEST_ASSERT_EQUAL('o', bitboard_get_cell(board, 1, 1));
 }
 
+// Test POS_TO_BIT / BIT_TO_ROW / BIT_TO_COL / BIT_MASK round-trip for all positions
+void test_bit_coordinate_roundtrip(void)
+{
+    for (int r = 0; r < BOARD_SIZE; r++)
+    {
+        for (int c = 0; c < BOARD_SIZE; c++)
+        {
+            int bit = POS_TO_BIT(r, c);
+            TEST_ASSERT_EQUAL(r, BIT_TO_ROW(bit));
+            TEST_ASSERT_EQUAL(c, BIT_TO_COL(bit));
+            TEST_ASSERT_EQUAL_UINT64(1ULL << bit, BIT_MASK(r, c));
+        }
+    }
+}
+
+// Test that bitboard_did_last_move_win only checks patterns through the given cell,
+// not all win patterns on the board.
+// Specifically: bitboard_has_won detects a row-0 win, but did_last_move_win
+// at an unrelated cell (1,0) returns false because it only checks row 1 and col 0.
+void test_did_last_move_win_checks_only_through_cell(void)
+{
+    init_win_masks();
+    Bitboard board = {0, 0};
+
+    // Fill row 0 completely — a genuine win
+    for (int c = 0; c < BOARD_SIZE; c++)
+        bitboard_make_move(&board, 0, c, 'x');
+
+    // Full scan detects the win
+    TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
+
+    // Query at (1,0): checks row 1 (no x) and col 0 (only (0,0), not a full column).
+    // (1,0) is not on either diagonal, so neither diagonal is checked.
+    // The row-0 win is invisible from this cell — returns false.
+    TEST_ASSERT_FALSE(bitboard_did_last_move_win(board.x_pieces, 1, 0));
+}
+
 void test_bitboard_suite(void)
 {
     RUN_TEST(test_all_win_patterns);
     RUN_TEST(test_make_unmake_symmetry);
     RUN_TEST(test_cell_operations);
+    RUN_TEST(test_bit_coordinate_roundtrip);
+    RUN_TEST(test_did_last_move_win_checks_only_through_cell);
 }
