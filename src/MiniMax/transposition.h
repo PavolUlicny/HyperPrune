@@ -110,7 +110,7 @@ extern "C"
         int16_t score;      /* Stored score */
         uint8_t type;       /* TranspositionTableNodeType */
         uint8_t occupied;   /* 0 = empty slot, 1 = occupied */
-        uint8_t padding[4]; /* Padding for alignment */
+        uint8_t padding[4]; /* Explicit padding to make struct size 16 bytes */
     } TranspositionTableEntry;
 
     /**
