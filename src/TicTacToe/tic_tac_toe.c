@@ -348,7 +348,6 @@ void choosePlayerSymbol(void)
             printf("\nEOF received. Defaulting to x.\n");
             human_symbol = 'x';
             ai_symbol = 'o';
-            discardLine();
             break;
         }
 
