@@ -16,6 +16,9 @@ static inline int CTZ64(uint64_t x)
     _BitScanForward64(&index, x);
     return (int)index;
 }
+#else
+// cppcheck-suppress preprocessorErrorDirective
+#error "No count-trailing-zeros intrinsic available for this compiler/platform. Add support in src/MiniMax/bitops.h."
 #endif
 
 #endif

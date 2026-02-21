@@ -9,12 +9,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifndef HAS_CTZ64
-// cppcheck-suppress preprocessorErrorDirective
-#error "transposition.c requires a count-trailing-zeros intrinsic (HAS_CTZ64 not defined). \
-See src/MiniMax/bitops.h to add support for your compiler/platform."
-#endif
-
 /*
  * Zobrist keys: [row][col][player_index]
  * player_index: 0='x', 1='o'

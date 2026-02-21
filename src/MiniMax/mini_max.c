@@ -16,12 +16,6 @@
 #include "bitops.h"
 #include <stdint.h>
 
-#ifndef HAS_CTZ64
-// cppcheck-suppress preprocessorErrorDirective
-#error "mini_max.c requires a count-trailing-zeros intrinsic (HAS_CTZ64 not defined). \
-See src/MiniMax/bitops.h to add support for your compiler/platform."
-#endif
-
 /* Helper constants used by the evaluation and search. */
 typedef enum
 {
