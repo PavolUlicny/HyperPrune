@@ -4,7 +4,6 @@
 // Test all 8 win patterns on 3x3
 void test_all_win_patterns(void)
 {
-    init_win_masks();
     Bitboard board;
 
     // Test row wins (BOARD_SIZE patterns)
@@ -97,7 +96,6 @@ void test_bit_coordinate_roundtrip(void)
 // at an unrelated cell (1,0) returns false because it only checks row 1 and col 0.
 void test_did_last_move_win_checks_only_through_cell(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Fill row 0 completely — a genuine win

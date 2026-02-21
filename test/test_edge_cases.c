@@ -6,7 +6,6 @@
 // Test bitboard_did_last_move_win for row win
 void test_did_last_move_win_row(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Create row win at row 0
@@ -25,7 +24,6 @@ void test_did_last_move_win_row(void)
 // Test bitboard_did_last_move_win for column win
 void test_did_last_move_win_col(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Create column win at col 0
@@ -41,7 +39,6 @@ void test_did_last_move_win_col(void)
 // Test bitboard_did_last_move_win for main diagonal
 void test_did_last_move_win_main_diagonal(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Create main diagonal win
@@ -58,7 +55,6 @@ void test_did_last_move_win_main_diagonal(void)
 void test_did_last_move_win_anti_diagonal(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Create anti-diagonal win
@@ -71,7 +67,6 @@ void test_did_last_move_win_anti_diagonal(void)
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 1, 1));
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 2, 0));
 #elif BOARD_SIZE == 4
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Create anti-diagonal win
@@ -91,7 +86,6 @@ void test_did_last_move_win_anti_diagonal(void)
 // Test bitboard_did_last_move_win returns false for non-winning board
 void test_did_last_move_win_no_win(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Partial row (not a win)
@@ -104,7 +98,6 @@ void test_did_last_move_win_no_win(void)
 // Test bitboard_has_won returns false for empty board
 void test_has_won_empty_board(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     TEST_ASSERT_FALSE(bitboard_has_won(board.x_pieces));
@@ -114,7 +107,6 @@ void test_has_won_empty_board(void)
 // Test bitboard_has_won returns false for partial board
 void test_has_won_partial_board(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     bitboard_make_move(&board, 0, 0, 'x');
@@ -259,7 +251,6 @@ void test_overlapping_bitboard_pieces(void)
 // Test win detection called on empty cell
 void test_did_last_move_win_empty_cell(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Call on empty cell (no piece there)
@@ -273,7 +264,6 @@ void test_did_last_move_win_empty_cell(void)
 void test_both_players_won_invalid_state(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Create impossible board where both have winning lines
@@ -290,7 +280,6 @@ void test_both_players_won_invalid_state(void)
     TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
     TEST_ASSERT_TRUE(bitboard_has_won(board.o_pieces));
 #elif BOARD_SIZE == 4
-    init_win_masks();
     Bitboard board = {0, 0};
 
     // Create impossible board where both have winning lines
@@ -316,7 +305,6 @@ void test_both_players_won_invalid_state(void)
 // The existing test_did_last_move_win_col only checks column 0.
 void test_did_last_move_win_col_last_column(void)
 {
-    init_win_masks();
     Bitboard board = {0, 0};
 
     for (int r = 0; r < BOARD_SIZE; r++)

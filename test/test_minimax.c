@@ -6,7 +6,6 @@
 // Test empty board plays center
 void test_empty_board_plays_center(void)
 {
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -24,7 +23,6 @@ void test_empty_board_plays_center(void)
 // Test terminal board returns invalid
 void test_terminal_board_returns_invalid(void)
 {
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -47,7 +45,6 @@ void test_terminal_board_returns_invalid(void)
 // Test overlapping pieces rejected
 void test_overlapping_pieces_rejected(void)
 {
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -68,7 +65,6 @@ void test_overlapping_pieces_rejected(void)
 // Test terminal board returns invalid when AI ('x') has already won
 void test_terminal_ai_x_wins(void)
 {
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -91,7 +87,6 @@ void test_terminal_ai_x_wins(void)
 // Test terminal board returns invalid when AI ('o') has already won
 void test_terminal_ai_o_wins(void)
 {
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -114,7 +109,6 @@ void test_terminal_ai_o_wins(void)
 // Test terminal board returns invalid when opponent ('o') has won and AI is 'x'
 void test_terminal_opponent_o_wins(void)
 {
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -138,7 +132,6 @@ void test_terminal_opponent_o_wins(void)
 void test_getAiMove_column_win(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -160,7 +153,6 @@ void test_getAiMove_column_win(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -190,7 +182,6 @@ void test_getAiMove_column_win(void)
 void test_getAiMove_blocks_column(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -212,7 +203,6 @@ void test_getAiMove_blocks_column(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -244,7 +234,6 @@ void test_getAiMove_blocks_column(void)
 // X occupies the right end of row 0 and needs the left-end cell (0,0) to win.
 void test_getAiMove_no_tt(void)
 {
-    init_win_masks();
     zobrist_init();
     transposition_table_init(0); // Disabled
 

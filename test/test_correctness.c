@@ -10,7 +10,6 @@ int play_full_game(char first_player, uint64_t seed)
     zobrist_set_seed(seed);
     zobrist_init();
     transposition_table_init(100000);
-    init_win_masks();
 
     Bitboard board = {0, 0};
     char current = first_player;
@@ -143,7 +142,6 @@ void test_cross_game_tt_no_reinit(void)
     zobrist_set_seed(17);
     zobrist_init();
     transposition_table_init(100000);
-    init_win_masks();
 
     int wins = 0;
 

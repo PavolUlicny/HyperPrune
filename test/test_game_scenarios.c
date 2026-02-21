@@ -7,7 +7,6 @@
 void test_ai_takes_winning_move(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -30,7 +29,6 @@ void test_ai_takes_winning_move(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -61,7 +59,6 @@ void test_ai_takes_winning_move(void)
 void test_ai_blocks_opponent_win(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -84,7 +81,6 @@ void test_ai_blocks_opponent_win(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -115,7 +111,6 @@ void test_ai_blocks_opponent_win(void)
 void test_single_empty_cell(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -141,7 +136,6 @@ void test_single_empty_cell(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -188,7 +182,6 @@ void test_single_empty_cell(void)
 // Test AI with 'o' as maximizing player
 void test_ai_as_o_player(void)
 {
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -209,7 +202,6 @@ void test_ai_as_o_player(void)
 void test_tie_scenario(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -237,7 +229,6 @@ void test_tie_scenario(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -270,7 +261,6 @@ void test_tie_scenario(void)
 void test_fork_creation(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -295,7 +285,6 @@ void test_fork_creation(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -326,7 +315,6 @@ void test_fork_creation(void)
 void test_diagonal_win(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -350,7 +338,6 @@ void test_diagonal_win(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -382,7 +369,6 @@ void test_diagonal_win(void)
 void test_getAiMove_two_empty_cells(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -410,7 +396,6 @@ void test_getAiMove_two_empty_cells(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -454,7 +439,6 @@ void test_hash_consistency_full_game(void)
 #if BOARD_SIZE == 3
     zobrist_set_seed(42);
     zobrist_init();
-    init_win_masks();
 
     Bitboard board = {0, 0};
     uint64_t hash = zobrist_hash(board, 'x');
@@ -475,7 +459,6 @@ void test_hash_consistency_full_game(void)
 #elif BOARD_SIZE == 4
     zobrist_set_seed(42);
     zobrist_init();
-    init_win_masks();
 
     Bitboard board = {0, 0};
     uint64_t hash = zobrist_hash(board, 'x');
@@ -502,7 +485,6 @@ void test_hash_consistency_full_game(void)
 void test_ai_o_takes_winning_move(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -526,7 +508,6 @@ void test_ai_o_takes_winning_move(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -560,7 +541,6 @@ void test_ai_o_takes_winning_move(void)
 void test_ai_o_blocks_x_win(void)
 {
 #if BOARD_SIZE == 3
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
@@ -582,7 +562,6 @@ void test_ai_o_blocks_x_win(void)
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
-    init_win_masks();
     zobrist_init();
     transposition_table_init(10000);
 
