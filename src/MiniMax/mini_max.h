@@ -7,8 +7,7 @@
  * Public API for the Minimax-based Tic-Tac-Toe engine.
  *
  * The engine searches the full game tree using Minimax with alpha–beta pruning.
- * BOARD_SIZE is configured at
- * compile time (3-8 per tic_tac_toe.h).
+ * BOARD_SIZE is configured at compile time (3–8, per tic_tac_toe.h).
  *
  * Board representation:
  * - Bitboard structure with two uint64_t (x_pieces, o_pieces)
