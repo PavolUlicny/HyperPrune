@@ -38,7 +38,7 @@ extern "C"
      * Behavior:
      *  - If the board is terminal (win/tie), returns (-1, -1)
      *  - On an empty board, selects the center without searching
-     *  - Otherwise, orders candidate moves and runs a full-depth alpha–beta search
+     *  - Otherwise, runs a full-depth alpha–beta search
      */
     void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col);
 

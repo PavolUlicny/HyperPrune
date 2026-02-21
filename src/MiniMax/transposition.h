@@ -89,7 +89,7 @@ extern "C"
      */
     typedef enum
     {
-        TRANSPOSITION_TABLE_EXACT,      /* Exact score (PV node: alpha < score < beta) */
+        TRANSPOSITION_TABLE_EXACT,      /* Exact score (no cutoff occurred; true value equals stored score) */
         TRANSPOSITION_TABLE_LOWERBOUND, /* Score >= stored value (beta cutoff: score >= beta) */
         TRANSPOSITION_TABLE_UPPERBOUND  /* Score <= stored value (alpha cutoff: score <= alpha) */
     } TranspositionTableNodeType;
