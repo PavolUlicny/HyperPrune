@@ -512,10 +512,10 @@ int main(int argc, char **argv)
         /* Try to parse game count from the argument after --selfplay */
         if (selfplay_idx + 1 < argc)
         {
-            char *endp;
+            char *endptr;
             errno = 0;
-            long val = strtol(argv[selfplay_idx + 1], &endp, 10);
-            if (endp != argv[selfplay_idx + 1] && *endp == '\0')
+            long val = strtol(argv[selfplay_idx + 1], &endptr, 10);
+            if (endptr != argv[selfplay_idx + 1] && *endptr == '\0')
             {
                 if (errno == ERANGE || val < 1 || val > INT_MAX)
                 {
