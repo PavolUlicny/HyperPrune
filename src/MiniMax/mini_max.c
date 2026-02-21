@@ -94,7 +94,6 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
 
     uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
     int bestScore = -INF;
-    int original_alpha = alpha;
 
     while (empty)
     {
@@ -109,9 +108,7 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
         bitboard_unmake_move(&board, row, col, aiPlayer);
 
         if (score > bestScore)
-        {
             bestScore = score;
-        }
 
         /* Early win return: stop searching if we found a winning move */
         if (bestScore == AI_WIN_SCORE)
@@ -123,20 +120,14 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
             break; /* Beta cutoff */
     }
 
-    /* Classify node type for transposition table storage */
+    /* Classify node type for transposition table storage:
+     * LOWERBOUND when bestScore >= beta (result exceeded upper bound; true value >= bestScore).
+     * EXACT in all other cases (all moves explored; true value == bestScore). */
     TranspositionTableNodeType store_type;
     if (bestScore >= beta)
-    {
-        store_type = TRANSPOSITION_TABLE_LOWERBOUND; /* Beta cutoff */
-    }
-    else if (bestScore <= original_alpha)
-    {
-        store_type = TRANSPOSITION_TABLE_UPPERBOUND; /* All moves were <= original alpha */
-    }
+        store_type = TRANSPOSITION_TABLE_LOWERBOUND;
     else
-    {
-        store_type = TRANSPOSITION_TABLE_EXACT; /* Exact score */
-    }
+        store_type = TRANSPOSITION_TABLE_EXACT;
     transposition_table_store(hash, bestScore, store_type);
 
     return bestScore;
@@ -166,7 +157,6 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
     uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
     int bestScore = INF;
     char opponent = (aiPlayer == 'x') ? 'o' : 'x';
-    int original_beta = beta;
 
     while (empty)
     {
@@ -181,9 +171,7 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
         bitboard_unmake_move(&board, row, col, opponent);
 
         if (score < bestScore)
-        {
             bestScore = score;
-        }
 
         /* Early win return: stop searching if opponent found a winning move */
         if (bestScore == PLAYER_WIN_SCORE)
@@ -195,20 +183,14 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
             break; /* Alpha cutoff */
     }
 
-    /* Classify node type for transposition table storage */
+    /* Classify node type for transposition table storage:
+     * UPPERBOUND when bestScore <= alpha (result fell below lower bound; true value <= bestScore).
+     * EXACT in all other cases (all moves explored; true value == bestScore). */
     TranspositionTableNodeType store_type;
     if (bestScore <= alpha)
-    {
-        store_type = TRANSPOSITION_TABLE_UPPERBOUND; /* Alpha cutoff */
-    }
-    else if (bestScore >= original_beta)
-    {
-        store_type = TRANSPOSITION_TABLE_LOWERBOUND; /* All moves were >= original beta */
-    }
+        store_type = TRANSPOSITION_TABLE_UPPERBOUND;
     else
-    {
-        store_type = TRANSPOSITION_TABLE_EXACT; /* Exact score */
-    }
+        store_type = TRANSPOSITION_TABLE_EXACT;
     transposition_table_store(hash, bestScore, store_type);
 
     return bestScore;
