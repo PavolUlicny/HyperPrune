@@ -290,6 +290,106 @@ void test_tt_non_power_of_two_sizes(void)
     transposition_table_free();
 }
 
+// Test that EXACT node type fires even when the stored score is outside the
+// current alpha-beta window. The probe logic must return EXACT unconditionally
+// (unlike LOWERBOUND/UPPERBOUND which are conditional on score vs beta/alpha).
+void test_tt_exact_fires_outside_window(void)
+{
+    zobrist_init();
+    transposition_table_init(1000);
+
+    uint64_t hash = 99999;
+    transposition_table_store(hash, 10, TRANSPOSITION_TABLE_EXACT);
+
+    int score;
+    // score=10 is below alpha=20: EXACT must still fire
+    int found = transposition_table_probe(hash, 20, 100, &score);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(10, score);
+
+    // score=10 is above beta=5: EXACT must still fire
+    found = transposition_table_probe(hash, -100, 5, &score);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(10, score);
+
+    transposition_table_free();
+}
+
+// Test the always-replace collision strategy: a second store at the same
+// table index evicts the first entry, making it a miss on probe.
+void test_tt_always_replace_evicts_previous(void)
+{
+    zobrist_init();
+    // Size 4 (already a power of 2): mask = 3
+    // hash_a=1 -> index 1 & 3 = 1
+    // hash_b=5 -> index 5 & 3 = 1  (same slot, different hash)
+    transposition_table_init(4);
+
+    uint64_t hash_a = 1;
+    uint64_t hash_b = 5;
+
+    transposition_table_store(hash_a, 42, TRANSPOSITION_TABLE_EXACT);
+
+    int score;
+    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_a, -100, 100, &score));
+    TEST_ASSERT_EQUAL(42, score);
+
+    // Store hash_b at the same slot — evicts hash_a
+    transposition_table_store(hash_b, 77, TRANSPOSITION_TABLE_EXACT);
+
+    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_b, -100, 100, &score));
+    TEST_ASSERT_EQUAL(77, score);
+
+    // hash_a must now be a miss (evicted)
+    TEST_ASSERT_EQUAL(0, transposition_table_probe(hash_a, -100, 100, &score));
+
+    transposition_table_free();
+}
+
+// Test that hash value 0 is a valid, storable key.
+// The 'occupied' flag exists specifically so that hash==0 is not treated as
+// an empty-slot sentinel, preserving full 64-bit hash entropy.
+void test_tt_hash_zero(void)
+{
+    zobrist_init();
+    transposition_table_init(1000);
+
+    transposition_table_store(0, 55, TRANSPOSITION_TABLE_EXACT);
+
+    int score;
+    int found = transposition_table_probe(0, -100, 100, &score);
+    TEST_ASSERT_EQUAL(1, found);
+    TEST_ASSERT_EQUAL(55, score);
+
+    transposition_table_free();
+}
+
+// Test single-entry table (size=1): mask=0, every hash maps to slot 0.
+// Verifies round_up_power_of_2(1)==1 and that the table works at minimum size.
+void test_tt_size_one(void)
+{
+    zobrist_init();
+    transposition_table_init(1);
+
+    uint64_t hash_a = 12345;
+    uint64_t hash_b = 67890;
+
+    transposition_table_store(hash_a, 30, TRANSPOSITION_TABLE_EXACT);
+
+    int score;
+    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_a, -100, 100, &score));
+    TEST_ASSERT_EQUAL(30, score);
+
+    // hash_b also maps to slot 0, evicting hash_a
+    transposition_table_store(hash_b, 60, TRANSPOSITION_TABLE_EXACT);
+
+    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_b, -100, 100, &score));
+    TEST_ASSERT_EQUAL(60, score);
+    TEST_ASSERT_EQUAL(0, transposition_table_probe(hash_a, -100, 100, &score));
+
+    transposition_table_free();
+}
+
 void test_transposition_table_suite(void)
 {
     RUN_TEST(test_tt_store_and_probe);
@@ -304,4 +404,8 @@ void test_transposition_table_suite(void)
     RUN_TEST(test_tt_cutoff_equality);
     RUN_TEST(test_tt_multiple_reinit);
     RUN_TEST(test_tt_non_power_of_two_sizes);
+    RUN_TEST(test_tt_exact_fires_outside_window);
+    RUN_TEST(test_tt_always_replace_evicts_previous);
+    RUN_TEST(test_tt_hash_zero);
+    RUN_TEST(test_tt_size_one);
 }
