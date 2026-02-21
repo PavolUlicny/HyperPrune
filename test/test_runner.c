@@ -1,4 +1,5 @@
 #include "unity/unity.h"
+#include "../src/TicTacToe/tic_tac_toe.h"
 #include <stdio.h>
 
 // Forward declarations from test files
@@ -12,7 +13,7 @@ void test_edge_cases_suite(void);
 
 void setUp(void)
 {
-    // Called before each test
+    init_win_masks();
 }
 
 void tearDown(void)
