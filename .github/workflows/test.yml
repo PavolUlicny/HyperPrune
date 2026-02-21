@@ -253,7 +253,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        board_size: [3, 4]
+        board_size: [3, 4, 5, 6, 7, 8]
 
     steps:
       - name: Checkout code
@@ -266,9 +266,11 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Run tests
+        if: matrix.board_size == 3 || matrix.board_size == 4
         run: ctest --test-dir build --build-config Release --output-on-failure
 
       - name: Self-play verification
+        if: matrix.board_size == 3 || matrix.board_size == 4
         shell: pwsh
         run: |
           $output = & ./build/Release/ttt.exe -s 1000000
@@ -370,7 +372,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build and run tests under ASan+UBSan (3x3/4x4)
-        if: contains(fromJSON('[3,4]'), matrix.board_size)
+        if: matrix.board_size == 3 || matrix.board_size == 4
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
@@ -384,7 +386,7 @@ jobs:
           ./test_runner_san
 
       - name: Run self-play under ASan+UBSan (3x3/4x4)
-        if: contains(fromJSON('[3,4]'), matrix.board_size)
+        if: matrix.board_size == 3 || matrix.board_size == 4
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
@@ -395,7 +397,7 @@ jobs:
           ./ttt_san -s 1000 -q
 
       - name: Sanitizer build-only coverage (5x5+)
-        if: contains(fromJSON('[5,6,7,8]'), matrix.board_size)
+        if: matrix.board_size >= 5
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
@@ -442,7 +444,7 @@ jobs:
             -o test_runner_valgrind -lm
 
       - name: Run tests under valgrind (3x3/4x4)
-        if: contains(fromJSON('[3,4]'), matrix.board_size)
+        if: matrix.board_size == 3 || matrix.board_size == 4
         run: |
           set -euo pipefail
           valgrind --leak-check=full --show-leak-kinds=all \
@@ -450,7 +452,7 @@ jobs:
             ./test_runner_valgrind
 
       - name: Run self-play under valgrind (3x3/4x4)
-        if: contains(fromJSON('[3,4]'), matrix.board_size)
+        if: matrix.board_size == 3 || matrix.board_size == 4
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
@@ -462,11 +464,10 @@ jobs:
             ./ttt_valgrind -s 1000 -q
 
       - name: Valgrind build-only coverage (5x5+)
-        if: contains(fromJSON('[5,6,7,8]'), matrix.board_size)
+        if: matrix.board_size >= 5
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
             -DBOARD_SIZE=${{ matrix.board_size }} \
             src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
             -o ttt_valgrind -lm
-
