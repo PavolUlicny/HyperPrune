@@ -12,7 +12,7 @@
 ## Requirements
 
 - C11 compiler (GCC, Clang, or MSVC)
-- Platform: Linux, macOS, Windows, BSD, WSL
+- Platform: Linux, macOS, Windows (x64), BSD, WSL
 - Build system: Make (Unix) or CMake (cross-platform)
 
 ## Quick start
