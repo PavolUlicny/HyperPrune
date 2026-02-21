@@ -312,6 +312,21 @@ void test_both_players_won_invalid_state(void)
 #endif
 }
 
+// Test bitboard_did_last_move_win for the last column (BOARD_SIZE-1).
+// The existing test_did_last_move_win_col only checks column 0.
+void test_did_last_move_win_col_last_column(void)
+{
+    init_win_masks();
+    Bitboard board = {0, 0};
+
+    for (int r = 0; r < BOARD_SIZE; r++)
+        bitboard_make_move(&board, r, BOARD_SIZE - 1, 'x');
+
+    // Both ends of the column should report a win
+    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, BOARD_SIZE - 1));
+    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, BOARD_SIZE - 1, BOARD_SIZE - 1));
+}
+
 void test_edge_cases_suite(void)
 {
     RUN_TEST(test_did_last_move_win_row);
@@ -331,4 +346,5 @@ void test_edge_cases_suite(void)
     RUN_TEST(test_overlapping_bitboard_pieces);
     RUN_TEST(test_did_last_move_win_empty_cell);
     RUN_TEST(test_both_players_won_invalid_state);
+    RUN_TEST(test_did_last_move_win_col_last_column);
 }
