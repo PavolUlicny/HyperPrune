@@ -363,7 +363,7 @@ int main(int argc, char **argv)
                 /* Check for empty string */
                 if (seed_str[0] == '\0')
                 {
-                    fprintf(stderr, "Error: --seed requires a value\n");
+                    fprintf(stderr, "Error: --seed value cannot be empty\n");
                     exit(EXIT_FAILURE);
                 }
 
