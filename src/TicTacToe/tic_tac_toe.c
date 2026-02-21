@@ -36,13 +36,13 @@ static void discardLine(void)
 /* Count how many digits are needed to print a non-negative integer. */
 static int numDigits(int number)
 {
-    int digitQuantity = 1;
+    int digit_quantity = 1;
     while (number >= 10)
     {
         number /= 10;
-        ++digitQuantity;
+        ++digit_quantity;
     }
-    return digitQuantity;
+    return digit_quantity;
 }
 
 /* Initialize win masks for bitboard win detection */
