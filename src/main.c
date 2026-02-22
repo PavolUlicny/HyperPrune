@@ -422,7 +422,12 @@ int main(int argc, char **argv)
                 errno = 0;
                 long val = strtol(argv[i + 1], &endptr, 10);
                 /* Check if it's a valid number (not just a flag like --quiet) */
-                if (*endptr == '\0')
+                if (endptr == argv[i + 1] && *endptr == '\0')
+                {
+                    fprintf(stderr, "Error: --tt-size requires a value\n");
+                    exit(EXIT_FAILURE);
+                }
+                else if (*endptr == '\0')
                 {
                     /* It's a number, validate range */
                     if (errno != ERANGE && val >= 0 && val <= MAX_TRANSPOSITION_TABLE_SIZE)
