@@ -464,7 +464,7 @@ int main(int argc, char **argv)
      */
     size_t transposition_table_size;
 
-#if BOARD_SIZE <= 3
+#if BOARD_SIZE == 3
     transposition_table_size = 100000;
 #elif BOARD_SIZE == 4
     transposition_table_size = 1500000;
