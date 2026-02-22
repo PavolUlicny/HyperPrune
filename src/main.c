@@ -64,7 +64,8 @@ static double timer_diff_seconds(const HiResTimer *start, const HiResTimer *end)
 /*
  * Maximum transposition table size (entry count).
  * This caps the allocation when BOARD_SIZE is large.
- * At 16 bytes per entry: 250M entries = 4 GB memory
+ * At 16 bytes per entry: 250M entries = 4 GB (SI). The allocator rounds up
+ * to the next power of 2 (268,435,456 entries = 4 GiB actual).
  */
 #define MAX_TRANSPOSITION_TABLE_SIZE 250000000
 
