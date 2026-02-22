@@ -121,13 +121,14 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
     }
 
     /* Classify node type for transposition table storage:
-     * LOWERBOUND when bestScore >= beta (result exceeded upper bound; true value >= bestScore).
+     * AI_WIN_SCORE is the absolute maximum — always EXACT regardless of beta.
+     * LOWERBOUND when bestScore >= beta (beta cutoff; true value >= bestScore).
      * EXACT in all other cases (all moves explored; true value == bestScore). */
     TranspositionTableNodeType store_type;
-    if (bestScore >= beta)
-        store_type = TRANSPOSITION_TABLE_LOWERBOUND;
-    else
+    if (bestScore == AI_WIN_SCORE || bestScore < beta)
         store_type = TRANSPOSITION_TABLE_EXACT;
+    else
+        store_type = TRANSPOSITION_TABLE_LOWERBOUND;
     transposition_table_store(hash, bestScore, store_type);
 
     return bestScore;
@@ -184,13 +185,14 @@ static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64
     }
 
     /* Classify node type for transposition table storage:
-     * UPPERBOUND when bestScore <= alpha (result fell below lower bound; true value <= bestScore).
+     * PLAYER_WIN_SCORE is the absolute minimum — always EXACT regardless of alpha.
+     * UPPERBOUND when bestScore <= alpha (alpha cutoff; true value <= bestScore).
      * EXACT in all other cases (all moves explored; true value == bestScore). */
     TranspositionTableNodeType store_type;
-    if (bestScore <= alpha)
-        store_type = TRANSPOSITION_TABLE_UPPERBOUND;
-    else
+    if (bestScore == PLAYER_WIN_SCORE || bestScore > alpha)
         store_type = TRANSPOSITION_TABLE_EXACT;
+    else
+        store_type = TRANSPOSITION_TABLE_UPPERBOUND;
     transposition_table_store(hash, bestScore, store_type);
 
     return bestScore;
