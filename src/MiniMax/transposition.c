@@ -180,10 +180,9 @@ void transposition_table_init(size_t size)
 
     if (transposition_table == NULL)
     {
-        const size_t requested_size = size;
         double table_size_mb = ((double)transposition_table_size * (double)sizeof(TranspositionTableEntry)) / (1024.0 * 1024.0);
         fprintf(stderr, "Warning: Failed to allocate transposition table (%zu entries requested, %zu actual, %.1f MB)\n",
-                requested_size, transposition_table_size,
+                size, transposition_table_size,
                 table_size_mb);
         fprintf(stderr, "Continuing without transposition table.\n");
         transposition_table_size = 0;
