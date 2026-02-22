@@ -422,8 +422,10 @@ int main(int argc, char **argv)
                 errno = 0;
                 long val = strtol(argv[i + 1], &endptr, 10);
                 /* Check if it's a valid number (not just a flag like --quiet) */
-                if (endptr == argv[i + 1] && *endptr == '\0')
+                if ((endptr == argv[i + 1] && *endptr == '\0') ||
+                    (argv[i + 1][0] == '-' && !isdigit((unsigned char)argv[i + 1][1])))
                 {
+                    /* Empty string or flag-like argument — no value provided */
                     fprintf(stderr, "Error: --tt-size requires a value\n");
                     exit(EXIT_FAILURE);
                 }
@@ -439,12 +441,6 @@ int main(int argc, char **argv)
                         fprintf(stderr, "Error: Invalid --tt-size value '%s' (must be 0 to %d)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
                         exit(EXIT_FAILURE);
                     }
-                }
-                else if (argv[i + 1][0] == '-' && !isdigit((unsigned char)argv[i + 1][1]))
-                {
-                    /* Starts with - but not a negative number, probably a flag */
-                    fprintf(stderr, "Error: --tt-size requires a value\n");
-                    exit(EXIT_FAILURE);
                 }
                 else
                 {
