@@ -321,6 +321,9 @@ int main(int argc, char **argv)
     {
         const char *arg = argv[i];
 
+        if (strcmp(arg, "--") == 0)
+            break; /* Stop option processing; remaining args are positional */
+
         if (strcmp(arg, "--selfplay") == 0 || strcmp(arg, "-s") == 0)
         {
             opt_selfplay = 1;
