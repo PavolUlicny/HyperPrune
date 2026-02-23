@@ -207,7 +207,7 @@ void test_make_unmake_hash_cycle(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    uint64_t original_hash = zobrist_hash(board, 'x');
+    uint64_t original_hash = zobrist_hash(board);
 
     // Make move and hash
     bitboard_make_move(&board, 1, 1, 'x');
@@ -220,16 +220,16 @@ void test_make_unmake_hash_cycle(void)
     TEST_ASSERT_EQUAL_UINT64(original_hash, restored_hash);
 }
 
-// Test zobrist hash is zero only when explicitly all keys sum to zero (extremely rare)
+// Test zobrist hash is non-zero for a non-empty board
 void test_zobrist_hash_nonzero(void)
 {
     zobrist_set_seed(42);
     zobrist_init();
 
     Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
+    bitboard_make_move(&board, 0, 0, 'x'); /* Non-empty board: piece key is non-zero */
+    uint64_t hash = zobrist_hash(board);
 
-    // Hash of empty board with player key should be non-zero
     // (Statistical property - not guaranteed but extremely likely)
     TEST_ASSERT_NOT_EQUAL_UINT64(0, hash);
 }
