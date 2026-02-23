@@ -16,14 +16,8 @@
 static uint64_t zobrist_keys[BOARD_SIZE][BOARD_SIZE][2];
 
 /*
- * Zobrist keys for aiPlayer perspective.
- * XORed into hash to distinguish positions with different maximizing players.
- */
-static uint64_t zobrist_player_keys[2];
-
-/*
  * Zobrist key for side-to-move.
- * XORed into hash when it's the opponent's turn (miniMaxLow).
+ * XORed into hash each time the player-to-move changes in negamax.
  */
 static uint64_t zobrist_turn_key;
 
@@ -101,23 +95,18 @@ void zobrist_init(void)
         }
     }
 
-    /* Initialize player perspective keys */
-    zobrist_player_keys[0] = splitmix64_next();
-    zobrist_player_keys[1] = splitmix64_next();
-
     /* Initialize side-to-move key */
     zobrist_turn_key = splitmix64_next();
 }
 
-uint64_t zobrist_hash(Bitboard board, char aiPlayer)
+uint64_t zobrist_hash(Bitboard board)
 {
     /*
-     * Hash encodes both position AND perspective (aiPlayer).
-     * This is critical because the minimax score for a position depends on
-     * who is maximizing. Without the aiPlayer key, we would return stale
-     * scores from the wrong perspective when games alternate starting player.
+     * Hash encodes position only (piece placement + side-to-move via toggle_turn).
+     * Scores are stored relative to the player-to-move, so no aiPlayer key is needed.
+     * TT entries are therefore reusable across games regardless of which player is AI.
      */
-    uint64_t hash = zobrist_player_keys[player_to_index(aiPlayer)];
+    uint64_t hash = 0;
 
     /* Hash X pieces using bit scanning */
     uint64_t x_pieces = board.x_pieces;
@@ -201,7 +190,7 @@ void transposition_table_free(void)
     transposition_table_mask = 0;
 }
 
-int transposition_table_probe(uint64_t hash, int alpha, int beta,
+int transposition_table_probe(uint64_t hash, int beta,
                               int *restrict out_score)
 {
     if (transposition_table == NULL || transposition_table_size == 0)
@@ -224,14 +213,11 @@ int transposition_table_probe(uint64_t hash, int alpha, int beta,
         return 0;
     }
 
-    /* No depth check needed - scores are now depth-independent */
-
     int score = entry->score;
 
-    /* Use stored score based on node type and bounds */
+    /* Use stored score based on node type */
     if (entry->type == TRANSPOSITION_TABLE_EXACT ||
-        (entry->type == TRANSPOSITION_TABLE_LOWERBOUND && score >= beta) ||
-        (entry->type == TRANSPOSITION_TABLE_UPPERBOUND && score <= alpha))
+        (entry->type == TRANSPOSITION_TABLE_LOWERBOUND && score >= beta))
     {
         *out_score = score;
         return 1;
