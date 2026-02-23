@@ -276,7 +276,7 @@ void test_getAiMove_no_tt(void)
     transposition_table_free();
 }
 
-void test_minimax_suite(void)
+void test_negamax_suite(void)
 {
     RUN_TEST(test_empty_board_plays_center);
     RUN_TEST(test_terminal_board_returns_invalid);

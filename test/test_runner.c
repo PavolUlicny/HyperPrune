@@ -4,7 +4,7 @@
 
 // Forward declarations from test files
 void test_bitboard_suite(void);
-void test_minimax_suite(void);
+void test_negamax_suite(void);
 void test_zobrist_suite(void);
 void test_correctness_suite(void);
 void test_transposition_table_suite(void);
@@ -28,8 +28,8 @@ int main(void)
     printf("\n=== Bitboard Tests ===\n");
     test_bitboard_suite();
 
-    printf("\n=== Minimax Tests ===\n");
-    test_minimax_suite();
+    printf("\n=== Negamax Tests ===\n");
+    test_negamax_suite();
 
     printf("\n=== Zobrist Hashing Tests ===\n");
     test_zobrist_suite();
