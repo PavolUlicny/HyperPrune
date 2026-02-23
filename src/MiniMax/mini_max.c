@@ -1,12 +1,16 @@
 /*
- * Minimax search with alpha–beta pruning for Tic-Tac-Toe
+ * Negamax search with alpha–beta pruning for Tic-Tac-Toe
  * -------------------------------------------------------
  *
- * This file implements a deterministic Minimax engine with:
+ * This file implements a deterministic Negamax engine with:
  *  - Alpha–beta pruning
  *  - Terminal-only scoring (win/loss/tie evaluation)
  *  - Simple opening heuristic: play center on empty board
  *  - Transposition table with Zobrist hashing for position caching
+ *
+ * Negamax formulation: every node is always from the current player's
+ * perspective. The parent receives -negamax(child, -beta, -alpha), so scores
+ * are relative to the player-to-move rather than a fixed "AI player".
  *
  * Public entry point: getAiMove(...)
  */
@@ -19,18 +23,14 @@
 /* Helper constants used by the evaluation and search. */
 typedef enum
 {
-    AI_WIN_SCORE = 100,
-    PLAYER_WIN_SCORE = -100,
+    WIN = 100, /* Current player wins */
     TIE_SCORE = 0,
     CONTINUE_SCORE = 1,
     INF = 101
 } HelperScores;
 
 /* Compile-time validation: terminal scores must fit in int16_t (transposition table storage) */
-_Static_assert(AI_WIN_SCORE <= INT16_MAX && AI_WIN_SCORE >= INT16_MIN,
-               "AI_WIN_SCORE must fit in int16_t");
-_Static_assert(PLAYER_WIN_SCORE <= INT16_MAX && PLAYER_WIN_SCORE >= INT16_MIN,
-               "PLAYER_WIN_SCORE must fit in int16_t");
+_Static_assert(WIN <= INT16_MAX && (-WIN) >= INT16_MIN, "WIN and -WIN must fit in int16_t");
 
 /*
  * Safe mask for valid board positions.
@@ -43,23 +43,21 @@ static const uint64_t VALID_POSITIONS_MASK = (1ULL << MAX_MOVES) - 1;
 #endif
 
 /*
- * Terminal evaluation using bitboard win detection:
- *  - +100 if a line completed by aiPlayer
- *  - -100 if a line completed by opponent
- *  -  0 for tie
- *  -  1 (CONTINUE_SCORE) if the game is not terminal
+ * Terminal evaluation from currentPlayer's perspective.
+ * Called at the start of a node before currentPlayer moves.
+ * Only the PREVIOUS player (opponent of currentPlayer) can have just won —
+ * currentPlayer hasn't moved yet — so only one bitboard_has_won call suffices.
+ *
+ *  -WIN (−100)     : opponent of currentPlayer won → currentPlayer loses
+ *   TIE_SCORE (0)  : board is full → draw
+ *   CONTINUE_SCORE : game not yet terminal
  */
-static inline int boardScore(Bitboard board, char aiPlayer)
+static inline int boardScore(Bitboard board, char currentPlayer)
 {
-    /* Check if AI has won */
-    uint64_t ai_pieces = (aiPlayer == 'x') ? board.x_pieces : board.o_pieces;
-    if (bitboard_has_won(ai_pieces))
-        return AI_WIN_SCORE;
-
-    /* Check if opponent has won */
-    uint64_t opponent_pieces = (aiPlayer == 'x') ? board.o_pieces : board.x_pieces;
-    if (bitboard_has_won(opponent_pieces))
-        return PLAYER_WIN_SCORE;
+    /* Check if previous player (opponent of currentPlayer) has won */
+    uint64_t opp_pieces = (currentPlayer == 'x') ? board.o_pieces : board.x_pieces;
+    if (bitboard_has_won(opp_pieces))
+        return -WIN;
 
     /* Check if board is full (tie) */
     uint64_t occupied = board.x_pieces | board.o_pieces;
@@ -69,29 +67,28 @@ static inline int boardScore(Bitboard board, char aiPlayer)
     return CONTINUE_SCORE;
 }
 
-static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64_t hash);
-
 /*
- * Maximizing ply (AI).
- * Returns best score achievable for aiPlayer from the current position.
+ * Negamax search with alpha-beta pruning.
+ * Returns the best score achievable for currentPlayer from the current position.
+ * All scores are relative to currentPlayer (positive = good for currentPlayer).
  */
-static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint64_t hash)
+static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint64_t hash)
 {
     /* Transposition table probe */
-    int transposition_table_score;
-    if (transposition_table_probe(hash, alpha, beta, &transposition_table_score))
-    {
-        return transposition_table_score;
-    }
+    int tt_score;
+    if (transposition_table_probe(hash, beta, &tt_score))
+        return tt_score;
 
-    int state = boardScore(board, aiPlayer);
+    /* Terminal check: did the previous player win? */
+    int state = boardScore(board, currentPlayer);
     if (state != CONTINUE_SCORE)
     {
-        /* terminal: cache and return raw score */
+        /* Terminal: cache and return exact score */
         transposition_table_store(hash, state, TRANSPOSITION_TABLE_EXACT);
         return state;
     }
 
+    char opponent = (currentPlayer == 'x') ? 'o' : 'x';
     uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
     int bestScore = -INF;
 
@@ -101,17 +98,17 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
         empty &= empty - 1;
         int row = BIT_TO_ROW(bit);
         int col = BIT_TO_COL(bit);
-        bitboard_make_move(&board, row, col, aiPlayer);
-        uint64_t new_hash = zobrist_toggle(hash, row, col, aiPlayer);
-        new_hash = zobrist_toggle_turn(new_hash); /* Toggle turn: AI → Opponent */
-        int score = miniMaxLow(board, aiPlayer, alpha, beta, new_hash);
-        bitboard_unmake_move(&board, row, col, aiPlayer);
+        bitboard_make_move(&board, row, col, currentPlayer);
+        uint64_t new_hash = zobrist_toggle(hash, row, col, currentPlayer);
+        new_hash = zobrist_toggle_turn(new_hash);
+        int score = -negamax(board, opponent, -beta, -alpha, new_hash);
+        bitboard_unmake_move(&board, row, col, currentPlayer);
 
         if (score > bestScore)
             bestScore = score;
 
-        /* Early win return: stop searching if we found a winning move */
-        if (bestScore == AI_WIN_SCORE)
+        /* Early exit: current player wins, can't do better */
+        if (bestScore == WIN)
             break;
 
         if (score > alpha)
@@ -120,79 +117,20 @@ static int miniMaxHigh(Bitboard board, char aiPlayer, int alpha, int beta, uint6
             break; /* Beta cutoff */
     }
 
-    /* Classify node type for transposition table storage:
-     * AI_WIN_SCORE is the absolute maximum — always EXACT regardless of beta.
+    /* Classify node type for transposition table storage.
+     * Only two early exits exist: WIN (absolute maximum) and beta cutoff
+     * (beta <= alpha). There is no alpha-cutoff exit that would leave moves
+     * unexplored, so bestScore is always the true value when no beta cutoff
+     * occurred. UPPERBOUND is therefore never needed.
+     *
+     * WIN is the absolute maximum — always EXACT regardless of beta.
      * LOWERBOUND when bestScore >= beta (beta cutoff; true value >= bestScore).
-     * EXACT in all other cases (all moves explored; true value == bestScore). */
+     * EXACT in all other cases (all moves explored; bestScore is the true value). */
     TranspositionTableNodeType store_type;
-    if (bestScore == AI_WIN_SCORE || bestScore < beta)
+    if (bestScore == WIN || bestScore < beta)
         store_type = TRANSPOSITION_TABLE_EXACT;
     else
         store_type = TRANSPOSITION_TABLE_LOWERBOUND;
-    transposition_table_store(hash, bestScore, store_type);
-
-    return bestScore;
-}
-
-/*
- * Minimizing ply (opponent).
- * Returns worst-case score for aiPlayer given optimal opponent play.
- */
-static int miniMaxLow(Bitboard board, char aiPlayer, int alpha, int beta, uint64_t hash)
-{
-    /* Transposition table probe */
-    int transposition_table_score;
-    if (transposition_table_probe(hash, alpha, beta, &transposition_table_score))
-    {
-        return transposition_table_score;
-    }
-
-    int state = boardScore(board, aiPlayer);
-    if (state != CONTINUE_SCORE)
-    {
-        /* terminal: cache and return raw score */
-        transposition_table_store(hash, state, TRANSPOSITION_TABLE_EXACT);
-        return state;
-    }
-
-    uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
-    int bestScore = INF;
-    char opponent = (aiPlayer == 'x') ? 'o' : 'x';
-
-    while (empty)
-    {
-        int bit = CTZ64(empty);
-        empty &= empty - 1;
-        int row = BIT_TO_ROW(bit);
-        int col = BIT_TO_COL(bit);
-        bitboard_make_move(&board, row, col, opponent);
-        uint64_t new_hash = zobrist_toggle(hash, row, col, opponent);
-        new_hash = zobrist_toggle_turn(new_hash); /* Toggle turn: Opponent → AI */
-        int score = miniMaxHigh(board, aiPlayer, alpha, beta, new_hash);
-        bitboard_unmake_move(&board, row, col, opponent);
-
-        if (score < bestScore)
-            bestScore = score;
-
-        /* Early win return: stop searching if opponent found a winning move */
-        if (bestScore == PLAYER_WIN_SCORE)
-            break;
-
-        if (score < beta)
-            beta = score;
-        if (beta <= alpha)
-            break; /* Alpha cutoff */
-    }
-
-    /* Classify node type for transposition table storage:
-     * PLAYER_WIN_SCORE is the absolute minimum — always EXACT regardless of alpha.
-     * UPPERBOUND when bestScore <= alpha (alpha cutoff; true value <= bestScore).
-     * EXACT in all other cases (all moves explored; true value == bestScore). */
-    TranspositionTableNodeType store_type;
-    if (bestScore == PLAYER_WIN_SCORE || bestScore > alpha)
-        store_type = TRANSPOSITION_TABLE_EXACT;
-    else
-        store_type = TRANSPOSITION_TABLE_UPPERBOUND;
     transposition_table_store(hash, bestScore, store_type);
 
     return bestScore;
@@ -215,8 +153,9 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
         return;
     }
 
-    int state = boardScore(board, aiPlayer);
-    if (state != CONTINUE_SCORE)
+    /* Terminal check (both players — either may have already won) */
+    if (bitboard_has_won(board.x_pieces) || bitboard_has_won(board.o_pieces) ||
+        (board.x_pieces | board.o_pieces) == VALID_POSITIONS_MASK)
     {
         *out_row = -1;
         *out_col = -1;
@@ -247,7 +186,8 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
     int bestRow = -1;
     int bestCol = -1;
     int bestScore = -INF;
-    uint64_t hash = zobrist_hash(board, aiPlayer);
+    uint64_t hash = zobrist_hash(board);
+    char opponent = (aiPlayer == 'x') ? 'o' : 'x';
 
     while (empty)
     {
@@ -257,8 +197,8 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
         int col = BIT_TO_COL(bit);
         bitboard_make_move(&board, row, col, aiPlayer);
         uint64_t new_hash = zobrist_toggle(hash, row, col, aiPlayer);
-        new_hash = zobrist_toggle_turn(new_hash); /* Toggle turn: AI → Opponent */
-        int score = miniMaxLow(board, aiPlayer, alpha, beta, new_hash);
+        new_hash = zobrist_toggle_turn(new_hash);
+        int score = -negamax(board, opponent, -beta, -alpha, new_hash);
         bitboard_unmake_move(&board, row, col, aiPlayer);
 
         if (score > bestScore)
@@ -269,8 +209,8 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
             alpha = score;
         }
 
-        /* Early win return: stop searching if we found a winning move */
-        if (bestScore == AI_WIN_SCORE)
+        /* Early exit: found a winning move */
+        if (bestScore == WIN)
             break;
     }
 
