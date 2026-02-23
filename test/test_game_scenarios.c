@@ -1,6 +1,6 @@
 #include "unity/unity.h"
-#include "../src/MiniMax/mini_max.h"
-#include "../src/MiniMax/transposition.h"
+#include "../src/Negamax/negamax.h"
+#include "../src/Negamax/transposition.h"
 #include "../src/TicTacToe/tic_tac_toe.h"
 
 // Test AI takes immediate winning move

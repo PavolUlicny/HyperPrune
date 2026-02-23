@@ -1,5 +1,5 @@
 #include "unity/unity.h"
-#include "../src/MiniMax/transposition.h"
+#include "../src/Negamax/transposition.h"
 #include "../src/TicTacToe/tic_tac_toe.h"
 
 // Test incremental hash matches full hash

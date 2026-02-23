@@ -1,7 +1,7 @@
 #include "unity/unity.h"
 #include "../src/TicTacToe/tic_tac_toe.h"
-#include "../src/MiniMax/mini_max.h"
-#include "../src/MiniMax/transposition.h"
+#include "../src/Negamax/negamax.h"
+#include "../src/Negamax/transposition.h"
 
 // Test bitboard_did_last_move_win for row win
 void test_did_last_move_win_row(void)
