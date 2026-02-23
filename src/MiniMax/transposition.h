@@ -1,7 +1,7 @@
 /*
  * Transposition Table with Zobrist Hashing
  * -----------------------------------------
- * Provides a hash-based cache for Minimax search results to avoid
+ * Provides a hash-based cache for Negamax search results to avoid
  * re-evaluating identical positions reached via different move orders.
  *
  * Key components:
@@ -48,14 +48,16 @@ extern "C"
 
     /**
      * Compute full board hash from scratch.
+     * The hash encodes position and side-to-move only; it is independent of
+     * which player is designated "AI". Scores stored in the TT are relative
+     * to the player-to-move, so no aiPlayer perspective key is needed.
      *
      * Parameters:
      *  - board: Current position (bitboard representation)
-     *  - aiPlayer: The maximizing player ('x' or 'o')
      *
      * Returns: 64-bit Zobrist hash for this position
      */
-    uint64_t zobrist_hash(Bitboard board, char aiPlayer);
+    uint64_t zobrist_hash(Bitboard board);
 
     /**
      * Incremental hash update: toggle a piece on/off.
@@ -75,7 +77,7 @@ extern "C"
 
     /**
      * Toggle the side-to-move component in the hash.
-     * Call this when transitioning between maximizing and minimizing plies.
+     * Call this each time the player-to-move changes (every negamax ply).
      *
      * Parameters:
      *  - hash: Current position hash
@@ -89,9 +91,8 @@ extern "C"
      */
     typedef enum
     {
-        TRANSPOSITION_TABLE_EXACT,      /* Exact score (no cutoff occurred; true value equals stored score) */
-        TRANSPOSITION_TABLE_LOWERBOUND, /* Score >= stored value (beta cutoff: score >= beta) */
-        TRANSPOSITION_TABLE_UPPERBOUND  /* Score <= stored value (alpha cutoff: score <= alpha) */
+        TRANSPOSITION_TABLE_EXACT,     /* Exact score (no cutoff occurred; true value equals stored score) */
+        TRANSPOSITION_TABLE_LOWERBOUND /* Score >= stored value (beta cutoff: score >= beta) */
     } TranspositionTableNodeType;
 
     /**
@@ -134,14 +135,14 @@ extern "C"
      *
      * Parameters:
      *  - hash: Position hash to look up
-     *  - alpha, beta: Current alpha-beta bounds
+     *  - beta: Current upper bound (used for LOWERBOUND cutoff: score >= beta)
      *  - out_score: Output pointer for retrieved score (if found)
      *
      * Returns:
      *  - 1 if a usable entry was found (out_score is valid)
      *  - 0 otherwise (cache miss or collision)
      */
-    int transposition_table_probe(uint64_t hash, int alpha, int beta,
+    int transposition_table_probe(uint64_t hash, int beta,
                                   int *restrict out_score);
 
     /**
@@ -150,7 +151,7 @@ extern "C"
      * Parameters:
      *  - hash: Position hash
      *  - score: Evaluated score
-     *  - type: Node type (exact/lower/upper bound)
+     *  - type: Node type (EXACT or LOWERBOUND)
      */
     void transposition_table_store(uint64_t hash, int score, TranspositionTableNodeType type);
 
