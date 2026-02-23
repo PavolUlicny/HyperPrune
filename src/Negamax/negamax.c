@@ -190,6 +190,8 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
     int bestCol = -1;
     int bestScore = -INF;
     uint64_t hash = zobrist_hash(board);
+    if (aiPlayer == 'o')
+        hash = zobrist_toggle_turn(hash); /* O to move: root hash must include turn key */
     char opponent = (aiPlayer == 'x') ? 'o' : 'x';
 
     while (empty)
