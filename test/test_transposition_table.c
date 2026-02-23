@@ -11,14 +11,14 @@ void test_tt_store_and_probe(void)
 
     Bitboard board = {0, 0};
     bitboard_make_move(&board, 0, 0, 'x');
-    uint64_t hash = zobrist_hash(board, 'x');
+    uint64_t hash = zobrist_hash(board);
 
     // Store exact score
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_EXACT);
 
     // Probe should succeed
     int score;
-    int found = transposition_table_probe(hash, -100, 100, &score);
+    int found = transposition_table_probe(hash, 100, &score);
 
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(50, score);
@@ -34,14 +34,14 @@ void test_tt_null_table(void)
     transposition_table_free();
 
     Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
+    uint64_t hash = zobrist_hash(board);
 
     // Store should not crash
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_EXACT);
 
     // Probe should return 0 (miss)
     int score;
-    int found = transposition_table_probe(hash, -100, 100, &score);
+    int found = transposition_table_probe(hash, 100, &score);
 
     TEST_ASSERT_EQUAL(0, found);
 }
@@ -53,14 +53,14 @@ void test_tt_zero_size(void)
     transposition_table_init(0);
 
     Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
+    uint64_t hash = zobrist_hash(board);
 
     // Operations should not crash when TT is disabled
     // Size 0 now properly disables TT (no allocation)
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_EXACT);
 
     int score;
-    int found = transposition_table_probe(hash, -100, 100, &score);
+    int found = transposition_table_probe(hash, 100, &score);
 
     // With size 0, TT is disabled, so probe should return 0 (not found)
     TEST_ASSERT_EQUAL(0, found);
@@ -75,14 +75,14 @@ void test_tt_reinitialization(void)
     transposition_table_init(1000);
 
     Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
+    uint64_t hash = zobrist_hash(board);
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_EXACT);
 
     // Reinitialize should clear table
     transposition_table_init(1000);
 
     int score;
-    int found = transposition_table_probe(hash, -100, 100, &score);
+    int found = transposition_table_probe(hash, 100, &score);
 
     TEST_ASSERT_EQUAL(0, found);
 
@@ -96,46 +96,20 @@ void test_tt_lowerbound_cutoff(void)
     transposition_table_init(1000);
 
     Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
+    uint64_t hash = zobrist_hash(board);
 
     // Store lowerbound score of 60
     transposition_table_store(hash, 60, TRANSPOSITION_TABLE_LOWERBOUND);
 
     // Probe with beta=50: should cutoff (score >= beta)
     int score;
-    int found = transposition_table_probe(hash, -100, 50, &score);
+    int found = transposition_table_probe(hash, 50, &score);
 
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(60, score);
 
     // Probe with beta=70: should NOT cutoff (score < beta)
-    found = transposition_table_probe(hash, -100, 70, &score);
-    TEST_ASSERT_EQUAL(0, found);
-
-    transposition_table_free();
-}
-
-// Test transposition table upperbound cutoff
-void test_tt_upperbound_cutoff(void)
-{
-    zobrist_init();
-    transposition_table_init(1000);
-
-    Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
-
-    // Store upperbound score of 30
-    transposition_table_store(hash, 30, TRANSPOSITION_TABLE_UPPERBOUND);
-
-    // Probe with alpha=40: should cutoff (score <= alpha)
-    int score;
-    int found = transposition_table_probe(hash, 40, 100, &score);
-
-    TEST_ASSERT_EQUAL(1, found);
-    TEST_ASSERT_EQUAL(30, score);
-
-    // Probe with alpha=20: should NOT cutoff (score > alpha)
-    found = transposition_table_probe(hash, 20, 100, &score);
+    found = transposition_table_probe(hash, 70, &score);
     TEST_ASSERT_EQUAL(0, found);
 
     transposition_table_free();
@@ -149,11 +123,11 @@ void test_tt_hash_collision(void)
 
     Bitboard board1 = {0, 0};
     bitboard_make_move(&board1, 0, 0, 'x');
-    uint64_t hash1 = zobrist_hash(board1, 'x');
+    uint64_t hash1 = zobrist_hash(board1);
 
     Bitboard board2 = {0, 0};
     bitboard_make_move(&board2, 1, 1, 'o');
-    uint64_t hash2 = zobrist_hash(board2, 'x');
+    uint64_t hash2 = zobrist_hash(board2);
 
     // Store first position
     transposition_table_store(hash1, 50, TRANSPOSITION_TABLE_EXACT);
@@ -163,29 +137,12 @@ void test_tt_hash_collision(void)
 
     // Probe second should always work
     int score;
-    int found = transposition_table_probe(hash2, -100, 100, &score);
+    int found = transposition_table_probe(hash2, 100, &score);
 
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(75, score);
 
     transposition_table_free();
-}
-
-// Test different aiPlayer produces different hashes
-void test_zobrist_different_aiplayer(void)
-{
-    zobrist_set_seed(42);
-    zobrist_init();
-
-    Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 1, 1, 'o');
-
-    uint64_t hash_x = zobrist_hash(board, 'x');
-    uint64_t hash_o = zobrist_hash(board, 'o');
-
-    // Same position, different maximizing player -> different hash
-    TEST_ASSERT_NOT_EQUAL_UINT64(hash_x, hash_o);
 }
 
 // Test INT16_MIN/MAX score boundaries (cast truncation check)
@@ -199,20 +156,20 @@ void test_tt_score_boundaries(void)
     // Test INT16_MIN boundary
     transposition_table_store(hash, INT16_MIN, TRANSPOSITION_TABLE_EXACT);
     int score;
-    int found = transposition_table_probe(hash, INT16_MIN - 1000, INT16_MAX, &score);
+    int found = transposition_table_probe(hash, INT16_MAX, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(INT16_MIN, score);
 
     // Test INT16_MAX boundary
     transposition_table_store(hash + 1, INT16_MAX, TRANSPOSITION_TABLE_EXACT);
-    found = transposition_table_probe(hash + 1, INT16_MIN, INT16_MAX + 1000, &score);
+    found = transposition_table_probe(hash + 1, INT16_MAX + 1000, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(INT16_MAX, score);
 
     transposition_table_free();
 }
 
-// Test alpha/beta equality in cutoff conditions (off-by-one check)
+// Test LOWERBOUND equality cutoff: score == beta should cutoff (off-by-one check)
 void test_tt_cutoff_equality(void)
 {
     zobrist_init();
@@ -223,15 +180,9 @@ void test_tt_cutoff_equality(void)
 
     // LOWERBOUND with score == beta should cutoff
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_LOWERBOUND);
-    int found = transposition_table_probe(hash, -100, 50, &score);
+    int found = transposition_table_probe(hash, 50, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(50, score);
-
-    // UPPERBOUND with score == alpha should cutoff
-    transposition_table_store(hash + 1, 30, TRANSPOSITION_TABLE_UPPERBOUND);
-    found = transposition_table_probe(hash + 1, 30, 100, &score);
-    TEST_ASSERT_EQUAL(1, found);
-    TEST_ASSERT_EQUAL(30, score);
 
     transposition_table_free();
 }
@@ -250,7 +201,7 @@ void test_tt_multiple_reinit(void)
 
         // Verify it's there
         int score;
-        int found = transposition_table_probe(12345, -100, 100, &score);
+        int found = transposition_table_probe(12345, 100, &score);
         TEST_ASSERT_EQUAL(1, found);
         TEST_ASSERT_EQUAL(i * 10, score);
     }
@@ -268,7 +219,7 @@ void test_tt_non_power_of_two_sizes(void)
     // Size 3 should round up to 4
     transposition_table_init(3);
     transposition_table_store(11111, 10, TRANSPOSITION_TABLE_EXACT);
-    found = transposition_table_probe(11111, -100, 100, &score);
+    found = transposition_table_probe(11111, 100, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(10, score);
     transposition_table_free();
@@ -276,7 +227,7 @@ void test_tt_non_power_of_two_sizes(void)
     // Size 7 should round up to 8
     transposition_table_init(7);
     transposition_table_store(22222, 20, TRANSPOSITION_TABLE_EXACT);
-    found = transposition_table_probe(22222, -100, 100, &score);
+    found = transposition_table_probe(22222, 100, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(20, score);
     transposition_table_free();
@@ -284,7 +235,7 @@ void test_tt_non_power_of_two_sizes(void)
     // Size 1023 should round up to 1024
     transposition_table_init(1023);
     transposition_table_store(33333, 30, TRANSPOSITION_TABLE_EXACT);
-    found = transposition_table_probe(33333, -100, 100, &score);
+    found = transposition_table_probe(33333, 100, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(30, score);
     transposition_table_free();
@@ -303,12 +254,12 @@ void test_tt_exact_fires_outside_window(void)
 
     int score;
     // score=10 is below alpha=20: EXACT must still fire
-    int found = transposition_table_probe(hash, 20, 100, &score);
+    int found = transposition_table_probe(hash, 100, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(10, score);
 
     // score=10 is above beta=5: EXACT must still fire
-    found = transposition_table_probe(hash, -100, 5, &score);
+    found = transposition_table_probe(hash, 5, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(10, score);
 
@@ -331,17 +282,17 @@ void test_tt_always_replace_evicts_previous(void)
     transposition_table_store(hash_a, 42, TRANSPOSITION_TABLE_EXACT);
 
     int score;
-    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_a, -100, 100, &score));
+    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_a, 100, &score));
     TEST_ASSERT_EQUAL(42, score);
 
     // Store hash_b at the same slot — evicts hash_a
     transposition_table_store(hash_b, 77, TRANSPOSITION_TABLE_EXACT);
 
-    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_b, -100, 100, &score));
+    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_b, 100, &score));
     TEST_ASSERT_EQUAL(77, score);
 
     // hash_a must now be a miss (evicted)
-    TEST_ASSERT_EQUAL(0, transposition_table_probe(hash_a, -100, 100, &score));
+    TEST_ASSERT_EQUAL(0, transposition_table_probe(hash_a, 100, &score));
 
     transposition_table_free();
 }
@@ -357,7 +308,7 @@ void test_tt_hash_zero(void)
     transposition_table_store(0, 55, TRANSPOSITION_TABLE_EXACT);
 
     int score;
-    int found = transposition_table_probe(0, -100, 100, &score);
+    int found = transposition_table_probe(0, 100, &score);
     TEST_ASSERT_EQUAL(1, found);
     TEST_ASSERT_EQUAL(55, score);
 
@@ -377,15 +328,15 @@ void test_tt_size_one(void)
     transposition_table_store(hash_a, 30, TRANSPOSITION_TABLE_EXACT);
 
     int score;
-    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_a, -100, 100, &score));
+    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_a, 100, &score));
     TEST_ASSERT_EQUAL(30, score);
 
     // hash_b also maps to slot 0, evicting hash_a
     transposition_table_store(hash_b, 60, TRANSPOSITION_TABLE_EXACT);
 
-    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_b, -100, 100, &score));
+    TEST_ASSERT_EQUAL(1, transposition_table_probe(hash_b, 100, &score));
     TEST_ASSERT_EQUAL(60, score);
-    TEST_ASSERT_EQUAL(0, transposition_table_probe(hash_a, -100, 100, &score));
+    TEST_ASSERT_EQUAL(0, transposition_table_probe(hash_a, 100, &score));
 
     transposition_table_free();
 }
@@ -397,9 +348,7 @@ void test_transposition_table_suite(void)
     RUN_TEST(test_tt_zero_size);
     RUN_TEST(test_tt_reinitialization);
     RUN_TEST(test_tt_lowerbound_cutoff);
-    RUN_TEST(test_tt_upperbound_cutoff);
     RUN_TEST(test_tt_hash_collision);
-    RUN_TEST(test_zobrist_different_aiplayer);
     RUN_TEST(test_tt_score_boundaries);
     RUN_TEST(test_tt_cutoff_equality);
     RUN_TEST(test_tt_multiple_reinit);
