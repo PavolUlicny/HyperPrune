@@ -24,8 +24,8 @@ option(ENABLE_NATIVE_OPTIMIZATIONS "Enable -march=native, -flto, and aggressive 
 add_executable(ttt
     src/main.c
     src/TicTacToe/tic_tac_toe.c
-    src/MiniMax/mini_max.c
-    src/MiniMax/transposition.c
+    src/Negamax/negamax.c
+    src/Negamax/transposition.c
 )
 target_compile_definitions(ttt PRIVATE BOARD_SIZE=${BOARD_SIZE})
 
@@ -45,7 +45,7 @@ endif()
 add_executable(test_runner
     test/test_runner.c
     test/test_bitboard.c
-    test/test_minimax.c
+    test/test_negamax.c
     test/test_zobrist.c
     test/test_transposition_table.c
     test/test_game_scenarios.c
@@ -53,8 +53,8 @@ add_executable(test_runner
     test/test_correctness.c
     test/unity/unity.c
     src/TicTacToe/tic_tac_toe.c
-    src/MiniMax/mini_max.c
-    src/MiniMax/transposition.c
+    src/Negamax/negamax.c
+    src/Negamax/transposition.c
 )
 target_compile_definitions(test_runner PRIVATE BOARD_SIZE=${BOARD_SIZE})
 target_include_directories(test_runner PRIVATE test/unity)
