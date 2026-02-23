@@ -2,11 +2,11 @@
 #define MINI_MAX_H
 
 /*
- * MiniMax (Tic-Tac-Toe)
+ * Negamax (Tic-Tac-Toe)
  * ---------------------
- * Public API for the Minimax-based Tic-Tac-Toe engine.
+ * Public API for the Negamax-based Tic-Tac-Toe engine.
  *
- * The engine searches the full game tree using Minimax with alpha–beta pruning.
+ * The engine searches the full game tree using Negamax with alpha–beta pruning.
  * BOARD_SIZE is configured at compile time (3–8, per tic_tac_toe.h).
  *
  * Board representation:
@@ -26,7 +26,7 @@ extern "C"
 #endif
 
     /**
-     * Compute the AI's next move using Minimax with alpha–beta pruning.
+     * Compute the AI's next move using Negamax with alpha–beta pruning.
      *
      * Parameters:
      *  - board:     Current position (bitboard representation)
