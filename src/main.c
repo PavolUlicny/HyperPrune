@@ -298,7 +298,7 @@ int main(int argc, char **argv)
         if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
         {
             printf("Usage: ttt [OPTIONS]\n\n");
-            printf("Play Tic-Tac-Toe against a perfect minimax AI or run self-play simulations.\n\n");
+            printf("Play Tic-Tac-Toe against a perfect negamax AI or run self-play simulations.\n\n");
             printf("OPTIONS:\n");
             printf("  Interactive Mode (default):\n");
             printf("    Start an interactive game against the AI.\n\n");
