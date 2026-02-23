@@ -9,10 +9,10 @@ void test_incremental_hash_matches_full(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    uint64_t full_hash = zobrist_hash(board, 'x');
+    uint64_t full_hash = zobrist_hash(board);
 
     // Make moves incrementally
-    uint64_t incremental_hash = zobrist_hash(board, 'x');
+    uint64_t incremental_hash = zobrist_hash(board);
     incremental_hash = zobrist_toggle(incremental_hash, 0, 0, 'x');
     bitboard_make_move(&board, 0, 0, 'x');
 
@@ -20,7 +20,7 @@ void test_incremental_hash_matches_full(void)
     bitboard_make_move(&board, 1, 1, 'o');
 
     // Recompute full hash
-    full_hash = zobrist_hash(board, 'x');
+    full_hash = zobrist_hash(board);
 
     TEST_ASSERT_EQUAL_UINT64(full_hash, incremental_hash);
 }
@@ -32,7 +32,7 @@ void test_turn_toggle_changes_hash(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    uint64_t hash1 = zobrist_hash(board, 'x');
+    uint64_t hash1 = zobrist_hash(board);
     uint64_t hash2 = zobrist_toggle_turn(hash1);
 
     TEST_ASSERT_NOT_EQUAL_UINT64(hash1, hash2);
@@ -56,8 +56,8 @@ void test_same_position_same_hash(void)
     bitboard_make_move(&board2, 1, 1, 'o'); // Different order
     bitboard_make_move(&board2, 0, 0, 'x');
 
-    uint64_t hash1 = zobrist_hash(board1, 'x');
-    uint64_t hash2 = zobrist_hash(board2, 'x');
+    uint64_t hash1 = zobrist_hash(board1);
+    uint64_t hash2 = zobrist_hash(board2);
 
     TEST_ASSERT_EQUAL_UINT64(hash1, hash2);
 }
@@ -71,12 +71,12 @@ void test_zobrist_seed_boundaries(void)
     // Test seed 0
     zobrist_set_seed(0);
     zobrist_init();
-    uint64_t hash_seed0 = zobrist_hash(board, 'x');
+    uint64_t hash_seed0 = zobrist_hash(board);
 
     // Test seed UINT64_MAX
     zobrist_set_seed(UINT64_MAX);
     zobrist_init();
-    uint64_t hash_seedmax = zobrist_hash(board, 'x');
+    uint64_t hash_seedmax = zobrist_hash(board);
 
     // Different seeds should produce different hashes
     TEST_ASSERT_NOT_EQUAL_UINT64(hash_seed0, hash_seedmax);
@@ -93,7 +93,7 @@ void test_zobrist_toggle_symmetry(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
+    uint64_t hash = zobrist_hash(board);
     uint64_t original_hash = hash;
 
     // Toggle same cell 10 times (5 pairs)
@@ -118,25 +118,10 @@ void test_zobrist_hash_idempotent(void)
     bitboard_make_move(&board, 0, 0, 'x');
     bitboard_make_move(&board, 1, 1, 'o');
 
-    uint64_t hash1 = zobrist_hash(board, 'x');
-    uint64_t hash2 = zobrist_hash(board, 'x');
+    uint64_t hash1 = zobrist_hash(board);
+    uint64_t hash2 = zobrist_hash(board);
 
     TEST_ASSERT_EQUAL_UINT64(hash1, hash2);
-}
-
-// Test that the empty board hashes differently for 'x' vs 'o' as aiPlayer.
-// On an empty board there are no piece keys — only the player perspective key
-// differentiates them. This verifies the player key is included even with no pieces.
-void test_zobrist_empty_board_different_aiplayer(void)
-{
-    zobrist_set_seed(42);
-    zobrist_init();
-
-    Bitboard empty = {0, 0};
-    uint64_t hash_x = zobrist_hash(empty, 'x');
-    uint64_t hash_o = zobrist_hash(empty, 'o');
-
-    TEST_ASSERT_NOT_EQUAL_UINT64(hash_x, hash_o);
 }
 
 // Test that the Zobrist key for an 'x' piece and an 'o' piece at the same cell
@@ -148,7 +133,7 @@ void test_zobrist_x_and_o_keys_at_same_cell_differ(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    uint64_t base = zobrist_hash(board, 'x');
+    uint64_t base = zobrist_hash(board);
 
     uint64_t with_x = zobrist_toggle(base, 0, 0, 'x');
     uint64_t with_o = zobrist_toggle(base, 0, 0, 'o');
@@ -166,6 +151,5 @@ void test_zobrist_suite(void)
     RUN_TEST(test_zobrist_seed_boundaries);
     RUN_TEST(test_zobrist_toggle_symmetry);
     RUN_TEST(test_zobrist_hash_idempotent);
-    RUN_TEST(test_zobrist_empty_board_different_aiplayer);
     RUN_TEST(test_zobrist_x_and_o_keys_at_same_cell_differ);
 }
