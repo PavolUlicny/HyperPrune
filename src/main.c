@@ -69,20 +69,6 @@ static double timer_diff_seconds(const HiResTimer *start, const HiResTimer *end)
  */
 #define MAX_TRANSPOSITION_TABLE_SIZE 250000000
 
-/* Return non-zero if arg is a recognized CLI option flag. */
-static int isKnownOption(const char *arg)
-{
-    return strcmp(arg, "--help") == 0 ||
-           strcmp(arg, "-h") == 0 ||
-           strcmp(arg, "--selfplay") == 0 ||
-           strcmp(arg, "-s") == 0 ||
-           strcmp(arg, "--quiet") == 0 ||
-           strcmp(arg, "-q") == 0 ||
-           strcmp(arg, "--tt-size") == 0 ||
-           strcmp(arg, "-t") == 0 ||
-           strcmp(arg, "--seed") == 0;
-}
-
 /*
  * Interactive human vs AI loop. Prompts the user to choose a symbol, then
  * alternates between human input and AI selection until the game ends.
@@ -292,7 +278,7 @@ static int selfPlay(int gameCount, int quiet)
  */
 int main(int argc, char **argv)
 {
-    /* Check for help flag first (before any initialization) */
+    /* Scan for --help first so it always wins over other flags */
     for (int i = 1; i < argc; i++)
     {
         if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
@@ -321,250 +307,157 @@ int main(int argc, char **argv)
         }
     }
 
-    /* Reject unknown option flags early to avoid silently ignoring user input. */
-    for (int i = 1; i < argc; ++i)
+    /* Single-pass argument parsing */
+    int opt_selfplay = 0;
+    int opt_selfplay_games = 1000;
+    int opt_quiet = 0;
+    int opt_seed_set = 0;
+    uint64_t opt_seed = 0;
+    int opt_tt_size_set = 0;
+    size_t opt_tt_size = 0;
+
+    for (int i = 1; i < argc; i++)
     {
         const char *arg = argv[i];
 
-        if (strcmp(arg, "--seed") == 0 || strcmp(arg, "--tt-size") == 0 ||
-            strcmp(arg, "-t") == 0 || strcmp(arg, "--selfplay") == 0 ||
-            strcmp(arg, "-s") == 0)
+        if (strcmp(arg, "--selfplay") == 0 || strcmp(arg, "-s") == 0)
         {
-            if (i + 1 < argc)
-            {
-                const char *next = argv[i + 1];
-                if (next[0] != '-' || isdigit((unsigned char)next[1]))
-                {
-                    ++i;
-                }
-            }
-            continue;
-        }
-
-        if (arg[0] == '-' && !isKnownOption(arg))
-        {
-            fprintf(stderr, "Error: Unknown option '%s'\n", arg);
-            fprintf(stderr, "Use --help to see available options.\n");
-            return EXIT_FAILURE;
-        }
-    }
-
-    /* Initialize win masks for bitboard operations */
-    init_win_masks();
-
-    /* Early parse for --seed flag to allow seeding Zobrist key generation */
-    for (int i = 1; i < argc; i++)
-    {
-        if (strcmp(argv[i], "--seed") == 0)
-        {
-            if (i + 1 < argc)
-            {
-                const char *seed_str = argv[i + 1];
-
-                /* Check for empty string */
-                if (seed_str[0] == '\0')
-                {
-                    fprintf(stderr, "Error: --seed value cannot be empty\n");
-                    exit(EXIT_FAILURE);
-                }
-
-                /* Check for negative values (starts with '-') */
-                if (seed_str[0] == '-')
-                {
-                    fprintf(stderr, "Error: Invalid --seed value '%s' (must be 0 to %llu)\n",
-                            seed_str, (unsigned long long)ULLONG_MAX);
-                    exit(EXIT_FAILURE);
-                }
-
-                char *endptr;
-                errno = 0; /* Must reset errno before strtoull */
-                unsigned long long val = strtoull(seed_str, &endptr, 10);
-
-                /* Check for parsing errors */
-                if (endptr == seed_str || *endptr != '\0')
-                {
-                    /* No conversion occurred or trailing garbage */
-                    fprintf(stderr, "Error: Invalid --seed value '%s' (not a valid number)\n", seed_str);
-                    exit(EXIT_FAILURE);
-                }
-                else if (errno == ERANGE)
-                {
-                    fprintf(stderr, "Error: --seed value '%s' out of range (max: %llu)\n",
-                            seed_str, (unsigned long long)ULLONG_MAX);
-                    exit(EXIT_FAILURE);
-                }
-                else
-                {
-                    zobrist_set_seed((uint64_t)val);
-                }
-            }
-            else
-            {
-                fprintf(stderr, "Error: --seed requires a value\n");
-                exit(EXIT_FAILURE);
-            }
-            break;
-        }
-    }
-
-    /* Initialize Zobrist hashing and transposition table */
-    zobrist_init();
-
-    /* Early parse for --tt-size flag to allow overriding transposition table size */
-    int tt_size_override = -1;
-    for (int i = 1; i < argc; i++)
-    {
-        if (strcmp(argv[i], "--tt-size") == 0 || strcmp(argv[i], "-t") == 0)
-        {
+            opt_selfplay = 1;
+            /* Optional positional argument: game count */
             if (i + 1 < argc)
             {
                 char *endptr;
                 errno = 0;
                 long val = strtol(argv[i + 1], &endptr, 10);
-                /* Check if it's a valid number (not just a flag like --quiet) */
-                if ((endptr == argv[i + 1] && *endptr == '\0') ||
-                    (argv[i + 1][0] == '-' && !isdigit((unsigned char)argv[i + 1][1])))
+                if (endptr != argv[i + 1] && *endptr == '\0')
                 {
-                    /* Empty string or flag-like argument — no value provided */
-                    fprintf(stderr, "Error: --tt-size requires a value\n");
-                    exit(EXIT_FAILURE);
-                }
-                else if (*endptr == '\0')
-                {
-                    /* It's a number, validate range */
-                    if (errno != ERANGE && val >= 0 && val <= MAX_TRANSPOSITION_TABLE_SIZE)
+                    /* Valid integer — consume as game count */
+                    if (errno == ERANGE || val < 1 || val > INT_MAX)
                     {
-                        tt_size_override = (int)val;
+                        fprintf(stderr, "Game count must be a positive integer.\n");
+                        return EXIT_FAILURE;
                     }
-                    else
-                    {
-                        fprintf(stderr, "Error: Invalid --tt-size value '%s' (must be 0 to %d)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
-                        exit(EXIT_FAILURE);
-                    }
+                    opt_selfplay_games = (int)val;
+                    i++;
                 }
-                else
+                else if (argv[i + 1][0] != '-')
                 {
-                    /* Not a valid number */
-                    fprintf(stderr, "Error: Invalid --tt-size value '%s' (must be 0 to %d)\n", argv[i + 1], MAX_TRANSPOSITION_TABLE_SIZE);
-                    exit(EXIT_FAILURE);
+                    /* Non-flag, non-integer: warn and leave in place */
+                    fprintf(stderr, "Warning: Invalid --selfplay value '%s', using default %d\n",
+                            argv[i + 1], opt_selfplay_games);
                 }
+                /* Starts with '-': another flag, leave for next iteration */
             }
-            else
+        }
+        else if (strcmp(arg, "--quiet") == 0 || strcmp(arg, "-q") == 0)
+        {
+            opt_quiet = 1;
+        }
+        else if (strcmp(arg, "--seed") == 0)
+        {
+            if (i + 1 >= argc)
+            {
+                fprintf(stderr, "Error: --seed requires a value\n");
+                return EXIT_FAILURE;
+            }
+            i++;
+            const char *seed_str = argv[i];
+            if (seed_str[0] == '\0')
+            {
+                fprintf(stderr, "Error: --seed value cannot be empty\n");
+                return EXIT_FAILURE;
+            }
+            if (seed_str[0] == '-')
+            {
+                fprintf(stderr, "Error: Invalid --seed value '%s' (must be 0 to %llu)\n",
+                        seed_str, (unsigned long long)ULLONG_MAX);
+                return EXIT_FAILURE;
+            }
+            char *endptr;
+            errno = 0;
+            unsigned long long val = strtoull(seed_str, &endptr, 10);
+            if (endptr == seed_str || *endptr != '\0')
+            {
+                fprintf(stderr, "Error: Invalid --seed value '%s' (not a valid number)\n", seed_str);
+                return EXIT_FAILURE;
+            }
+            if (errno == ERANGE)
+            {
+                fprintf(stderr, "Error: --seed value '%s' out of range (max: %llu)\n",
+                        seed_str, (unsigned long long)ULLONG_MAX);
+                return EXIT_FAILURE;
+            }
+            opt_seed = (uint64_t)val;
+            opt_seed_set = 1;
+        }
+        else if (strcmp(arg, "--tt-size") == 0 || strcmp(arg, "-t") == 0)
+        {
+            if (i + 1 >= argc ||
+                (argv[i + 1][0] == '-' && !isdigit((unsigned char)argv[i + 1][1])))
             {
                 fprintf(stderr, "Error: --tt-size requires a value\n");
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
-            break;
+            i++;
+            char *endptr;
+            errno = 0;
+            long val = strtol(argv[i], &endptr, 10);
+            if (endptr == argv[i] || *endptr != '\0' ||
+                errno == ERANGE || val < 0 || val > MAX_TRANSPOSITION_TABLE_SIZE)
+            {
+                fprintf(stderr, "Error: Invalid --tt-size value '%s' (must be 0 to %d)\n",
+                        argv[i], MAX_TRANSPOSITION_TABLE_SIZE);
+                return EXIT_FAILURE;
+            }
+            opt_tt_size = (size_t)val;
+            opt_tt_size_set = 1;
         }
+        else if (arg[0] == '-')
+        {
+            fprintf(stderr, "Error: Unknown option '%s'\n", arg);
+            fprintf(stderr, "Use --help to see available options.\n");
+            return EXIT_FAILURE;
+        }
+        /* Non-flag positional args not consumed as values are silently ignored */
     }
+
+    /* Initialize subsystems in required order */
+    init_win_masks();
+    if (opt_seed_set)
+        zobrist_set_seed(opt_seed);
+    zobrist_init();
 
     /*
      * Dynamic transposition table sizing.
      * Formula: size = 1,500,000 × (BOARD_SIZE / 4)^9.4
      * The result is capped at MAX_TRANSPOSITION_TABLE_SIZE.
      */
-    size_t transposition_table_size;
+    size_t tt_size;
 
 #if BOARD_SIZE == 3
-    transposition_table_size = 100000;
+    tt_size = 100000;
 #elif BOARD_SIZE == 4
-    transposition_table_size = 1500000;
+    tt_size = 1500000;
 #else
     {
-        /* Extrapolate for larger boards using exponential scaling. */
         double growth_factor = pow((double)BOARD_SIZE / 4.0, 9.4);
-        transposition_table_size = (size_t)(1500000.0 * growth_factor);
-
-        /* Apply maximum cap to prevent excessive memory usage */
-        if (transposition_table_size > MAX_TRANSPOSITION_TABLE_SIZE)
-        {
-            transposition_table_size = MAX_TRANSPOSITION_TABLE_SIZE;
-        }
+        tt_size = (size_t)(1500000.0 * growth_factor);
+        if (tt_size > MAX_TRANSPOSITION_TABLE_SIZE)
+            tt_size = MAX_TRANSPOSITION_TABLE_SIZE;
     }
 #endif
 
-    /* Apply user override if --tt-size was specified */
-    if (tt_size_override >= 0)
-    {
-        transposition_table_size = (size_t)tt_size_override;
-    }
+    if (opt_tt_size_set)
+        tt_size = opt_tt_size;
 
-    transposition_table_init(transposition_table_size);
+    transposition_table_init(tt_size);
 
     int ret_code = 0;
-
-    /* Check if --selfplay is present anywhere in argv (order-independent) */
-    int selfplay_mode = 0;
-    int selfplay_idx = -1;
-    for (int i = 1; i < argc; i++)
-    {
-        if (strcmp(argv[i], "--selfplay") == 0 || strcmp(argv[i], "-s") == 0)
-        {
-            selfplay_mode = 1;
-            selfplay_idx = i;
-            break;
-        }
-    }
-
-    if (selfplay_mode)
-    {
-        int games = 1000;
-        int quiet = 0;
-
-        /* Try to parse game count from the argument after --selfplay */
-        if (selfplay_idx + 1 < argc)
-        {
-            char *endptr;
-            errno = 0;
-            long val = strtol(argv[selfplay_idx + 1], &endptr, 10);
-            if (endptr != argv[selfplay_idx + 1] && *endptr == '\0')
-            {
-                if (errno == ERANGE || val < 1 || val > INT_MAX)
-                {
-                    fprintf(stderr, "Game count must be a positive integer.\n");
-                    transposition_table_free();
-                    return 1;
-                }
-                games = (int)val;
-            }
-            else if (!((strcmp(argv[selfplay_idx + 1], "--quiet") == 0 || strcmp(argv[selfplay_idx + 1], "-q") == 0) ||
-                       (strcmp(argv[selfplay_idx + 1], "--tt-size") == 0 || strcmp(argv[selfplay_idx + 1], "-t") == 0) ||
-                       strcmp(argv[selfplay_idx + 1], "--seed") == 0))
-            {
-                /* Not a valid game count and not a recognized flag, warn */
-                fprintf(stderr, "Warning: Invalid --selfplay value '%s', using default %d\n",
-                        argv[selfplay_idx + 1], games);
-            }
-        }
-
-        /* Scan all arguments for flags */
-        for (int i = 1; i < argc; ++i)
-        {
-            if (strcmp(argv[i], "--quiet") == 0 || strcmp(argv[i], "-q") == 0)
-            {
-                quiet = 1;
-            }
-            else if (strcmp(argv[i], "--tt-size") == 0 || strcmp(argv[i], "-t") == 0)
-            {
-                /* Already parsed earlier, skip it and its value if present */
-                if (i + 1 < argc)
-                {
-                    /* Only skip next arg if it's not a flag (or is a negative number) */
-                    if (argv[i + 1][0] != '-' || isdigit((unsigned char)argv[i + 1][1]))
-                    {
-                        i++; /* Skip the value argument */
-                    }
-                }
-            }
-        }
-        ret_code = selfPlay(games, quiet);
-    }
+    if (opt_selfplay)
+        ret_code = selfPlay(opt_selfplay_games, opt_quiet);
     else
-    {
         playGame();
-    }
 
-    /* Clean up transposition table */
     transposition_table_free();
     return ret_code;
 }
