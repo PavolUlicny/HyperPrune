@@ -90,10 +90,10 @@ void test_bit_coordinate_roundtrip(void)
     }
 }
 
-// Test that bitboard_did_last_move_win only checks patterns through the given cell,
-// not all win patterns on the board.
-// Specifically: bitboard_has_won detects a row-0 win, but did_last_move_win
-// at an unrelated cell (1,0) returns false because it only checks row 1 and col 0.
+// Test that bitboard_did_last_move_win only checks patterns through the given cell.
+// bitboard_has_won detects a row-0 win, but bitboard_did_last_move_win queried at
+// an unrelated cell (1,0) returns false — it only checks row 1 and col 0, so the
+// row-0 win is invisible from that cell.
 void test_did_last_move_win_checks_only_through_cell(void)
 {
     Bitboard board = {0, 0};
