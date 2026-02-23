@@ -441,7 +441,7 @@ void test_hash_consistency_full_game(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
+    uint64_t hash = zobrist_hash(board);
 
     // Play predetermined sequence
     int moves[][2] = {{1, 1}, {0, 0}, {0, 2}, {2, 0}, {1, 0}};
@@ -453,7 +453,7 @@ void test_hash_consistency_full_game(void)
         hash = zobrist_toggle(hash, moves[i][0], moves[i][1], players[i]);
 
         // Verify incremental matches full
-        uint64_t full_hash = zobrist_hash(board, 'x');
+        uint64_t full_hash = zobrist_hash(board);
         TEST_ASSERT_EQUAL_UINT64(full_hash, hash);
     }
 #elif BOARD_SIZE == 4
@@ -461,7 +461,7 @@ void test_hash_consistency_full_game(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board, 'x');
+    uint64_t hash = zobrist_hash(board);
 
     // Play predetermined sequence for 4x4
     int moves[][2] = {{1, 1}, {0, 0}, {0, 2}, {2, 0}, {1, 0}, {3, 3}, {2, 2}};
@@ -473,7 +473,7 @@ void test_hash_consistency_full_game(void)
         hash = zobrist_toggle(hash, moves[i][0], moves[i][1], players[i]);
 
         // Verify incremental matches full
-        uint64_t full_hash = zobrist_hash(board, 'x');
+        uint64_t full_hash = zobrist_hash(board);
         TEST_ASSERT_EQUAL_UINT64(full_hash, hash);
     }
 #endif
