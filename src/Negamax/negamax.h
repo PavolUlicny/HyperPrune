@@ -1,5 +1,5 @@
-#ifndef MINI_MAX_H
-#define MINI_MAX_H
+#ifndef NEGAMAX_H
+#define NEGAMAX_H
 
 /*
  * Negamax (Tic-Tac-Toe)

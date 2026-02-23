@@ -15,7 +15,7 @@
  * Public entry point: getAiMove(...)
  */
 
-#include "mini_max.h"
+#include "negamax.h"
 #include "transposition.h"
 #include "bitops.h"
 #include <stdint.h>

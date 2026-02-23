@@ -18,7 +18,7 @@ static inline int CTZ64(uint64_t x)
 }
 #else
 // cppcheck-suppress preprocessorErrorDirective
-#error "No count-trailing-zeros intrinsic available for this compiler/platform. Add support in src/MiniMax/bitops.h."
+#error "No count-trailing-zeros intrinsic available for this compiler/platform. Add support in src/Negamax/bitops.h."
 #endif
 
 #endif
