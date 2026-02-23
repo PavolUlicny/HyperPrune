@@ -92,7 +92,7 @@ int bitboard_has_won(uint64_t player_pieces)
     return 0;
 }
 
-/* Win check based on last move */
+/* Win check for patterns passing through (row, col) — row, column, and diagonals if on them */
 int bitboard_did_last_move_win(uint64_t player_pieces, int row, int col)
 {
     /* Check row */
