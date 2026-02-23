@@ -69,13 +69,13 @@ The `ENABLE_NATIVE_OPTIMIZATIONS` CMake option enables aggressive optimizations 
 # Unix (GCC/Clang)
 gcc -std=c11 -O3 -march=native -flto -DBOARD_SIZE=3 \
   src/main.c src/TicTacToe/tic_tac_toe.c \
-  src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+  src/Negamax/negamax.c src/Negamax/transposition.c \
   -o ttt -lm
 
 # Windows (MSVC)
 cl /std:c11 /O2 /DBOARD_SIZE=3 \
   src\main.c src\TicTacToe\tic_tac_toe.c \
-  src\MiniMax\mini_max.c src\MiniMax\transposition.c \
+  src\Negamax\negamax.c src\Negamax\transposition.c \
   /Fe:ttt.exe
 ```
 
@@ -146,15 +146,15 @@ The test runner is built at `test/test_runner` (Makefile) or `build/test_runner`
 The engine can be used directly from the public headers:
 
 - `TicTacToe/tic_tac_toe.h` for board state, move helpers, and win checks
-- `MiniMax/mini_max.h` for `getAiMove()`
-- `MiniMax/transposition.h` for Zobrist + transposition table
+- `Negamax/negamax.h` for `getAiMove()`
+- `Negamax/transposition.h` for Zobrist + transposition table
 
 Minimal init and loop (0-based coordinates):
 
 ```c
 #include "TicTacToe/tic_tac_toe.h"
-#include "MiniMax/mini_max.h"
-#include "MiniMax/transposition.h"
+#include "Negamax/negamax.h"
+#include "Negamax/transposition.h"
 
 int main(void)
 {
@@ -176,8 +176,8 @@ Compile with `-Isrc` to include the headers:
 ```sh
 gcc -std=c11 -Isrc -DBOARD_SIZE=3 your_program.c \
   src/TicTacToe/tic_tac_toe.c \
-  src/MiniMax/mini_max.c \
-  src/MiniMax/transposition.c \
+  src/Negamax/negamax.c \
+  src/Negamax/transposition.c \
   -o your_program -lm
 ```
 
@@ -199,7 +199,7 @@ Notes:
 src/
 ├── main.c                    # Entry point and CLI
 ├── TicTacToe/                # Board logic and I/O helpers
-└── MiniMax/                  # Search and transposition table
+└── Negamax/                  # Search and transposition table
 test/
 └── unity/                    # Unity test framework
 ```
