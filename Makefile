@@ -124,7 +124,7 @@ pgo:
 	@echo "[PGO  ] Step 1/3: Building with profiling instrumentation..."
 	@$(MAKE) pgo-clean > /dev/null 2>&1
 	@$(MAKE) clean > /dev/null
-	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native $(PGO_GENERATE) \
+	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native -flto $(PGO_GENERATE) \
 		-funroll-loops $(SEMANTIC_INTERPOSITION_FLAG) -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
 		$(SOURCES) -o $(TARGET) -lm
 	@PROFILE_GAMES=$$((1000000 / (($(BOARD_SIZE) - 2) * ($(BOARD_SIZE) - 2)))); \
