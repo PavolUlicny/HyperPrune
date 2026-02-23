@@ -277,11 +277,9 @@ void test_fork_creation(void)
     int row, col;
     getAiMove(board, 'x', &row, &col);
 
-    // AI should block or create optimal position
-    // Just verify it returns a valid move
-    TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
-    TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
-    TEST_ASSERT_TRUE(bitboard_is_empty(board, row, col));
+    // (2,2) simultaneously completes the main diagonal (X wins) and blocks O's row 2
+    TEST_ASSERT_EQUAL(2, row);
+    TEST_ASSERT_EQUAL(2, col);
 
     transposition_table_free();
 #elif BOARD_SIZE == 4
@@ -331,8 +329,8 @@ void test_diagonal_win(void)
     int row, col;
     getAiMove(board, 'x', &row, &col);
 
-    // AI should play (0,2) to complete anti-diagonal and win
-    // (or make another optimal move)
+    // Multiple winning moves exist: (0,2) wins immediately via anti-diagonal;
+    // (0,0) creates a fork (two simultaneous threats). Assert valid move only.
     TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
     TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
 
@@ -357,9 +355,9 @@ void test_diagonal_win(void)
     int row, col;
     getAiMove(board, 'x', &row, &col);
 
-    // AI should play (3,3) to complete diagonal OR block O
-    TEST_ASSERT_TRUE(row >= 0 && row < BOARD_SIZE);
-    TEST_ASSERT_TRUE(col >= 0 && col < BOARD_SIZE);
+    // (3,3) simultaneously completes X's main diagonal (immediate win) and blocks O's row 3
+    TEST_ASSERT_EQUAL(3, row);
+    TEST_ASSERT_EQUAL(3, col);
 
     transposition_table_free();
 #endif
