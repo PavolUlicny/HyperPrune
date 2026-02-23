@@ -42,8 +42,8 @@ int play_full_game(char first_player, uint64_t seed)
     return 0; // Tie
 }
 
-// Test 3x3 optimal play (should always tie)
-void test_optimal_play_3x3(void)
+// Test optimal play (should always tie — 3x3 and 4x4 are both forced draws)
+void test_optimal_play(void)
 {
 #if BOARD_SIZE == 3
     int x_wins = 0, o_wins = 0, ties = 0;
@@ -91,7 +91,7 @@ void test_determinism(void)
     TEST_ASSERT_EQUAL(result1, result2);
 }
 
-// Test 3x3 optimal play with O going first (complements test_optimal_play_3x3 which uses X first)
+// Test optimal play with O going first (complements test_optimal_play which uses X first)
 void test_optimal_play_o_first(void)
 {
 #if BOARD_SIZE == 3
@@ -176,7 +176,7 @@ void test_cross_game_tt_no_reinit(void)
 
 void test_correctness_suite(void)
 {
-    RUN_TEST(test_optimal_play_3x3);
+    RUN_TEST(test_optimal_play);
     RUN_TEST(test_determinism);
     RUN_TEST(test_optimal_play_o_first);
     RUN_TEST(test_cross_game_tt_no_reinit);
