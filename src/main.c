@@ -26,8 +26,8 @@
 #include <math.h>
 #include <errno.h>
 #include "TicTacToe/tic_tac_toe.h"
-#include "MiniMax/mini_max.h"
-#include "MiniMax/transposition.h"
+#include "Negamax/negamax.h"
+#include "Negamax/transposition.h"
 
 /* Portable high-resolution timer */
 #ifdef _MSC_VER
