@@ -35,7 +35,7 @@ jobs:
       - name: Run clang-tidy (warnings as errors)
         run: |
           set -euo pipefail
-          SRC_FILES="src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c"
+          SRC_FILES="src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c"
           for bs in 3 4 5 6 7 8; do
             for f in $SRC_FILES; do
               clang-tidy "$f" -p build/tidy-$bs --warnings-as-errors='*'
@@ -345,8 +345,8 @@ jobs:
           APP_STRICT="$COMMON -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition"
           TEST_STRICT="$COMMON"
 
-          APP_SRC="src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c"
-          TEST_SRC="test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c test/test_correctness.c test/unity/unity.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c"
+          APP_SRC="src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c"
+          TEST_SRC="test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c test/test_correctness.c test/unity/unity.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c"
 
           ${{ matrix.compiler }} -std=c11 $APP_STRICT -DBOARD_SIZE=${{ matrix.board_size }} \
             $APP_SRC \
@@ -378,10 +378,10 @@ jobs:
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
             -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
-            test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
+            test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
             test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
             test/test_correctness.c test/unity/unity.c \
-            src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o test_runner_san -lm
           ./test_runner_san
 
@@ -392,7 +392,7 @@ jobs:
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
             -DBOARD_SIZE=${{ matrix.board_size }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o ttt_san -lm
           ./ttt_san -s 1000 -q
 
@@ -403,15 +403,15 @@ jobs:
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
             -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
-            test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
+            test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
             test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
             test/test_correctness.c test/unity/unity.c \
-            src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o test_runner_san -lm
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
             -DBOARD_SIZE=${{ matrix.board_size }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o ttt_san -lm
 
   valgrind:
@@ -437,10 +437,10 @@ jobs:
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
             -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
-            test/test_runner.c test/test_bitboard.c test/test_minimax.c test/test_zobrist.c \
+            test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
             test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
             test/test_correctness.c test/unity/unity.c \
-            src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o test_runner_valgrind -lm
 
       - name: Run tests under valgrind (3x3/4x4)
@@ -457,7 +457,7 @@ jobs:
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
             -DBOARD_SIZE=${{ matrix.board_size }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o ttt_valgrind -lm
           valgrind --leak-check=full --show-leak-kinds=all \
             --errors-for-leak-kinds=all --error-exitcode=1 \
@@ -469,5 +469,5 @@ jobs:
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
             -DBOARD_SIZE=${{ matrix.board_size }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/MiniMax/mini_max.c src/MiniMax/transposition.c \
+            src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o ttt_valgrind -lm
