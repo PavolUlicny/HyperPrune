@@ -157,8 +157,7 @@ extern "C"
     }
 
     /**
-     * Check if a player has won (full board scan).
-     * Uses pre-computed win masks.
+     * Check if a player has won using pre-computed win masks.
      */
     int bitboard_has_won(uint64_t player_pieces);
 
