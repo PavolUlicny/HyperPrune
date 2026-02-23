@@ -2,7 +2,7 @@
  * Tic-Tac-Toe board and I/O utilities
  * -----------------------------------
  * Public API for handling game state, user interaction, and simple result
- * evaluation. The engine logic (negamax) is in MiniMax/.
+ * evaluation. The engine logic (negamax) is in Negamax/.
  *
  * Board representation:
  *  - Bitboard structure with two uint64_t (x_pieces, o_pieces)
