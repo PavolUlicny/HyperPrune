@@ -29,8 +29,11 @@ typedef enum
     INF = 101
 } HelperScores;
 
-/* Compile-time validation: terminal scores must fit in int16_t (transposition table storage) */
-_Static_assert(WIN <= INT16_MAX && (-WIN) >= INT16_MIN, "WIN and -WIN must fit in int16_t");
+/* Compile-time validation: scores must fit in int16_t (transposition table storage).
+ * INF/-INF are never stored, but asserting them guards against future constant changes. */
+_Static_assert(WIN <= INT16_MAX && (-WIN) >= INT16_MIN &&
+                   INF <= INT16_MAX && (-INF) >= INT16_MIN,
+               "WIN, -WIN, INF, and -INF must fit in int16_t");
 
 /*
  * Safe mask for valid board positions.
