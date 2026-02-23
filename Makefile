@@ -36,8 +36,8 @@ TARGET := ttt
 SOURCES := \
 	$(SRCDIR)/main.c \
 	$(SRCDIR)/TicTacToe/tic_tac_toe.c \
-	$(SRCDIR)/MiniMax/mini_max.c \
-	$(SRCDIR)/MiniMax/transposition.c
+	$(SRCDIR)/Negamax/negamax.c \
+	$(SRCDIR)/Negamax/transposition.c
 
 OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 DEPS := $(OBJECTS:.o=.d)
@@ -149,7 +149,7 @@ TEST_UNITY_DIR := $(TEST_DIR)/unity
 TEST_SOURCES := \
 	$(TEST_DIR)/test_runner.c \
 	$(TEST_DIR)/test_bitboard.c \
-	$(TEST_DIR)/test_minimax.c \
+	$(TEST_DIR)/test_negamax.c \
 	$(TEST_DIR)/test_zobrist.c \
 	$(TEST_DIR)/test_transposition_table.c \
 	$(TEST_DIR)/test_game_scenarios.c \
@@ -159,8 +159,8 @@ TEST_SOURCES := \
 # Core objects (excluding main.o)
 CORE_SOURCES := \
 	$(SRCDIR)/TicTacToe/tic_tac_toe.c \
-	$(SRCDIR)/MiniMax/mini_max.c \
-	$(SRCDIR)/MiniMax/transposition.c
+	$(SRCDIR)/Negamax/negamax.c \
+	$(SRCDIR)/Negamax/transposition.c
 
 TEST_TARGET := $(TEST_DIR)/test_runner
 
