@@ -162,8 +162,13 @@ extern "C"
     int bitboard_has_won(uint64_t player_pieces);
 
     /**
-     * Win check based on last move.
-     * Only checks relevant patterns (row, col, diagonals if applicable).
+     * Win check focused on patterns that pass through (row, col).
+     * Checks at most 4 lines: the row, the column, the main diagonal (if row==col),
+     * and the anti-diagonal (if row+col==BOARD_SIZE-1). Does NOT scan the full board.
+     *
+     * Intended use: pass the cell that was just played to detect whether that move
+     * completed a winning line. Passing any other cell will correctly return false
+     * even if a win exists elsewhere on the board.
      */
     int bitboard_did_last_move_win(uint64_t player_pieces, int row, int col);
 
