@@ -136,9 +136,10 @@ void test_optimal_play_o_first(void)
 // which player goes first. This forces the TT to be reused across games where the
 // same board positions are reached at different search depths (max vs min nodes).
 // If zobrist_toggle_turn calls are ever removed, this test will fail.
+// Runs on 3x3 and 4x4 (5x5+ skipped — too slow for a unit test).
 void test_cross_game_tt_no_reinit(void)
 {
-#if BOARD_SIZE == 3
+#if BOARD_SIZE == 3 || BOARD_SIZE == 4
     zobrist_set_seed(17);
     zobrist_init();
     transposition_table_init(100000);
