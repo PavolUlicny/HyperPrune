@@ -238,7 +238,7 @@ void transposition_table_store(uint64_t hash, int score, TranspositionTableNodeT
 
     /* Replacement strategy: always replace */
     entry->hash = hash;
-    entry->score = (int16_t)score;
-    entry->type = (uint8_t)type;
+    entry->score = (int16_t)score; // NOLINT(bugprone-narrowing-conversions)
+    entry->type = (uint8_t)type;   // NOLINT(bugprone-narrowing-conversions)
     entry->occupied = 1;
 }
