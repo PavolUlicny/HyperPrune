@@ -270,6 +270,82 @@ void test_did_last_move_win_col_last_column(void)
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, BOARD_SIZE - 1, BOARD_SIZE - 1));
 }
 
+// Test checkWinner returns X_WIN when X completes a row
+void test_checkWinner_x_win(void)
+{
+    restartGame();
+    for (int c = 0; c < BOARD_SIZE; c++)
+        bitboard_make_move(&board_state, 0, c, 'x');
+
+    TEST_ASSERT_EQUAL(X_WIN, checkWinner(0, BOARD_SIZE - 1));
+}
+
+// Test checkWinner returns O_WIN when O completes a column
+void test_checkWinner_o_win(void)
+{
+    restartGame();
+    for (int r = 0; r < BOARD_SIZE; r++)
+        bitboard_make_move(&board_state, r, 0, 'o');
+
+    TEST_ASSERT_EQUAL(O_WIN, checkWinner(BOARD_SIZE - 1, 0));
+}
+
+// Test checkWinner returns GAME_CONTINUE on a non-terminal board
+void test_checkWinner_continue(void)
+{
+    restartGame();
+    bitboard_make_move(&board_state, 0, 0, 'x');
+
+    TEST_ASSERT_EQUAL(GAME_CONTINUE, checkWinner(0, 0));
+}
+
+// Test checkWinner returns GAME_TIE when the board is full with no winner.
+// Uses makeMove so move_count reaches MAX_MOVES.
+// Produces: X O X / X O X / O X O (3x3) — verified no winner.
+void test_checkWinner_tie(void)
+{
+#if BOARD_SIZE == 3
+    restartGame();
+    int moves[][2] = {{0, 0}, {0, 1}, {0, 2}, {1, 1}, {1, 0}, {2, 0}, {1, 2}, {2, 2}, {2, 1}};
+    for (int i = 0; i < 9; i++)
+        makeMove(moves[i][0], moves[i][1]);
+    TEST_ASSERT_EQUAL(GAME_TIE, checkWinner(2, 1));
+#endif
+}
+
+// Test makeMove places the current player's piece and flips player_turn
+void test_makeMove_places_piece_and_flips_turn(void)
+{
+    restartGame();
+
+    makeMove(0, 0);
+    TEST_ASSERT_EQUAL('x', bitboard_get_cell(board_state, 0, 0));
+    TEST_ASSERT_EQUAL('o', player_turn);
+
+    makeMove(1, 1);
+    TEST_ASSERT_EQUAL('o', bitboard_get_cell(board_state, 1, 1));
+    TEST_ASSERT_EQUAL('x', player_turn);
+}
+
+// Test restartGame clears the board, resets player_turn to 'x', and resets move_count
+void test_restartGame_clears_board_and_resets_turn(void)
+{
+    makeMove(0, 0);
+    makeMove(1, 1);
+
+    restartGame();
+
+    TEST_ASSERT_EQUAL('x', player_turn);
+
+    for (int r = 0; r < BOARD_SIZE; r++)
+        for (int c = 0; c < BOARD_SIZE; c++)
+            TEST_ASSERT_EQUAL(' ', bitboard_get_cell(board_state, r, c));
+
+    // move_count must be reset: one piece should give GAME_CONTINUE, not GAME_TIE
+    bitboard_make_move(&board_state, 0, 0, 'x');
+    TEST_ASSERT_EQUAL(GAME_CONTINUE, checkWinner(0, 0));
+}
+
 void test_edge_cases_suite(void)
 {
     RUN_TEST(test_did_last_move_win_row);
@@ -290,4 +366,10 @@ void test_edge_cases_suite(void)
     RUN_TEST(test_did_last_move_win_empty_cell);
     RUN_TEST(test_both_players_won_invalid_state);
     RUN_TEST(test_did_last_move_win_col_last_column);
+    RUN_TEST(test_checkWinner_x_win);
+    RUN_TEST(test_checkWinner_o_win);
+    RUN_TEST(test_checkWinner_continue);
+    RUN_TEST(test_checkWinner_tie);
+    RUN_TEST(test_makeMove_places_piece_and_flips_turn);
+    RUN_TEST(test_restartGame_clears_board_and_resets_turn);
 }
