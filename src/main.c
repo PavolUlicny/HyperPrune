@@ -147,8 +147,8 @@ static void playGame(void)
  */
 static int selfPlay(int gameCount, int quiet)
 {
-    int ai1Wins = 0;
-    int ai2Wins = 0;
+    int x_wins = 0;
+    int o_wins = 0;
     int ties = 0;
     HiResTimer startTime = {0};
     int timing_available = 0;
@@ -193,9 +193,9 @@ static int selfPlay(int gameCount, int quiet)
                 if (result == GAME_TIE)
                     ++ties;
                 else if (currentPlayer == 'x')
-                    ++ai1Wins;
+                    ++x_wins;
                 else
-                    ++ai2Wins;
+                    ++o_wins;
                 break;
             }
         }
@@ -233,8 +233,8 @@ static int selfPlay(int gameCount, int quiet)
         }
 
         /* Calculate percentages */
-        double ai1_pct = (100.0 * ai1Wins) / gameCount;
-        double ai2_pct = (100.0 * ai2Wins) / gameCount;
+        double x_pct = (100.0 * x_wins) / gameCount;
+        double o_pct = (100.0 * o_wins) / gameCount;
         double tie_pct = (100.0 * ties) / gameCount;
 
         /* Print results header */
@@ -245,8 +245,8 @@ static int selfPlay(int gameCount, int quiet)
 
         /* Print game outcomes (always available) */
         printf("  Outcomes\n");
-        printf("    X wins:  %8d  (%5.1f%%)\n", ai1Wins, ai1_pct);
-        printf("    O wins:  %8d  (%5.1f%%)\n", ai2Wins, ai2_pct);
+        printf("    X wins:  %8d  (%5.1f%%)\n", x_wins, x_pct);
+        printf("    O wins:  %8d  (%5.1f%%)\n", o_wins, o_pct);
         printf("    Ties:    %8d  (%5.1f%%)\n", ties, tie_pct);
         printf("\n");
 
