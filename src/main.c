@@ -182,7 +182,7 @@ static int selfPlay(int gameCount, int quiet)
             if (currentRow == -1 || currentCol == -1)
             {
                 fprintf(stderr, "Error: AI returned invalid move in self-play (game %d)\n", g + 1);
-                return 1; /* Exit with error */
+                return EXIT_FAILURE;
             }
 
             makeMove(currentRow, currentCol);
