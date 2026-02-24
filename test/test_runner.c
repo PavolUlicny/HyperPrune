@@ -13,16 +13,15 @@ void test_edge_cases_suite(void);
 
 void setUp(void)
 {
-    init_win_masks();
 }
 
 void tearDown(void)
 {
-    // Called after each test
 }
 
 int main(void)
 {
+    init_win_masks();
     UNITY_BEGIN();
 
     printf("\n=== Bitboard Tests ===\n");
