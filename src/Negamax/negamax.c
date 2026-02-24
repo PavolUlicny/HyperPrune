@@ -25,7 +25,7 @@ typedef enum
 {
     WIN = 100, /* Current player wins */
     TIE_SCORE = 0,
-    CONTINUE_SCORE = 1,
+    NOT_TERMINAL = 1,
     INF = 101
 } HelperScores;
 
@@ -53,7 +53,7 @@ static const uint64_t VALID_POSITIONS_MASK = (1ULL << MAX_MOVES) - 1;
  *
  *  -WIN (−100)     : opponent of currentPlayer won → currentPlayer loses
  *   TIE_SCORE (0)  : board is full → draw
- *   CONTINUE_SCORE : game not yet terminal
+ *   NOT_TERMINAL   : game not yet terminal
  */
 static inline int boardScore(Bitboard board, char currentPlayer)
 {
@@ -67,7 +67,7 @@ static inline int boardScore(Bitboard board, char currentPlayer)
     if (occupied == VALID_POSITIONS_MASK)
         return TIE_SCORE;
 
-    return CONTINUE_SCORE;
+    return NOT_TERMINAL;
 }
 
 /*
@@ -84,7 +84,7 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
 
     /* Terminal check: did the previous player win? */
     int state = boardScore(board, currentPlayer);
-    if (state != CONTINUE_SCORE)
+    if (state != NOT_TERMINAL)
     {
         /* Terminal: cache and return exact score */
         transposition_table_store(hash, state, TRANSPOSITION_TABLE_EXACT);
