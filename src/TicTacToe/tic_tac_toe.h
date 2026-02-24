@@ -53,12 +53,12 @@ extern "C"
 #define BIT_TO_COL(bit) ((bit) % BOARD_SIZE)
 #define BIT_MASK(row, col) (1ULL << POS_TO_BIT(row, col))
 
-    /** Game outcome from the point-of-view of the UI. */
+    /** Game outcome based on which symbol won. */
     typedef enum
     {
         GAME_CONTINUE = 0,
-        PLAYER_WIN = 1,
-        AI_WIN = 2,
+        X_WIN = 1,
+        O_WIN = 2,
         GAME_TIE = 3
     } GameResult;
 
@@ -84,7 +84,10 @@ extern "C"
     /** Pretty-print the current board to stdout with row/column indices. */
     void printBoard(void);
 
-    /** Print a human-readable message and board for a terminal result. */
+    /**
+     * Print a human-readable message and board for a terminal result.
+     * Translates X_WIN/O_WIN into "Player wins!" / "AI wins!" using human_symbol.
+     */
     void printGameResult(GameResult result);
 
     /**
@@ -102,7 +105,7 @@ extern "C"
 
     /**
      * Check if the last move at (row,col) decided the game.
-     * Returns PLAYER_WIN or AI_WIN based on the symbol at that cell,
+     * Returns X_WIN or O_WIN based on the symbol at that cell,
      * GAME_TIE if the board is full, or GAME_CONTINUE otherwise.
      */
     GameResult checkWinner(int row, int col);

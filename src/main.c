@@ -192,7 +192,7 @@ static int selfPlay(int gameCount, int quiet)
             {
                 if (result == GAME_TIE)
                     ++ties;
-                else if (currentPlayer == 'x')
+                else if (result == X_WIN)
                     ++x_wins;
                 else
                     ++o_wins;

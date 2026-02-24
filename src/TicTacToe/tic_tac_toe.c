@@ -171,13 +171,13 @@ void printGameResult(GameResult result)
 {
     switch (result)
     {
-    case PLAYER_WIN:
-        printf("Player wins!\n");
+    case X_WIN:
+        printf("%s wins!\n", ('x' == human_symbol) ? "Player" : "AI");
         printBoard();
         printf("\n");
         break;
-    case AI_WIN:
-        printf("AI wins!\n");
+    case O_WIN:
+        printf("%s wins!\n", ('o' == human_symbol) ? "Player" : "AI");
         printBoard();
         printf("\n");
         break;
@@ -279,7 +279,7 @@ void makeMove(int row, int col)
 /*
  * Check whether the last move at (row,col) finished the game.
  * Uses bitboard win detection for checking.
- * Returns PLAYER_WIN/AI_WIN/TIE/CONTINUE.
+ * Returns X_WIN/O_WIN/TIE/CONTINUE.
  */
 GameResult checkWinner(int row, int col)
 {
@@ -287,7 +287,7 @@ GameResult checkWinner(int row, int col)
     uint64_t player_pieces = (player == 'x') ? board_state.x_pieces : board_state.o_pieces;
 
     if (bitboard_did_last_move_win(player_pieces, row, col))
-        return (player == human_symbol) ? PLAYER_WIN : AI_WIN;
+        return (player == 'x') ? X_WIN : O_WIN;
 
     if (move_count < MAX_MOVES)
         return GAME_CONTINUE;
