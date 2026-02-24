@@ -24,7 +24,7 @@
 typedef enum
 {
     WIN = 100, /* Current player wins */
-    TIE_SCORE = 0,
+    TIE = 0,
     NOT_TERMINAL = 1,
     INF = 101
 } HelperScores;
@@ -52,7 +52,7 @@ static const uint64_t VALID_POSITIONS_MASK = (1ULL << MAX_MOVES) - 1;
  * currentPlayer hasn't moved yet — so only one bitboard_has_won call suffices.
  *
  *  -WIN (−100)     : opponent of currentPlayer won → currentPlayer loses
- *   TIE_SCORE (0)  : board is full → draw
+ *   TIE (0)  : board is full → draw
  *   NOT_TERMINAL   : game not yet terminal
  */
 static inline int boardScore(Bitboard board, char currentPlayer)
@@ -65,7 +65,7 @@ static inline int boardScore(Bitboard board, char currentPlayer)
     /* Check if board is full (tie) */
     uint64_t occupied = board.x_pieces | board.o_pieces;
     if (occupied == VALID_POSITIONS_MASK)
-        return TIE_SCORE;
+        return TIE;
 
     return NOT_TERMINAL;
 }
