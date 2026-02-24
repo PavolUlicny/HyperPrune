@@ -434,14 +434,13 @@ void test_getAiMove_two_empty_cells(void)
 // Test hash consistency over full game (end-to-end)
 void test_hash_consistency_full_game(void)
 {
-#if BOARD_SIZE == 3
     zobrist_set_seed(42);
     zobrist_init();
 
     Bitboard board = {0, 0};
     uint64_t hash = zobrist_hash(board);
 
-    // Play predetermined sequence
+    // Predetermined sequence within the top-left 3x3 — valid for all board sizes
     int moves[][2] = {{1, 1}, {0, 0}, {0, 2}, {2, 0}, {1, 0}};
     char players[] = {'x', 'o', 'x', 'o', 'x'};
 
@@ -450,31 +449,9 @@ void test_hash_consistency_full_game(void)
         bitboard_make_move(&board, moves[i][0], moves[i][1], players[i]);
         hash = zobrist_toggle(hash, moves[i][0], moves[i][1], players[i]);
 
-        // Verify incremental matches full
         uint64_t full_hash = zobrist_hash(board);
         TEST_ASSERT_EQUAL_UINT64(full_hash, hash);
     }
-#elif BOARD_SIZE == 4
-    zobrist_set_seed(42);
-    zobrist_init();
-
-    Bitboard board = {0, 0};
-    uint64_t hash = zobrist_hash(board);
-
-    // Play predetermined sequence for 4x4
-    int moves[][2] = {{1, 1}, {0, 0}, {0, 2}, {2, 0}, {1, 0}, {3, 3}, {2, 2}};
-    char players[] = {'x', 'o', 'x', 'o', 'x', 'o', 'x'};
-
-    for (int i = 0; i < 7; i++)
-    {
-        bitboard_make_move(&board, moves[i][0], moves[i][1], players[i]);
-        hash = zobrist_toggle(hash, moves[i][0], moves[i][1], players[i]);
-
-        // Verify incremental matches full
-        uint64_t full_hash = zobrist_hash(board);
-        TEST_ASSERT_EQUAL_UINT64(full_hash, hash);
-    }
-#endif
 }
 
 // Test AI as 'o' takes immediate winning move.

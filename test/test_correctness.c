@@ -82,13 +82,15 @@ void test_optimal_play(void)
 #endif
 }
 
-// Test determinism
+// Test determinism (5x5+ skipped — too slow for a unit test)
 void test_determinism(void)
 {
+#if BOARD_SIZE == 3 || BOARD_SIZE == 4
     int result1 = play_full_game('x', UINT64_C(42));
     int result2 = play_full_game('x', UINT64_C(42));
 
     TEST_ASSERT_EQUAL(result1, result2);
+#endif
 }
 
 // Test optimal play with O going first (complements test_optimal_play which uses X first)

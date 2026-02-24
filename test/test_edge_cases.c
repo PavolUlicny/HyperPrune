@@ -54,33 +54,13 @@ void test_did_last_move_win_main_diagonal(void)
 // Test bitboard_did_last_move_win for anti-diagonal (comprehensive - all positions)
 void test_did_last_move_win_anti_diagonal(void)
 {
-#if BOARD_SIZE == 3
     Bitboard board = {0, 0};
 
-    // Create anti-diagonal win
-    bitboard_make_move(&board, 0, 2, 'x');
-    bitboard_make_move(&board, 1, 1, 'x');
-    bitboard_make_move(&board, 2, 0, 'x');
+    for (int i = 0; i < BOARD_SIZE; i++)
+        bitboard_make_move(&board, i, BOARD_SIZE - 1 - i, 'x');
 
-    // All three positions should detect the anti-diagonal win
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, 2));
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 1, 1));
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 2, 0));
-#elif BOARD_SIZE == 4
-    Bitboard board = {0, 0};
-
-    // Create anti-diagonal win
-    bitboard_make_move(&board, 0, 3, 'x');
-    bitboard_make_move(&board, 1, 2, 'x');
-    bitboard_make_move(&board, 2, 1, 'x');
-    bitboard_make_move(&board, 3, 0, 'x');
-
-    // All four positions should detect the anti-diagonal win
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, 3));
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 1, 2));
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 2, 1));
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 3, 0));
-#endif
+    for (int i = 0; i < BOARD_SIZE; i++)
+        TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, i, BOARD_SIZE - 1 - i));
 }
 
 // Test bitboard_did_last_move_win returns false for non-winning board
@@ -263,42 +243,17 @@ void test_did_last_move_win_empty_cell(void)
 // Test both players won (invalid state - documents priority)
 void test_both_players_won_invalid_state(void)
 {
-#if BOARD_SIZE == 3
     Bitboard board = {0, 0};
 
-    // Create impossible board where both have winning lines
-    // X X X
-    // O O O
-    // _ _ _
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 0, 1, 'x');
-    bitboard_make_move(&board, 0, 2, 'x');
-    bitboard_make_move(&board, 1, 0, 'o');
-    bitboard_make_move(&board, 1, 1, 'o');
-    bitboard_make_move(&board, 1, 2, 'o');
+    // X fills row 0, O fills row 1 — impossible game state where both have won
+    for (int c = 0; c < BOARD_SIZE; c++)
+    {
+        bitboard_make_move(&board, 0, c, 'x');
+        bitboard_make_move(&board, 1, c, 'o');
+    }
 
     TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
     TEST_ASSERT_TRUE(bitboard_has_won(board.o_pieces));
-#elif BOARD_SIZE == 4
-    Bitboard board = {0, 0};
-
-    // Create impossible board where both have winning lines
-    // X X X X
-    // O O O O
-    // _ _ _ _
-    // _ _ _ _
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 0, 1, 'x');
-    bitboard_make_move(&board, 0, 2, 'x');
-    bitboard_make_move(&board, 0, 3, 'x');
-    bitboard_make_move(&board, 1, 0, 'o');
-    bitboard_make_move(&board, 1, 1, 'o');
-    bitboard_make_move(&board, 1, 2, 'o');
-    bitboard_make_move(&board, 1, 3, 'o');
-
-    TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
-    TEST_ASSERT_TRUE(bitboard_has_won(board.o_pieces));
-#endif
 }
 
 // Test bitboard_did_last_move_win for the last column (BOARD_SIZE-1).
