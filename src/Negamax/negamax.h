@@ -28,6 +28,8 @@ extern "C"
     /**
      * Compute the AI's next move using Negamax with alpha–beta pruning.
      *
+     * Prerequisite: init_win_masks() must be called once before the first call.
+     *
      * Parameters:
      *  - board:     Current position (bitboard representation)
      *  - aiPlayer:  The AI symbol ('x' or 'o') to maximize for
