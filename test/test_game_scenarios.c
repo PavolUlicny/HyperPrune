@@ -562,6 +562,58 @@ void test_ai_o_blocks_x_win(void)
 #endif
 }
 
+// Test AI wins immediately rather than blocking an equally urgent opponent threat.
+// X can win at (0,2) by completing row 0.
+// O threatens (1,2) to complete row 1 — a separate blocking cell.
+// AI must prefer winning over blocking.
+void test_win_over_block_priority(void)
+{
+#if BOARD_SIZE == 3
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X X _   <- X wins at (0,2)
+    // O O _   <- O threatens (1,2)
+    // _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(2, col);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X X X _   <- X wins at (0,3)
+    // O O O _   <- O threatens (1,3)
+    // _ _ _ _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move(&board, 1, 2, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(3, col);
+
+    transposition_table_free();
+#endif
+}
+
 void test_game_scenarios_suite(void)
 {
     RUN_TEST(test_ai_takes_winning_move);
@@ -575,4 +627,5 @@ void test_game_scenarios_suite(void)
     RUN_TEST(test_hash_consistency_full_game);
     RUN_TEST(test_ai_o_takes_winning_move);
     RUN_TEST(test_ai_o_blocks_x_win);
+    RUN_TEST(test_win_over_block_priority);
 }
