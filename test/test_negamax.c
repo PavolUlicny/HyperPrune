@@ -276,6 +276,59 @@ void test_getAiMove_no_tt(void)
     transposition_table_free();
 }
 
+// Test AI completes an anti-diagonal win.
+// All other diagonal tests use the main diagonal; this covers the anti-diagonal.
+void test_getAiMove_anti_diagonal_win(void)
+{
+#if BOARD_SIZE == 3
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X needs (1,1) to complete the anti-diagonal (0,2)-(1,1)-(2,0).
+    // O blocks (0,0) and (2,2), so all other X moves create only one threat
+    // that O can block — making (1,1) the unique winning move.
+    // O _ X
+    // _ _ _
+    // X _ O
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 2, 'x');
+    bitboard_make_move(&board, 2, 0, 'x');
+    bitboard_make_move(&board, 0, 0, 'o');
+    bitboard_make_move(&board, 2, 2, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    TEST_ASSERT_EQUAL(1, row);
+    TEST_ASSERT_EQUAL(1, col);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X needs (3,0) to complete the anti-diagonal (0,3)-(1,2)-(2,1)-(3,0).
+    // _ O _ X
+    // O _ X _
+    // _ X _ _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move(&board, 0, 3, 'x');
+    bitboard_make_move(&board, 1, 2, 'x');
+    bitboard_make_move(&board, 2, 1, 'x');
+    bitboard_make_move(&board, 0, 1, 'o');
+    bitboard_make_move(&board, 1, 0, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    TEST_ASSERT_EQUAL(3, row);
+    TEST_ASSERT_EQUAL(0, col);
+
+    transposition_table_free();
+#endif
+}
+
 void test_negamax_suite(void)
 {
     RUN_TEST(test_empty_board_plays_center);
@@ -287,4 +340,5 @@ void test_negamax_suite(void)
     RUN_TEST(test_getAiMove_column_win);
     RUN_TEST(test_getAiMove_blocks_column);
     RUN_TEST(test_getAiMove_no_tt);
+    RUN_TEST(test_getAiMove_anti_diagonal_win);
 }
