@@ -58,7 +58,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
-        board_size: [3, 4]
+        board_size: [3, 4, 5, 6, 7, 8]
 
     steps:
       - name: Checkout code
@@ -75,6 +75,7 @@ jobs:
           make test CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
 
       - name: Self-play verification
+        if: matrix.board_size == 3 || matrix.board_size == 4
         run: |
           set -euo pipefail
           echo "Running self-play verification for perfect play..."
@@ -153,7 +154,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        board_size: [3, 4]
+        board_size: [3, 4, 5, 6, 7, 8]
         native_opt: [ON, OFF]
 
     steps:
@@ -176,6 +177,7 @@ jobs:
           ctest --test-dir build --build-config Release --output-on-failure
 
       - name: Self-play verification
+        if: matrix.board_size == 3 || matrix.board_size == 4
         run: |
           set -euo pipefail
           echo "Running self-play verification for perfect play..."
@@ -266,7 +268,6 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Run tests
-        if: matrix.board_size == 3 || matrix.board_size == 4
         run: ctest --test-dir build --build-config Release --output-on-failure
 
       - name: Self-play verification
@@ -371,8 +372,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build and run tests under ASan+UBSan (3x3/4x4)
-        if: matrix.board_size == 3 || matrix.board_size == 4
+      - name: Build and run tests under ASan+UBSan
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
@@ -395,24 +395,6 @@ jobs:
             src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o ttt_san -lm
           ./ttt_san -s 1000 -q
-
-      - name: Sanitizer build-only coverage (5x5+)
-        if: matrix.board_size >= 5
-        run: |
-          set -euo pipefail
-          ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
-            -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
-            -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
-            test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
-            test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
-            test/test_correctness.c test/unity/unity.c \
-            src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
-            -o test_runner_san -lm
-          ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
-            -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
-            -DBOARD_SIZE=${{ matrix.board_size }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
-            -o ttt_san -lm
 
   valgrind:
     runs-on: ubuntu-latest
@@ -443,8 +425,7 @@ jobs:
             src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o test_runner_valgrind -lm
 
-      - name: Run tests under valgrind (3x3/4x4)
-        if: matrix.board_size == 3 || matrix.board_size == 4
+      - name: Run tests under valgrind
         run: |
           set -euo pipefail
           valgrind --leak-check=full --show-leak-kinds=all \
@@ -462,12 +443,3 @@ jobs:
           valgrind --leak-check=full --show-leak-kinds=all \
             --errors-for-leak-kinds=all --error-exitcode=1 \
             ./ttt_valgrind -s 1000 -q
-
-      - name: Valgrind build-only coverage (5x5+)
-        if: matrix.board_size >= 5
-        run: |
-          set -euo pipefail
-          ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
-            -DBOARD_SIZE=${{ matrix.board_size }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
-            -o ttt_valgrind -lm
