@@ -186,7 +186,7 @@ void printGameResult(GameResult result)
         printBoard();
         printf("\n");
         break;
-    default:
+    case GAME_CONTINUE:
         printf("Game continues...\n");
         break;
     }
