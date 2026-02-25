@@ -232,19 +232,18 @@ void test_tie_scenario(void)
     zobrist_init();
     transposition_table_init(10000);
 
-    // Create a tie board (no 4-in-a-row)
-    // X O X O
-    // O X O X
-    // X O X O
-    // O X O X
+    // Create a tie board (no 4-in-a-row in any direction)
+    // X X O O
+    // O O X X
+    // X X O O
+    // O O X X
     Bitboard board = {0, 0};
-    for (int i = 0; i < 16; i++)
-    {
-        int r = i / 4;
-        int c = i % 4;
-        char player = ((r + c) % 2 == 0) ? 'x' : 'o';
-        bitboard_make_move(&board, r, c, player);
-    }
+    for (int r = 0; r < 4; r++)
+        for (int c = 0; c < 4; c++)
+        {
+            char player = ((c < 2) == (r % 2 == 0)) ? 'x' : 'o';
+            bitboard_make_move(&board, r, c, player);
+        }
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
