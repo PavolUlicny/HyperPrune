@@ -92,7 +92,7 @@ extern "C"
     typedef enum
     {
         TRANSPOSITION_TABLE_EXACT,     /* Exact score (all moves explored, or WIN found; true value equals stored score) */
-        TRANSPOSITION_TABLE_LOWERBOUND /* Score >= stored value (beta cutoff: score >= beta) */
+        TRANSPOSITION_TABLE_LOWERBOUND /* True value >= stored score (beta cutoff); probe fires when stored_score >= beta */
     } TranspositionTableNodeType;
 
     /**
