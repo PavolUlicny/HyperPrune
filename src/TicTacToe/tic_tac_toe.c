@@ -356,21 +356,22 @@ void choosePlayerSymbol(void)
         int choice = ch;
         discardLine();
 
-        if (choice == 'x' || choice == 'X')
+        switch (choice)
         {
+        case 'x':
+        case 'X':
             human_symbol = 'x';
             ai_symbol = 'o';
-            break;
-        }
-        else if (choice == 'o' || choice == 'O')
-        {
+            return;
+        case 'o':
+        case 'O':
+        case '0':
             human_symbol = 'o';
             ai_symbol = 'x';
-            break;
-        }
-        else
-        {
+            return;
+        default:
             printf("Please enter x or o.\n");
+            break;
         }
     }
 }
