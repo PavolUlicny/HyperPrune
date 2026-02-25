@@ -2,7 +2,6 @@
 #include "../src/Negamax/negamax.h"
 #include "../src/Negamax/transposition.h"
 #include "../src/TicTacToe/tic_tac_toe.h"
-#include <stdlib.h>
 
 // Helper: Play a complete game
 int play_full_game(char first_player, uint64_t seed)
