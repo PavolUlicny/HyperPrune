@@ -301,7 +301,8 @@ void test_checkWinner_continue(void)
 
 // Test checkWinner returns GAME_TIE when the board is full with no winner.
 // Uses makeMove so move_count reaches MAX_MOVES.
-// Produces: X O X / X O X / O X O (3x3) — verified no winner.
+// 3x3 produces: X O X / X O X / O X O — verified no winner.
+// 4x4 produces: X X O O / O O X X / X X O O / O O X X — verified no winner.
 void test_checkWinner_tie(void)
 {
 #if BOARD_SIZE == 3
@@ -310,6 +311,13 @@ void test_checkWinner_tie(void)
     for (int i = 0; i < 9; i++)
         makeMove(moves[i][0], moves[i][1]);
     TEST_ASSERT_EQUAL(GAME_TIE, checkWinner(2, 1));
+#elif BOARD_SIZE == 4
+    restartGame();
+    int moves[][2] = {
+        {0, 0}, {0, 2}, {0, 1}, {0, 3}, {1, 2}, {1, 0}, {1, 3}, {1, 1}, {2, 0}, {2, 2}, {2, 1}, {2, 3}, {3, 2}, {3, 0}, {3, 3}, {3, 1}};
+    for (int i = 0; i < 16; i++)
+        makeMove(moves[i][0], moves[i][1]);
+    TEST_ASSERT_EQUAL(GAME_TIE, checkWinner(3, 1));
 #endif
 }
 
