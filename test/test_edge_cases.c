@@ -338,6 +338,7 @@ void test_makeMove_places_piece_and_flips_turn(void)
 // Test restartGame clears the board, resets player_turn to 'x', and resets move_count
 void test_restartGame_clears_board_and_resets_turn(void)
 {
+    restartGame();
     makeMove(0, 0);
     makeMove(1, 1);
 
