@@ -75,5 +75,6 @@ test/test_runner
 # Keep Unity framework
 !test/unity/
 
-# .claude folder
+# claude files
 .claude/
+CLAUDE.md
