@@ -121,24 +121,36 @@ extern "C"
 
     /* Bitboard utility functions */
 
-    /** Make a move on the bitboard (set bit for player). */
-    static inline void bitboard_make_move(Bitboard *board, int row, int col, char player)
+    /** Make a move on the bitboard using a bit index directly. */
+    static inline void bitboard_make_move_bit(Bitboard *board, int bit, char player)
     {
-        uint64_t mask = BIT_MASK(row, col);
+        uint64_t mask = 1ULL << bit;
         if (player == 'x')
             board->x_pieces |= mask;
         else
             board->o_pieces |= mask;
     }
 
-    /** Unmake a move on the bitboard (clear bit for player). */
-    static inline void bitboard_unmake_move(Bitboard *board, int row, int col, char player)
+    /** Unmake a move on the bitboard using a bit index directly. */
+    static inline void bitboard_unmake_move_bit(Bitboard *board, int bit, char player)
     {
-        uint64_t mask = BIT_MASK(row, col);
+        uint64_t mask = 1ULL << bit;
         if (player == 'x')
             board->x_pieces &= ~mask;
         else
             board->o_pieces &= ~mask;
+    }
+
+    /** Make a move on the bitboard (set bit for player). */
+    static inline void bitboard_make_move(Bitboard *board, int row, int col, char player)
+    {
+        bitboard_make_move_bit(board, POS_TO_BIT(row, col), player);
+    }
+
+    /** Unmake a move on the bitboard (clear bit for player). */
+    static inline void bitboard_unmake_move(Bitboard *board, int row, int col, char player)
+    {
+        bitboard_unmake_move_bit(board, POS_TO_BIT(row, col), player);
     }
 
     /** Get the symbol at a cell ('x', 'o', or ' '). */

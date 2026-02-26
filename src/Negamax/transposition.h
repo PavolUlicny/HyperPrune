@@ -63,17 +63,17 @@ extern "C"
      * Incremental hash update: toggle a piece on/off.
      *
      * Usage:
-     *  - Before move: new_hash = zobrist_toggle(hash, row, col, player)
-     *  - After unmake: hash = zobrist_toggle(new_hash, row, col, player)
+     *  - Before move: new_hash = zobrist_toggle(hash, bit, player)
+     *  - After unmake: hash = zobrist_toggle(new_hash, bit, player)
      *
      * Parameters:
      *  - hash: Current position hash
-     *  - row, col: Cell coordinates (0-based)
+     *  - bit: Bit index of the cell (row * BOARD_SIZE + col)
      *  - player: Piece to toggle ('x' or 'o')
      *
      * Returns: Updated hash after toggling the piece
      */
-    uint64_t zobrist_toggle(uint64_t hash, int row, int col, char player);
+    uint64_t zobrist_toggle(uint64_t hash, int bit, char player);
 
     /**
      * Toggle the side-to-move component in the hash.

@@ -99,13 +99,11 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
     {
         int bit = CTZ64(empty);
         empty &= empty - 1;
-        int row = BIT_TO_ROW(bit);
-        int col = BIT_TO_COL(bit);
-        bitboard_make_move(&board, row, col, currentPlayer);
-        uint64_t new_hash = zobrist_toggle(hash, row, col, currentPlayer);
+        bitboard_make_move_bit(&board, bit, currentPlayer);
+        uint64_t new_hash = zobrist_toggle(hash, bit, currentPlayer);
         new_hash = zobrist_toggle_turn(new_hash);
         int score = -negamax(board, opponent, -beta, -alpha, new_hash);
-        bitboard_unmake_move(&board, row, col, currentPlayer);
+        bitboard_unmake_move_bit(&board, bit, currentPlayer);
 
         if (score > bestScore)
             bestScore = score;
@@ -186,8 +184,7 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
 
     int alpha = -INF;
     int beta = INF;
-    int bestRow = -1;
-    int bestCol = -1;
+    int bestBit = -1;
     int bestScore = -INF;
     uint64_t hash = zobrist_hash(board);
     if (aiPlayer == 'o')
@@ -198,19 +195,16 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
     {
         int bit = CTZ64(empty);
         empty &= empty - 1;
-        int row = BIT_TO_ROW(bit);
-        int col = BIT_TO_COL(bit);
-        bitboard_make_move(&board, row, col, aiPlayer);
-        uint64_t new_hash = zobrist_toggle(hash, row, col, aiPlayer);
+        bitboard_make_move_bit(&board, bit, aiPlayer);
+        uint64_t new_hash = zobrist_toggle(hash, bit, aiPlayer);
         new_hash = zobrist_toggle_turn(new_hash);
         int score = -negamax(board, opponent, -beta, -alpha, new_hash);
-        bitboard_unmake_move(&board, row, col, aiPlayer);
+        bitboard_unmake_move_bit(&board, bit, aiPlayer);
 
         if (score > bestScore)
         {
             bestScore = score;
-            bestRow = row;
-            bestCol = col;
+            bestBit = bit;
             alpha = score;
         }
 
@@ -219,6 +213,6 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
             break;
     }
 
-    *out_row = bestRow;
-    *out_col = bestCol;
+    *out_row = BIT_TO_ROW(bestBit);
+    *out_col = BIT_TO_COL(bestBit);
 }

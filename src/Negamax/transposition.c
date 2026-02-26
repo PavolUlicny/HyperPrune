@@ -10,10 +10,10 @@
 #include <stdio.h>
 
 /*
- * Zobrist keys: [row][col][player_index]
- * player_index: 0='x', 1='o'
+ * Zobrist keys: [bit][player_index]
+ * bit = row * BOARD_SIZE + col, player_index: 0='x', 1='o'
  */
-static uint64_t zobrist_keys[BOARD_SIZE][BOARD_SIZE][2];
+static uint64_t zobrist_keys[MAX_MOVES][2];
 
 /*
  * Zobrist key for side-to-move.
@@ -84,14 +84,11 @@ void zobrist_set_seed(uint64_t seed)
 void zobrist_init(void)
 {
     /* Initialize piece keys using SplitMix64 */
-    for (int r = 0; r < BOARD_SIZE; r++)
+    for (int bit = 0; bit < MAX_MOVES; bit++)
     {
-        for (int c = 0; c < BOARD_SIZE; c++)
+        for (int p = 0; p < 2; p++)
         {
-            for (int p = 0; p < 2; p++)
-            {
-                zobrist_keys[r][c][p] = splitmix64_next();
-            }
+            zobrist_keys[bit][p] = splitmix64_next();
         }
     }
 
@@ -113,9 +110,7 @@ uint64_t zobrist_hash(Bitboard board)
     while (x_pieces)
     {
         int bit = CTZ64(x_pieces);
-        int row = BIT_TO_ROW(bit);
-        int col = BIT_TO_COL(bit);
-        hash ^= zobrist_keys[row][col][0];
+        hash ^= zobrist_keys[bit][0];
         x_pieces &= x_pieces - 1;
     }
 
@@ -124,18 +119,16 @@ uint64_t zobrist_hash(Bitboard board)
     while (o_pieces)
     {
         int bit = CTZ64(o_pieces);
-        int row = BIT_TO_ROW(bit);
-        int col = BIT_TO_COL(bit);
-        hash ^= zobrist_keys[row][col][1];
+        hash ^= zobrist_keys[bit][1];
         o_pieces &= o_pieces - 1;
     }
 
     return hash;
 }
 
-uint64_t zobrist_toggle(uint64_t hash, int row, int col, char player)
+uint64_t zobrist_toggle(uint64_t hash, int bit, char player)
 {
-    return hash ^ zobrist_keys[row][col][player_to_index(player)];
+    return hash ^ zobrist_keys[bit][player_to_index(player)];
 }
 
 uint64_t zobrist_toggle_turn(uint64_t hash)
