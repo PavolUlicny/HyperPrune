@@ -446,7 +446,7 @@ void test_hash_consistency_full_game(void)
     for (int i = 0; i < 5; i++)
     {
         bitboard_make_move(&board, moves[i][0], moves[i][1], players[i]);
-        hash = zobrist_toggle(hash, moves[i][0], moves[i][1], players[i]);
+        hash = zobrist_toggle(hash, POS_TO_BIT(moves[i][0], moves[i][1]), players[i]);
 
         uint64_t full_hash = zobrist_hash(board);
         TEST_ASSERT_EQUAL_UINT64(full_hash, hash);

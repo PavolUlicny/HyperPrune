@@ -13,10 +13,10 @@ void test_incremental_hash_matches_full(void)
 
     // Make moves incrementally
     uint64_t incremental_hash = zobrist_hash(board);
-    incremental_hash = zobrist_toggle(incremental_hash, 0, 0, 'x');
+    incremental_hash = zobrist_toggle(incremental_hash, POS_TO_BIT(0, 0), 'x');
     bitboard_make_move(&board, 0, 0, 'x');
 
-    incremental_hash = zobrist_toggle(incremental_hash, 1, 1, 'o');
+    incremental_hash = zobrist_toggle(incremental_hash, POS_TO_BIT(1, 1), 'o');
     bitboard_make_move(&board, 1, 1, 'o');
 
     // Recompute full hash
@@ -99,8 +99,8 @@ void test_zobrist_toggle_symmetry(void)
     // Toggle same cell 10 times (5 pairs)
     for (int i = 0; i < 5; i++)
     {
-        hash = zobrist_toggle(hash, 1, 1, 'x');
-        hash = zobrist_toggle(hash, 1, 1, 'x');
+        hash = zobrist_toggle(hash, POS_TO_BIT(1, 1), 'x');
+        hash = zobrist_toggle(hash, POS_TO_BIT(1, 1), 'x');
     }
 
     // Should return to original (XOR symmetry)
@@ -135,8 +135,8 @@ void test_zobrist_x_and_o_keys_at_same_cell_differ(void)
     Bitboard board = {0, 0};
     uint64_t base = zobrist_hash(board);
 
-    uint64_t with_x = zobrist_toggle(base, 0, 0, 'x');
-    uint64_t with_o = zobrist_toggle(base, 0, 0, 'o');
+    uint64_t with_x = zobrist_toggle(base, POS_TO_BIT(0, 0), 'x');
+    uint64_t with_o = zobrist_toggle(base, POS_TO_BIT(0, 0), 'o');
 
     TEST_ASSERT_NOT_EQUAL_UINT64(with_x, with_o);
     TEST_ASSERT_NOT_EQUAL_UINT64(base, with_x);

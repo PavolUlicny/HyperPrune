@@ -191,11 +191,11 @@ void test_make_unmake_hash_cycle(void)
 
     // Make move and hash
     bitboard_make_move(&board, 1, 1, 'x');
-    uint64_t new_hash = zobrist_toggle(original_hash, 1, 1, 'x');
+    uint64_t new_hash = zobrist_toggle(original_hash, POS_TO_BIT(1, 1), 'x');
 
     // Unmake and restore hash
     bitboard_unmake_move(&board, 1, 1, 'x');
-    uint64_t restored_hash = zobrist_toggle(new_hash, 1, 1, 'x');
+    uint64_t restored_hash = zobrist_toggle(new_hash, POS_TO_BIT(1, 1), 'x');
 
     TEST_ASSERT_EQUAL_UINT64(original_hash, restored_hash);
 }
