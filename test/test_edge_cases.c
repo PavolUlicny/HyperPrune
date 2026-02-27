@@ -350,9 +350,49 @@ void test_restartGame_clears_board_and_resets_turn(void)
         for (int c = 0; c < BOARD_SIZE; c++)
             TEST_ASSERT_EQUAL(' ', bitboard_get_cell(board_state, r, c));
 
-    // move_count must be reset: one piece should give GAME_CONTINUE, not GAME_TIE
-    bitboard_make_move_rc(&board_state, 0, 0, 'x');
-    TEST_ASSERT_EQUAL(GAME_CONTINUE, checkWinner(0, 0));
+    /*
+     * Verify move_count was zeroed by playing a full tie-board sequence via makeMove()
+     * and asserting GAME_CONTINUE on the penultimate move and GAME_TIE on the last.
+     *
+     * Fill pattern: player(r,c) = ((c/2 + r) % 2 == 0) ? 'x' : 'o'
+     * This places pieces in 2-column alternating bands. Every row, column, and diagonal
+     * in the resulting board contains both 'x' and 'o' pieces, so no line is ever
+     * completed by one player — making it a win-free tie for all board sizes 3-8.
+     *
+     * Since every line in the final board is mixed, no partial prefix of the fill can
+     * complete a line for one player either, so no spurious win fires mid-sequence.
+     *
+     * If restartGame() failed to reset move_count (left it at 2), move_count would
+     * reach MAX_MOVES after only MAX_MOVES-2 post-restart calls, and checkWinner()
+     * would return GAME_TIE instead of GAME_CONTINUE on the penultimate move.
+     */
+    int x_bits[MAX_MOVES], o_bits[MAX_MOVES];
+    int nx = 0, no_count = 0;
+    for (int r = 0; r < BOARD_SIZE; r++)
+        for (int c = 0; c < BOARD_SIZE; c++)
+        {
+            if (((c / 2) + r) % 2 == 0)
+                x_bits[nx++] = r * BOARD_SIZE + c;
+            else
+                o_bits[no_count++] = r * BOARD_SIZE + c;
+        }
+
+    /* Interleave x and o positions; makeMove() alternates turns automatically */
+    int xi = 0, oi = 0;
+    int last_row = 0, last_col = 0;
+    for (int i = 0; i < MAX_MOVES - 1; i++)
+    {
+        int bit = (i % 2 == 0) ? x_bits[xi++] : o_bits[oi++];
+        last_row = bit / BOARD_SIZE;
+        last_col = bit % BOARD_SIZE;
+        makeMove(last_row, last_col);
+    }
+    TEST_ASSERT_EQUAL(GAME_CONTINUE, checkWinner(last_row, last_col));
+
+    /* Final move: completes the board, must be GAME_TIE (not a win) */
+    int final_bit = (xi < nx) ? x_bits[xi] : o_bits[oi];
+    makeMove(final_bit / BOARD_SIZE, final_bit % BOARD_SIZE);
+    TEST_ASSERT_EQUAL(GAME_TIE, checkWinner(final_bit / BOARD_SIZE, final_bit % BOARD_SIZE));
 }
 
 void test_edge_cases_suite(void)
