@@ -270,7 +270,7 @@ int getMove(int *out_row, int *out_col)
 /* Place the current player's symbol and toggle player_turn; increment move_count. */
 void makeMove(int row, int col)
 {
-    bitboard_make_move(&board_state, row, col, player_turn);
+    bitboard_make_move_rc(&board_state, row, col, player_turn);
     player_turn = (player_turn == 'x') ? 'o' : 'x';
     move_count++;
 }

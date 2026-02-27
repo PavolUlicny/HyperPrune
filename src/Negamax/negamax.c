@@ -99,11 +99,11 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
     {
         int bit = CTZ64(empty);
         empty &= empty - 1;
-        bitboard_make_move_bit(&board, bit, currentPlayer);
+        bitboard_make_move(&board, bit, currentPlayer);
         uint64_t new_hash = zobrist_toggle(hash, bit, currentPlayer);
         new_hash = zobrist_toggle_turn(new_hash);
         int score = -negamax(board, opponent, -beta, -alpha, new_hash);
-        bitboard_unmake_move_bit(&board, bit, currentPlayer);
+        bitboard_unmake_move(&board, bit, currentPlayer);
 
         if (score > bestScore)
             bestScore = score;
@@ -195,11 +195,11 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
     {
         int bit = CTZ64(empty);
         empty &= empty - 1;
-        bitboard_make_move_bit(&board, bit, aiPlayer);
+        bitboard_make_move(&board, bit, aiPlayer);
         uint64_t new_hash = zobrist_toggle(hash, bit, aiPlayer);
         new_hash = zobrist_toggle_turn(new_hash);
         int score = -negamax(board, opponent, -beta, -alpha, new_hash);
-        bitboard_unmake_move_bit(&board, bit, aiPlayer);
+        bitboard_unmake_move(&board, bit, aiPlayer);
 
         if (score > bestScore)
         {
