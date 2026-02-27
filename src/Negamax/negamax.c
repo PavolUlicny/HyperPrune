@@ -25,15 +25,19 @@ typedef enum
 {
     WIN = 100, /* Current player wins */
     TIE = 0,
-    NOT_TERMINAL = 1,
-    INF = 101
+    INF = 101,         /* Alpha-beta window boundary (never stored in TT) */
+    NOT_TERMINAL = 102 /* boardScore() sentinel: game still in progress (never stored in TT).
+                        * Exceeds WIN to stay outside the storable score range [-WIN, WIN]. */
 } HelperScores;
 
 /* Compile-time validation: scores must fit in int16_t (transposition table storage).
- * INF/-INF are never stored, but asserting them guards against future constant changes. */
+ * INF/-INF are never stored, but asserting them guards against future constant changes.
+ * NOT_TERMINAL is also never stored; assert it stays outside [-WIN, WIN]. */
 _Static_assert(WIN <= INT16_MAX && (-WIN) >= INT16_MIN &&
                    INF <= INT16_MAX && (-INF) >= INT16_MIN,
                "WIN, -WIN, INF, and -INF must fit in int16_t");
+_Static_assert(NOT_TERMINAL > WIN,
+               "NOT_TERMINAL must exceed WIN to stay outside the storable score range");
 
 /*
  * Safe mask for valid board positions.
