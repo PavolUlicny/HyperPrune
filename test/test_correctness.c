@@ -6,6 +6,9 @@
 // Helper: Play a complete game
 int play_full_game(char first_player, uint64_t seed)
 {
+    /* Called here even though test_runner.c:main() also calls it, so that this
+     * helper remains self-contained and correct if used outside the standard runner. */
+    init_win_masks();
     zobrist_set_seed(seed);
     zobrist_init();
     transposition_table_init(100000);
