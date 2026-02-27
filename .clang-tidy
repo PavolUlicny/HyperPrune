@@ -12,4 +12,4 @@ Checks: >
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   performance-*
 
-WarningsAsErrors: ""
+WarningsAsErrors: "*"
