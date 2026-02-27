@@ -30,7 +30,7 @@ void test_terminal_board_returns_invalid(void)
     Bitboard board = {0, 0};
     for (int c = 0; c < BOARD_SIZE; c++)
     {
-        bitboard_make_move(&board, 0, c, 'x');
+        bitboard_make_move_rc(&board, 0, c, 'x');
     }
 
     int row, col;
@@ -50,8 +50,8 @@ void test_overlapping_pieces_rejected(void)
 
     // Create invalid board (overlapping at 0,0)
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 0, 0, 'o'); // Overlap!
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'o'); // Overlap!
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -72,7 +72,7 @@ void test_terminal_ai_x_wins(void)
     Bitboard board = {0, 0};
     for (int c = 0; c < BOARD_SIZE; c++)
     {
-        bitboard_make_move(&board, 0, c, 'x');
+        bitboard_make_move_rc(&board, 0, c, 'x');
     }
 
     int row, col;
@@ -94,7 +94,7 @@ void test_terminal_ai_o_wins(void)
     Bitboard board = {0, 0};
     for (int c = 0; c < BOARD_SIZE; c++)
     {
-        bitboard_make_move(&board, 0, c, 'o');
+        bitboard_make_move_rc(&board, 0, c, 'o');
     }
 
     int row, col;
@@ -116,7 +116,7 @@ void test_terminal_opponent_o_wins(void)
     Bitboard board = {0, 0};
     for (int c = 0; c < BOARD_SIZE; c++)
     {
-        bitboard_make_move(&board, 0, c, 'o');
+        bitboard_make_move_rc(&board, 0, c, 'o');
     }
 
     int row, col;
@@ -140,10 +140,10 @@ void test_getAiMove_column_win(void)
     // X O _
     // _ _ _
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 1, 0, 'x');
-    bitboard_make_move(&board, 0, 2, 'o');
-    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 2, 'o');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -162,11 +162,11 @@ void test_getAiMove_column_win(void)
     // X _ _ _
     // _ _ _ _
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 1, 0, 'x');
-    bitboard_make_move(&board, 2, 0, 'x');
-    bitboard_make_move(&board, 0, 2, 'o');
-    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 0, 'x');
+    bitboard_make_move_rc(&board, 2, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 2, 'o');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -190,10 +190,10 @@ void test_getAiMove_blocks_column(void)
     // O _ X
     // _ _ _
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'o');
-    bitboard_make_move(&board, 1, 0, 'o');
-    bitboard_make_move(&board, 0, 1, 'x');
-    bitboard_make_move(&board, 1, 2, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'o');
+    bitboard_make_move_rc(&board, 1, 0, 'o');
+    bitboard_make_move_rc(&board, 0, 1, 'x');
+    bitboard_make_move_rc(&board, 1, 2, 'x');
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -212,11 +212,11 @@ void test_getAiMove_blocks_column(void)
     // O _ _ _
     // _ _ _ _
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'o');
-    bitboard_make_move(&board, 1, 0, 'o');
-    bitboard_make_move(&board, 2, 0, 'o');
-    bitboard_make_move(&board, 0, 1, 'x');
-    bitboard_make_move(&board, 1, 2, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'o');
+    bitboard_make_move_rc(&board, 1, 0, 'o');
+    bitboard_make_move_rc(&board, 2, 0, 'o');
+    bitboard_make_move_rc(&board, 0, 1, 'x');
+    bitboard_make_move_rc(&board, 1, 2, 'x');
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -243,10 +243,10 @@ void test_getAiMove_no_tt(void)
     // _ O _
     // _ O _
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 1, 'x');
-    bitboard_make_move(&board, 0, 2, 'x');
-    bitboard_make_move(&board, 1, 1, 'o');
-    bitboard_make_move(&board, 2, 1, 'o');
+    bitboard_make_move_rc(&board, 0, 1, 'x');
+    bitboard_make_move_rc(&board, 0, 2, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 2, 1, 'o');
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -260,11 +260,11 @@ void test_getAiMove_no_tt(void)
     // _ _ _ _
     // _ _ _ _
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 1, 'x');
-    bitboard_make_move(&board, 0, 2, 'x');
-    bitboard_make_move(&board, 0, 3, 'x');
-    bitboard_make_move(&board, 1, 0, 'o');
-    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 0, 1, 'x');
+    bitboard_make_move_rc(&board, 0, 2, 'x');
+    bitboard_make_move_rc(&board, 0, 3, 'x');
+    bitboard_make_move_rc(&board, 1, 0, 'o');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -291,10 +291,10 @@ void test_getAiMove_anti_diagonal_win(void)
     // _ _ _
     // X _ O
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 2, 'x');
-    bitboard_make_move(&board, 2, 0, 'x');
-    bitboard_make_move(&board, 0, 0, 'o');
-    bitboard_make_move(&board, 2, 2, 'o');
+    bitboard_make_move_rc(&board, 0, 2, 'x');
+    bitboard_make_move_rc(&board, 2, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'o');
+    bitboard_make_move_rc(&board, 2, 2, 'o');
 
     int row, col;
     getAiMove(board, 'x', &row, &col);
@@ -313,11 +313,11 @@ void test_getAiMove_anti_diagonal_win(void)
     // _ X _ _
     // _ _ _ _
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 3, 'x');
-    bitboard_make_move(&board, 1, 2, 'x');
-    bitboard_make_move(&board, 2, 1, 'x');
-    bitboard_make_move(&board, 0, 1, 'o');
-    bitboard_make_move(&board, 1, 0, 'o');
+    bitboard_make_move_rc(&board, 0, 3, 'x');
+    bitboard_make_move_rc(&board, 1, 2, 'x');
+    bitboard_make_move_rc(&board, 2, 1, 'x');
+    bitboard_make_move_rc(&board, 0, 1, 'o');
+    bitboard_make_move_rc(&board, 1, 0, 'o');
 
     int row, col;
     getAiMove(board, 'x', &row, &col);

@@ -14,10 +14,10 @@ void test_incremental_hash_matches_full(void)
     // Make moves incrementally
     uint64_t incremental_hash = zobrist_hash(board);
     incremental_hash = zobrist_toggle(incremental_hash, POS_TO_BIT(0, 0), 'x');
-    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
 
     incremental_hash = zobrist_toggle(incremental_hash, POS_TO_BIT(1, 1), 'o');
-    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
 
     // Recompute full hash
     full_hash = zobrist_hash(board);
@@ -49,12 +49,12 @@ void test_same_position_same_hash(void)
     zobrist_init();
 
     Bitboard board1 = {0, 0};
-    bitboard_make_move(&board1, 0, 0, 'x');
-    bitboard_make_move(&board1, 1, 1, 'o');
+    bitboard_make_move_rc(&board1, 0, 0, 'x');
+    bitboard_make_move_rc(&board1, 1, 1, 'o');
 
     Bitboard board2 = {0, 0};
-    bitboard_make_move(&board2, 1, 1, 'o'); // Different order
-    bitboard_make_move(&board2, 0, 0, 'x');
+    bitboard_make_move_rc(&board2, 1, 1, 'o'); // Different order
+    bitboard_make_move_rc(&board2, 0, 0, 'x');
 
     uint64_t hash1 = zobrist_hash(board1);
     uint64_t hash2 = zobrist_hash(board2);
@@ -66,7 +66,7 @@ void test_same_position_same_hash(void)
 void test_zobrist_seed_boundaries(void)
 {
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
 
     // Test seed 0
     zobrist_set_seed(0);
@@ -115,8 +115,8 @@ void test_zobrist_hash_idempotent(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
 
     uint64_t hash1 = zobrist_hash(board);
     uint64_t hash2 = zobrist_hash(board);

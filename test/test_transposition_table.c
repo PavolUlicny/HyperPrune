@@ -10,7 +10,7 @@ void test_tt_store_and_probe(void)
     transposition_table_init(1000);
 
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
     uint64_t hash = zobrist_hash(board);
 
     // Store exact score
@@ -122,11 +122,11 @@ void test_tt_hash_collision(void)
     transposition_table_init(1000);
 
     Bitboard board1 = {0, 0};
-    bitboard_make_move(&board1, 0, 0, 'x');
+    bitboard_make_move_rc(&board1, 0, 0, 'x');
     uint64_t hash1 = zobrist_hash(board1);
 
     Bitboard board2 = {0, 0};
-    bitboard_make_move(&board2, 1, 1, 'o');
+    bitboard_make_move_rc(&board2, 1, 1, 'o');
     uint64_t hash2 = zobrist_hash(board2);
 
     // Store first position

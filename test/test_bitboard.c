@@ -12,7 +12,7 @@ void test_all_win_patterns(void)
         board = (Bitboard){0, 0};
         for (int c = 0; c < BOARD_SIZE; c++)
         {
-            bitboard_make_move(&board, r, c, 'x');
+            bitboard_make_move_rc(&board, r, c, 'x');
         }
         TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
     }
@@ -23,7 +23,7 @@ void test_all_win_patterns(void)
         board = (Bitboard){0, 0};
         for (int r = 0; r < BOARD_SIZE; r++)
         {
-            bitboard_make_move(&board, r, c, 'x');
+            bitboard_make_move_rc(&board, r, c, 'x');
         }
         TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
     }
@@ -32,7 +32,7 @@ void test_all_win_patterns(void)
     board = (Bitboard){0, 0};
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        bitboard_make_move(&board, i, i, 'x');
+        bitboard_make_move_rc(&board, i, i, 'x');
     }
     TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
 
@@ -40,7 +40,7 @@ void test_all_win_patterns(void)
     board = (Bitboard){0, 0};
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        bitboard_make_move(&board, i, BOARD_SIZE - 1 - i, 'x');
+        bitboard_make_move_rc(&board, i, BOARD_SIZE - 1 - i, 'x');
     }
     TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
 }
@@ -51,10 +51,10 @@ void test_make_unmake_symmetry(void)
     Bitboard board = {0, 0};
     Bitboard original = board;
 
-    bitboard_make_move(&board, 1, 1, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'x');
     TEST_ASSERT_NOT_EQUAL(board.x_pieces, original.x_pieces);
 
-    bitboard_unmake_move(&board, 1, 1, 'x');
+    bitboard_unmake_move_rc(&board, 1, 1, 'x');
     TEST_ASSERT_EQUAL(board.x_pieces, original.x_pieces);
     TEST_ASSERT_EQUAL(board.o_pieces, original.o_pieces);
 }
@@ -67,11 +67,11 @@ void test_cell_operations(void)
     TEST_ASSERT_TRUE(bitboard_is_empty(board, 0, 0));
     TEST_ASSERT_EQUAL(' ', bitboard_get_cell(board, 0, 0));
 
-    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
     TEST_ASSERT_FALSE(bitboard_is_empty(board, 0, 0));
     TEST_ASSERT_EQUAL('x', bitboard_get_cell(board, 0, 0));
 
-    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
     TEST_ASSERT_EQUAL('o', bitboard_get_cell(board, 1, 1));
 }
 
@@ -100,7 +100,7 @@ void test_did_last_move_win_checks_only_through_cell(void)
 
     // Fill row 0 completely — a genuine win
     for (int c = 0; c < BOARD_SIZE; c++)
-        bitboard_make_move(&board, 0, c, 'x');
+        bitboard_make_move_rc(&board, 0, c, 'x');
 
     // Full scan detects the win
     TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));

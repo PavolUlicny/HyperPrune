@@ -11,7 +11,7 @@ void test_did_last_move_win_row(void)
     // Create row win at row 0
     for (int c = 0; c < BOARD_SIZE; c++)
     {
-        bitboard_make_move(&board, 0, c, 'x');
+        bitboard_make_move_rc(&board, 0, c, 'x');
     }
 
     // Check that last move at (0, BOARD_SIZE-1) wins
@@ -29,7 +29,7 @@ void test_did_last_move_win_col(void)
     // Create column win at col 0
     for (int r = 0; r < BOARD_SIZE; r++)
     {
-        bitboard_make_move(&board, r, 0, 'o');
+        bitboard_make_move_rc(&board, r, 0, 'o');
     }
 
     // Check that last move at (BOARD_SIZE-1, 0) wins
@@ -44,7 +44,7 @@ void test_did_last_move_win_main_diagonal(void)
     // Create main diagonal win
     for (int i = 0; i < BOARD_SIZE; i++)
     {
-        bitboard_make_move(&board, i, i, 'x');
+        bitboard_make_move_rc(&board, i, i, 'x');
     }
 
     // Check center of diagonal
@@ -57,7 +57,7 @@ void test_did_last_move_win_anti_diagonal(void)
     Bitboard board = {0, 0};
 
     for (int i = 0; i < BOARD_SIZE; i++)
-        bitboard_make_move(&board, i, BOARD_SIZE - 1 - i, 'x');
+        bitboard_make_move_rc(&board, i, BOARD_SIZE - 1 - i, 'x');
 
     for (int i = 0; i < BOARD_SIZE; i++)
         TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, i, BOARD_SIZE - 1 - i));
@@ -69,8 +69,8 @@ void test_did_last_move_win_no_win(void)
     Bitboard board = {0, 0};
 
     // Partial row (not a win)
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 0, 1, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 1, 'x');
 
     TEST_ASSERT_FALSE(bitboard_did_last_move_win(board.x_pieces, 0, 1));
 }
@@ -89,9 +89,9 @@ void test_has_won_partial_board(void)
 {
     Bitboard board = {0, 0};
 
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 1, 1, 'x');
-    bitboard_make_move(&board, 0, 1, 'o');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'x');
+    bitboard_make_move_rc(&board, 0, 1, 'o');
 
     TEST_ASSERT_FALSE(bitboard_has_won(board.x_pieces));
     TEST_ASSERT_FALSE(bitboard_has_won(board.o_pieces));
@@ -103,9 +103,9 @@ void test_multiple_makes(void)
     Bitboard board = {0, 0};
 
     // Make multiple moves
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 1, 1, 'o');
-    bitboard_make_move(&board, 2, 2, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 2, 2, 'x');
 
     // Verify all are set
     TEST_ASSERT_EQUAL('x', bitboard_get_cell(board, 0, 0));
@@ -117,10 +117,10 @@ void test_multiple_makes(void)
 void test_unmake_empty_cell(void)
 {
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
 
     // Unmake a cell that was never set
-    bitboard_unmake_move(&board, 1, 1, 'o');
+    bitboard_unmake_move_rc(&board, 1, 1, 'o');
 
     // Board should be unchanged except for (0,0)
     TEST_ASSERT_EQUAL('x', bitboard_get_cell(board, 0, 0));
@@ -132,10 +132,10 @@ void test_both_players_pieces(void)
 {
     Bitboard board = {0, 0};
 
-    bitboard_make_move(&board, 0, 0, 'x');
-    bitboard_make_move(&board, 0, 1, 'x');
-    bitboard_make_move(&board, 1, 0, 'o');
-    bitboard_make_move(&board, 1, 1, 'o');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 1, 'x');
+    bitboard_make_move_rc(&board, 1, 0, 'o');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
 
     TEST_ASSERT_EQUAL('x', bitboard_get_cell(board, 0, 0));
     TEST_ASSERT_EQUAL('x', bitboard_get_cell(board, 0, 1));
@@ -164,19 +164,19 @@ void test_corner_cells(void)
     Bitboard board = {0, 0};
 
     // Top-left
-    bitboard_make_move(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 0, 'x');
     TEST_ASSERT_EQUAL('x', bitboard_get_cell(board, 0, 0));
 
     // Top-right
-    bitboard_make_move(&board, 0, BOARD_SIZE - 1, 'o');
+    bitboard_make_move_rc(&board, 0, BOARD_SIZE - 1, 'o');
     TEST_ASSERT_EQUAL('o', bitboard_get_cell(board, 0, BOARD_SIZE - 1));
 
     // Bottom-left
-    bitboard_make_move(&board, BOARD_SIZE - 1, 0, 'x');
+    bitboard_make_move_rc(&board, BOARD_SIZE - 1, 0, 'x');
     TEST_ASSERT_EQUAL('x', bitboard_get_cell(board, BOARD_SIZE - 1, 0));
 
     // Bottom-right
-    bitboard_make_move(&board, BOARD_SIZE - 1, BOARD_SIZE - 1, 'o');
+    bitboard_make_move_rc(&board, BOARD_SIZE - 1, BOARD_SIZE - 1, 'o');
     TEST_ASSERT_EQUAL('o', bitboard_get_cell(board, BOARD_SIZE - 1, BOARD_SIZE - 1));
 }
 
@@ -190,11 +190,11 @@ void test_make_unmake_hash_cycle(void)
     uint64_t original_hash = zobrist_hash(board);
 
     // Make move and hash
-    bitboard_make_move(&board, 1, 1, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'x');
     uint64_t new_hash = zobrist_toggle(original_hash, POS_TO_BIT(1, 1), 'x');
 
     // Unmake and restore hash
-    bitboard_unmake_move(&board, 1, 1, 'x');
+    bitboard_unmake_move_rc(&board, 1, 1, 'x');
     uint64_t restored_hash = zobrist_toggle(new_hash, POS_TO_BIT(1, 1), 'x');
 
     TEST_ASSERT_EQUAL_UINT64(original_hash, restored_hash);
@@ -207,7 +207,7 @@ void test_zobrist_hash_nonzero(void)
     zobrist_init();
 
     Bitboard board = {0, 0};
-    bitboard_make_move(&board, 0, 0, 'x'); /* Non-empty board: piece key is non-zero */
+    bitboard_make_move_rc(&board, 0, 0, 'x'); /* Non-empty board: piece key is non-zero */
     uint64_t hash = zobrist_hash(board);
 
     // (Statistical property - not guaranteed but extremely likely)
@@ -248,8 +248,8 @@ void test_both_players_won_invalid_state(void)
     // X fills row 0, O fills row 1 — impossible game state where both have won
     for (int c = 0; c < BOARD_SIZE; c++)
     {
-        bitboard_make_move(&board, 0, c, 'x');
-        bitboard_make_move(&board, 1, c, 'o');
+        bitboard_make_move_rc(&board, 0, c, 'x');
+        bitboard_make_move_rc(&board, 1, c, 'o');
     }
 
     TEST_ASSERT_TRUE(bitboard_has_won(board.x_pieces));
@@ -263,7 +263,7 @@ void test_did_last_move_win_col_last_column(void)
     Bitboard board = {0, 0};
 
     for (int r = 0; r < BOARD_SIZE; r++)
-        bitboard_make_move(&board, r, BOARD_SIZE - 1, 'x');
+        bitboard_make_move_rc(&board, r, BOARD_SIZE - 1, 'x');
 
     // Both ends of the column should report a win
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, BOARD_SIZE - 1));
@@ -275,7 +275,7 @@ void test_checkWinner_x_win(void)
 {
     restartGame();
     for (int c = 0; c < BOARD_SIZE; c++)
-        bitboard_make_move(&board_state, 0, c, 'x');
+        bitboard_make_move_rc(&board_state, 0, c, 'x');
 
     TEST_ASSERT_EQUAL(X_WIN, checkWinner(0, BOARD_SIZE - 1));
 }
@@ -285,7 +285,7 @@ void test_checkWinner_o_win(void)
 {
     restartGame();
     for (int r = 0; r < BOARD_SIZE; r++)
-        bitboard_make_move(&board_state, r, 0, 'o');
+        bitboard_make_move_rc(&board_state, r, 0, 'o');
 
     TEST_ASSERT_EQUAL(O_WIN, checkWinner(BOARD_SIZE - 1, 0));
 }
@@ -294,7 +294,7 @@ void test_checkWinner_o_win(void)
 void test_checkWinner_continue(void)
 {
     restartGame();
-    bitboard_make_move(&board_state, 0, 0, 'x');
+    bitboard_make_move_rc(&board_state, 0, 0, 'x');
 
     TEST_ASSERT_EQUAL(GAME_CONTINUE, checkWinner(0, 0));
 }
@@ -351,7 +351,7 @@ void test_restartGame_clears_board_and_resets_turn(void)
             TEST_ASSERT_EQUAL(' ', bitboard_get_cell(board_state, r, c));
 
     // move_count must be reset: one piece should give GAME_CONTINUE, not GAME_TIE
-    bitboard_make_move(&board_state, 0, 0, 'x');
+    bitboard_make_move_rc(&board_state, 0, 0, 'x');
     TEST_ASSERT_EQUAL(GAME_CONTINUE, checkWinner(0, 0));
 }
 

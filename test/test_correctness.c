@@ -22,7 +22,7 @@ int play_full_game(char first_player, uint64_t seed)
         if (row == -1)
             break; // Terminal
 
-        bitboard_make_move(&board, row, col, current);
+        bitboard_make_move_rc(&board, row, col, current);
         moves++;
 
         // Check win
@@ -160,7 +160,7 @@ void test_cross_game_tt_no_reinit(void)
             if (row == -1)
                 break;
 
-            bitboard_make_move(&board, row, col, current);
+            bitboard_make_move_rc(&board, row, col, current);
             uint64_t pieces = (current == 'x') ? board.x_pieces : board.o_pieces;
             if (bitboard_did_last_move_win(pieces, row, col))
             {
