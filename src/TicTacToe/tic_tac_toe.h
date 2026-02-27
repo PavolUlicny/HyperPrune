@@ -107,6 +107,9 @@ extern "C"
      * Check if the last move at (row,col) decided the game.
      * Returns X_WIN or O_WIN based on the symbol at that cell,
      * GAME_TIE if the board is full, or GAME_CONTINUE otherwise.
+     *
+     * Precondition: (row,col) must be an occupied cell. Calling with an
+     * empty cell produces undefined results.
      */
     GameResult checkWinner(int row, int col);
 
