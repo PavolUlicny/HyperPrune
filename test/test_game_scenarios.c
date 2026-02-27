@@ -241,6 +241,8 @@ void test_tie_scenario(void)
     for (int r = 0; r < 4; r++)
         for (int c = 0; c < 4; c++)
         {
+            /* 'x' where left-half column (c<2) and even row agree; 'o' otherwise —
+             * produces the 2-column alternating bands shown in the comment above */
             char player = ((c < 2) == (r % 2 == 0)) ? 'x' : 'o';
             bitboard_make_move_rc(&board, r, c, player);
         }
