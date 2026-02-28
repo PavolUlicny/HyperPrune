@@ -199,6 +199,7 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
             if (bestScore == WIN)
             {
                 killers_update(depth, best_bit);
+                /* history[best_bit] intentionally not updated: see Phase 1 WIN block comment. */
                 goto move_loop_done;
             }
             if (score > alpha)
