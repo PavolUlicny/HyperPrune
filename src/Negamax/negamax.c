@@ -55,7 +55,7 @@ _Static_assert(NOT_TERMINAL > WIN,
 static int killers[MAX_MOVES][2];
 static int history[MAX_MOVES];
 
-static void killers_update(int depth, int bit)
+static inline void killers_update(int depth, int bit)
 {
     assert(depth < MAX_MOVES); /* max reachable depth is MAX_MOVES-3; array sized MAX_MOVES */
     if (killers[depth][0] != bit)
