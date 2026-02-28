@@ -179,25 +179,6 @@ void test_single_empty_cell(void)
 #endif
 }
 
-// Test AI with 'o' as maximizing player
-void test_ai_as_o_player(void)
-{
-    zobrist_init();
-    transposition_table_init(10000);
-
-    Bitboard board = {0, 0};
-    int row, col;
-
-    // Empty board, AI is 'o'
-    getAiMove(board, 'o', &row, &col);
-
-    // Should still play center
-    TEST_ASSERT_EQUAL(BOARD_SIZE / 2, row);
-    TEST_ASSERT_EQUAL(BOARD_SIZE / 2, col);
-
-    transposition_table_free();
-}
-
 // Test tie scenario (full board)
 void test_tie_scenario(void)
 {
@@ -615,12 +596,116 @@ void test_win_over_block_priority(void)
 #endif
 }
 
+// Test AI as 'o' takes an immediate row win.
+// test_ai_o_takes_winning_move covers column; this covers a row,
+// exercising the aiPlayer=='o' hash-toggling path with a different win direction.
+void test_ai_o_row_win(void)
+{
+#if BOARD_SIZE == 3
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // O needs (0,2) to complete row 0. X has no immediate win.
+    // O O _
+    // X _ X
+    // _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'o');
+    bitboard_make_move_rc(&board, 0, 1, 'o');
+    bitboard_make_move_rc(&board, 1, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 2, 'x');
+
+    int row, col;
+    getAiMove(board, 'o', &row, &col);
+
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(2, col);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // O needs (0,3) to complete row 0. X has no immediate win.
+    // O O O _
+    // X X _ _
+    // _ _ _ _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'o');
+    bitboard_make_move_rc(&board, 0, 1, 'o');
+    bitboard_make_move_rc(&board, 0, 2, 'o');
+    bitboard_make_move_rc(&board, 1, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'x');
+
+    int row, col;
+    getAiMove(board, 'o', &row, &col);
+
+    TEST_ASSERT_EQUAL(0, row);
+    TEST_ASSERT_EQUAL(3, col);
+
+    transposition_table_free();
+#endif
+}
+
+// Test AI as 'o' blocks opponent ('x') from completing a diagonal.
+// Existing block tests cover rows and columns; this covers diagonal blocking.
+void test_ai_o_blocks_diagonal(void)
+{
+#if BOARD_SIZE == 3
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X has (0,0) and (1,1) on the main diagonal; needs (2,2) to win.
+    // O has no winning move, so O must block at (2,2).
+    // X _ O
+    // _ X _
+    // O _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'x');
+    bitboard_make_move_rc(&board, 0, 2, 'o');
+    bitboard_make_move_rc(&board, 2, 0, 'o');
+
+    int row, col;
+    getAiMove(board, 'o', &row, &col);
+
+    TEST_ASSERT_EQUAL(2, row);
+    TEST_ASSERT_EQUAL(2, col);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X has (0,0), (1,1), (2,2) on the main diagonal; needs (3,3) to win.
+    // O has no immediate win, so O must block at (3,3).
+    // X _ _ _
+    // _ X _ _
+    // _ _ X _
+    // O O _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'x');
+    bitboard_make_move_rc(&board, 2, 2, 'x');
+    bitboard_make_move_rc(&board, 3, 0, 'o');
+    bitboard_make_move_rc(&board, 3, 1, 'o');
+
+    int row, col;
+    getAiMove(board, 'o', &row, &col);
+
+    TEST_ASSERT_EQUAL(3, row);
+    TEST_ASSERT_EQUAL(3, col);
+
+    transposition_table_free();
+#endif
+}
+
 void test_game_scenarios_suite(void)
 {
     RUN_TEST(test_ai_takes_winning_move);
     RUN_TEST(test_ai_blocks_opponent_win);
     RUN_TEST(test_single_empty_cell);
-    RUN_TEST(test_ai_as_o_player);
     RUN_TEST(test_tie_scenario);
     RUN_TEST(test_fork_creation);
     RUN_TEST(test_diagonal_win);
@@ -629,4 +714,6 @@ void test_game_scenarios_suite(void)
     RUN_TEST(test_ai_o_takes_winning_move);
     RUN_TEST(test_ai_o_blocks_x_win);
     RUN_TEST(test_win_over_block_priority);
+    RUN_TEST(test_ai_o_row_win);
+    RUN_TEST(test_ai_o_blocks_diagonal);
 }

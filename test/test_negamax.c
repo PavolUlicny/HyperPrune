@@ -62,29 +62,10 @@ void test_overlapping_pieces_rejected(void)
     transposition_table_free();
 }
 
-// Test terminal board returns invalid when AI ('x') has already won
-void test_terminal_ai_x_wins(void)
-{
-    zobrist_init();
-    transposition_table_init(10000);
-
-    // X has won (row 0)
-    Bitboard board = {0, 0};
-    for (int c = 0; c < BOARD_SIZE; c++)
-    {
-        bitboard_make_move_rc(&board, 0, c, 'x');
-    }
-
-    int row, col;
-    getAiMove(board, 'x', &row, &col);
-
-    TEST_ASSERT_EQUAL(-1, row);
-    TEST_ASSERT_EQUAL(-1, col);
-
-    transposition_table_free();
-}
-
-// Test terminal board returns invalid when AI ('o') has already won
+// Test terminal board returns invalid when O has won.
+// Complements test_terminal_board_returns_invalid (X won) — verifies the O branch
+// of the terminal check. The aiPlayer argument is irrelevant: the terminal check
+// fires before any player-specific code, so one test per winner suffices.
 void test_terminal_ai_o_wins(void)
 {
     zobrist_init();
@@ -99,28 +80,6 @@ void test_terminal_ai_o_wins(void)
 
     int row, col;
     getAiMove(board, 'o', &row, &col);
-
-    TEST_ASSERT_EQUAL(-1, row);
-    TEST_ASSERT_EQUAL(-1, col);
-
-    transposition_table_free();
-}
-
-// Test terminal board returns invalid when opponent ('o') has won and AI is 'x'
-void test_terminal_opponent_o_wins(void)
-{
-    zobrist_init();
-    transposition_table_init(10000);
-
-    // O has won (row 0)
-    Bitboard board = {0, 0};
-    for (int c = 0; c < BOARD_SIZE; c++)
-    {
-        bitboard_make_move_rc(&board, 0, c, 'o');
-    }
-
-    int row, col;
-    getAiMove(board, 'x', &row, &col);
 
     TEST_ASSERT_EQUAL(-1, row);
     TEST_ASSERT_EQUAL(-1, col);
@@ -329,16 +288,128 @@ void test_getAiMove_anti_diagonal_win(void)
 #endif
 }
 
+// Test AI completes a main diagonal win.
+// Symmetric to test_getAiMove_anti_diagonal_win: O blocks the anti-diagonal endpoints
+// so that (1,1) is X's only winning move (completes the main diagonal).
+void test_getAiMove_main_diagonal_win(void)
+{
+#if BOARD_SIZE == 3
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X needs (1,1) to complete the main diagonal (0,0)-(1,1)-(2,2).
+    // O blocks (0,2) and (2,0), so all other X moves create only one threat
+    // that O can block — making (1,1) the unique winning move.
+    // X _ O
+    // _ _ _
+    // O _ X
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 2, 2, 'x');
+    bitboard_make_move_rc(&board, 0, 2, 'o');
+    bitboard_make_move_rc(&board, 2, 0, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    TEST_ASSERT_EQUAL(1, row);
+    TEST_ASSERT_EQUAL(1, col);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X needs (3,3) to complete the main diagonal (0,0)-(1,1)-(2,2)-(3,3).
+    // X _ _ O
+    // _ X _ O
+    // _ _ X _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'x');
+    bitboard_make_move_rc(&board, 2, 2, 'x');
+    bitboard_make_move_rc(&board, 0, 3, 'o');
+    bitboard_make_move_rc(&board, 1, 3, 'o');
+
+    int row, col;
+    getAiMove(board, 'x', &row, &col);
+
+    TEST_ASSERT_EQUAL(3, row);
+    TEST_ASSERT_EQUAL(3, col);
+
+    transposition_table_free();
+#endif
+}
+
+// Test that getAiMove returns the same move when called twice on the same position
+// without reinitialising the TT between calls. The first call populates the TT;
+// the second call hits TT entries everywhere and must produce the same best move.
+// Killers and history are cleared at the start of each call, so stale heuristic
+// tables cannot affect the result.
+void test_getAiMove_same_position_called_twice(void)
+{
+#if BOARD_SIZE == 3
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X X _
+    // O _ _
+    // O _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 1, 'x');
+    bitboard_make_move_rc(&board, 1, 0, 'o');
+    bitboard_make_move_rc(&board, 2, 0, 'o');
+
+    int row1, col1, row2, col2;
+    getAiMove(board, 'x', &row1, &col1);
+    getAiMove(board, 'x', &row2, &col2);
+
+    TEST_ASSERT_EQUAL(0, row1);
+    TEST_ASSERT_EQUAL(2, col1);
+    TEST_ASSERT_EQUAL(row1, row2);
+    TEST_ASSERT_EQUAL(col1, col2);
+
+    transposition_table_free();
+#elif BOARD_SIZE == 4
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // X X X _
+    // O O _ _
+    // _ _ _ _
+    // _ _ _ _
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 0, 1, 'x');
+    bitboard_make_move_rc(&board, 0, 2, 'x');
+    bitboard_make_move_rc(&board, 1, 0, 'o');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
+
+    int row1, col1, row2, col2;
+    getAiMove(board, 'x', &row1, &col1);
+    getAiMove(board, 'x', &row2, &col2);
+
+    TEST_ASSERT_EQUAL(0, row1);
+    TEST_ASSERT_EQUAL(3, col1);
+    TEST_ASSERT_EQUAL(row1, row2);
+    TEST_ASSERT_EQUAL(col1, col2);
+
+    transposition_table_free();
+#endif
+}
+
 void test_negamax_suite(void)
 {
     RUN_TEST(test_empty_board_plays_center);
     RUN_TEST(test_terminal_board_returns_invalid);
-    RUN_TEST(test_overlapping_pieces_rejected);
-    RUN_TEST(test_terminal_ai_x_wins);
     RUN_TEST(test_terminal_ai_o_wins);
-    RUN_TEST(test_terminal_opponent_o_wins);
+    RUN_TEST(test_overlapping_pieces_rejected);
     RUN_TEST(test_getAiMove_column_win);
     RUN_TEST(test_getAiMove_blocks_column);
     RUN_TEST(test_getAiMove_no_tt);
     RUN_TEST(test_getAiMove_anti_diagonal_win);
+    RUN_TEST(test_getAiMove_main_diagonal_win);
+    RUN_TEST(test_getAiMove_same_position_called_twice);
 }

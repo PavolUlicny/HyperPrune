@@ -395,6 +395,28 @@ void test_restartGame_clears_board_and_resets_turn(void)
     TEST_ASSERT_EQUAL(GAME_TIE, checkWinner(final_bit / BOARD_SIZE, final_bit % BOARD_SIZE));
 }
 
+// Test bitboard_has_won returns false for a completely full board with no winner.
+// test_tie_scenario implicitly relies on this, but the full-board OR-check in
+// getAiMove fires first, so a false positive from bitboard_has_won would not be
+// caught there. This test checks bitboard_has_won directly on a full tie board.
+//
+// Board layout: 2-column alternating bands — every row, column, and diagonal
+// contains both 'x' and 'o' pieces, so no line is complete for either player.
+// The pattern is: player(r,c) = (((c/2) + r) % 2 == 0) ? 'x' : 'o'
+void test_has_won_full_board_no_winner(void)
+{
+    Bitboard board = {0, 0};
+    for (int r = 0; r < BOARD_SIZE; r++)
+        for (int c = 0; c < BOARD_SIZE; c++)
+        {
+            char player = (((c / 2) + r) % 2 == 0) ? 'x' : 'o';
+            bitboard_make_move_rc(&board, r, c, player);
+        }
+
+    TEST_ASSERT_FALSE(bitboard_has_won(board.x_pieces));
+    TEST_ASSERT_FALSE(bitboard_has_won(board.o_pieces));
+}
+
 void test_edge_cases_suite(void)
 {
     RUN_TEST(test_did_last_move_win_row);
@@ -404,6 +426,7 @@ void test_edge_cases_suite(void)
     RUN_TEST(test_did_last_move_win_no_win);
     RUN_TEST(test_has_won_empty_board);
     RUN_TEST(test_has_won_partial_board);
+    RUN_TEST(test_has_won_full_board_no_winner);
     RUN_TEST(test_multiple_makes);
     RUN_TEST(test_unmake_empty_cell);
     RUN_TEST(test_both_players_pieces);
