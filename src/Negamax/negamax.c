@@ -144,6 +144,10 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
         if (bestScore == WIN)
         {
             killers_update(depth, bit);
+            /* history[bit] intentionally not updated: killers are depth-local
+             * heuristics, and giving a killer's WIN result global history credit
+             * inflates Phase 2 ordering at all depths in ways that interact with
+             * the shared TT across getAiMove calls and break correctness. */
             goto move_loop_done;
         }
         if (score > alpha)
