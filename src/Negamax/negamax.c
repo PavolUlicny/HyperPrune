@@ -47,9 +47,9 @@ _Static_assert(NOT_TERMINAL > WIN,
  * Killer moves and history heuristic tables.
  * Cleared at the start of each getAiMove() call; not shared across calls.
  *
- * killers[depth][0..1]: bit indices of moves that caused beta cutoffs at this
- *   depth. -1 = unused. Tried before other moves to get early cutoffs.
- * history[bit]: cumulative cutoff count for each move across the whole search.
+ * killers[depth][0..1]: bit indices of moves that caused cutoffs (beta or WIN)
+ *   at this depth. -1 = unused. Tried before other moves to get early cutoffs.
+ * history[bit]: cumulative beta-cutoff count for each move across the whole search.
  *   Higher = more likely to cause a cutoff. Used to order non-killer moves.
  */
 static int killers[MAX_MOVES][2];
