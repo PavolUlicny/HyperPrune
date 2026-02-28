@@ -268,7 +268,7 @@ static int selfPlay(int gameCount, int quiet)
         printf("\n");
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 /*
