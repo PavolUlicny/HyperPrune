@@ -145,7 +145,11 @@ void test_tt_hash_collision(void)
     transposition_table_free();
 }
 
-// Test INT16_MIN/MAX score boundaries (cast truncation check)
+// Test storage layer round-trip fidelity at int16_t type limits.
+// INT16_MIN/MAX are not scores the game engine ever produces (valid range is
+// [-WIN, WIN] = [-100, 100]), but the TT stores scores as int16_t. This test
+// confirms the narrowing cast in transposition_table_store() does not corrupt
+// values at the extremes of the storage type.
 void test_tt_score_boundaries(void)
 {
     zobrist_init();
