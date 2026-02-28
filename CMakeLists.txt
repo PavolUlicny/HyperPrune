@@ -18,6 +18,9 @@ else()
 endif()
 
 # Native optimizations (opt-in for maximum performance)
+# Note: this flag adds micro-tuning flags only (-march=native, -funroll-loops, etc.).
+# The optimization level (-O3 -DNDEBUG) comes from CMAKE_BUILD_TYPE=Release.
+# Using -DENABLE_NATIVE_OPTIMIZATIONS=ON without -DCMAKE_BUILD_TYPE=Release compiles at -O0.
 option(ENABLE_NATIVE_OPTIMIZATIONS "Enable -march=native, -flto, and aggressive optimizations" OFF)
 
 # Main executable
