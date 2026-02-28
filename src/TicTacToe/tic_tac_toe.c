@@ -190,7 +190,8 @@ void printGameResult(GameResult result)
         printf("\n");
         break;
     case GAME_CONTINUE:
-        printf("Game continues...\n");
+    default:
+        assert(0 && "printGameResult called with non-terminal result");
         break;
     }
 }
