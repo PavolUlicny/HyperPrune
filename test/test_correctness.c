@@ -6,9 +6,6 @@
 // Helper: Play a complete game
 int play_full_game(char first_player, uint64_t seed)
 {
-    /* Called here even though test_runner.c:main() also calls it, so that this
-     * helper remains self-contained and correct if used outside the standard runner. */
-    init_win_masks();
     zobrist_set_seed(seed);
     zobrist_init();
     transposition_table_init(100000);
@@ -181,6 +178,11 @@ void test_cross_game_tt_no_reinit(void)
 
 void test_correctness_suite(void)
 {
+    /* Redundant when run via test_runner.c (which calls init_win_masks() in main()),
+     * but required for suite-level self-containment: test_cross_game_tt_no_reinit
+     * does not use play_full_game() and would operate on uninitialized win masks
+     * if this suite were invoked without the standard test runner. */
+    init_win_masks();
     RUN_TEST(test_optimal_play);
     RUN_TEST(test_determinism);
     RUN_TEST(test_optimal_play_o_first);
