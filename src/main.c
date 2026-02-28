@@ -425,6 +425,13 @@ int main(int argc, char **argv)
         /* Non-flag positional args not consumed as values are silently ignored */
     }
 
+    if (opt_quiet && !opt_selfplay)
+    {
+        fprintf(stderr, "Error: --quiet requires --selfplay\n");
+        fprintf(stderr, "Use --help to see available options.\n");
+        return EXIT_FAILURE;
+    }
+
     /* Initialize subsystems in required order */
     init_win_masks();
     if (opt_seed_set)
