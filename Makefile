@@ -165,12 +165,21 @@ CORE_SOURCES := \
 
 TEST_TARGET := $(TEST_DIR)/test_runner
 
+# Headers listed explicitly so that modifying any header triggers a test rebuild.
+# (-MMD/-MP cannot be used here: the test build is a single-invocation compile
+# with no intermediate .o files, so no per-object .d dependency files are produced.)
+TEST_HEADERS := \
+	$(SRCDIR)/TicTacToe/tic_tac_toe.h \
+	$(SRCDIR)/Negamax/negamax.h \
+	$(SRCDIR)/Negamax/transposition.h \
+	$(SRCDIR)/Negamax/bitops.h
+
 test: $(TEST_TARGET)
 	@echo "[TEST ] Running test suite..."
 	@$(TEST_TARGET)
 	@echo "[TEST ] All tests passed ✓"
 
-$(TEST_TARGET): $(TEST_SOURCES) $(CORE_SOURCES) $(TEST_UNITY_DIR)/unity.c
+$(TEST_TARGET): $(TEST_SOURCES) $(CORE_SOURCES) $(TEST_UNITY_DIR)/unity.c $(TEST_HEADERS)
 	@echo "[BUILD] Test suite..."
 	@$(CC) $(WARNINGS) -O1 -std=c11 -DBOARD_SIZE=$(BOARD_SIZE) -I$(TEST_UNITY_DIR) \
 		$(TEST_SOURCES) $(CORE_SOURCES) $(TEST_UNITY_DIR)/unity.c \
