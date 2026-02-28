@@ -166,7 +166,10 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
         uint64_t rem = empty & ~tried;
         while (rem)
         {
-            /* Linear scan for the move with the highest history score */
+            /* Linear scan for the move with the highest history score.
+             * O(n²) across all Phase 2 iterations (n = remaining moves):
+             * each pick rescans the shrinking remainder. Acceptable for
+             * n ≤ 64 but worth noting for larger board sizes. */
             int best_bit = CTZ64(rem);
             int best_hist = history[best_bit];
             uint64_t scan = rem & (rem - 1);
