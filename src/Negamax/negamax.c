@@ -19,6 +19,7 @@
 #include "transposition.h"
 #include "bitops.h"
 #include <stdint.h>
+#include <string.h>
 
 /* Helper constants used by the evaluation and search. */
 typedef enum
@@ -38,6 +39,27 @@ _Static_assert(WIN <= INT16_MAX && (-WIN) >= INT16_MIN &&
                "WIN, -WIN, INF, and -INF must fit in int16_t");
 _Static_assert(NOT_TERMINAL > WIN,
                "NOT_TERMINAL must exceed WIN to stay outside the storable score range");
+
+/*
+ * Killer moves and history heuristic tables.
+ * Cleared at the start of each getAiMove() call; not shared across calls.
+ *
+ * killers[depth][0..1]: bit indices of moves that caused beta cutoffs at this
+ *   depth. -1 = unused. Tried before other moves to get early cutoffs.
+ * history[bit]: cumulative cutoff count for each move across the whole search.
+ *   Higher = more likely to cause a cutoff. Used to order non-killer moves.
+ */
+static int killers[MAX_MOVES][2];
+static int history[MAX_MOVES];
+
+static void killers_update(int depth, int bit)
+{
+    if (killers[depth][0] != bit)
+    {
+        killers[depth][1] = killers[depth][0];
+        killers[depth][0] = bit;
+    }
+}
 
 /*
  * Safe mask for valid board positions.
@@ -79,7 +101,8 @@ static inline int boardScore(Bitboard board, char currentPlayer)
  * Returns the best score achievable for currentPlayer from the current position.
  * All scores are relative to currentPlayer (positive = good for currentPlayer).
  */
-static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint64_t hash)
+static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint64_t hash,
+                   int depth)
 {
     /* Transposition table probe */
     int tt_score;
@@ -98,29 +121,70 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
     char opponent = (currentPlayer == 'x') ? 'o' : 'x';
     uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
     int bestScore = -INF;
+    uint64_t tried = 0; /* bitmask of moves already tried via killer slots */
 
-    while (empty)
+/* Shared move-processing body — updates bestScore, alpha, killers/history on cutoff. */
+#define PROCESS_MOVE(bit)                                               \
+    do                                                                  \
+    {                                                                   \
+        bitboard_make_move(&board, (bit), currentPlayer);               \
+        uint64_t new_hash = zobrist_toggle(hash, (bit), currentPlayer); \
+        new_hash = zobrist_toggle_turn(new_hash);                       \
+        int score = -negamax(board, opponent, -beta, -alpha, new_hash,  \
+                             depth + 1);                                \
+        bitboard_unmake_move(&board, (bit), currentPlayer);             \
+        if (score > bestScore)                                          \
+            bestScore = score;                                          \
+        if (bestScore == WIN)                                           \
+        {                                                               \
+            killers_update(depth, (bit));                               \
+            goto move_loop_done;                                        \
+        }                                                               \
+        if (score > alpha)                                              \
+            alpha = score;                                              \
+        if (beta <= alpha)                                              \
+        {                                                               \
+            killers_update(depth, (bit));                               \
+            history[(bit)]++;                                           \
+            goto move_loop_done;                                        \
+        }                                                               \
+    } while (0)
+
+    /* Phase 1: try killer moves first */
+    for (int k = 0; k < 2; k++)
     {
-        int bit = CTZ64(empty);
-        empty &= empty - 1;
-        bitboard_make_move(&board, bit, currentPlayer);
-        uint64_t new_hash = zobrist_toggle(hash, bit, currentPlayer);
-        new_hash = zobrist_toggle_turn(new_hash);
-        int score = -negamax(board, opponent, -beta, -alpha, new_hash);
-        bitboard_unmake_move(&board, bit, currentPlayer);
-
-        if (score > bestScore)
-            bestScore = score;
-
-        /* Early exit: current player wins, can't do better */
-        if (bestScore == WIN)
-            break;
-
-        if (score > alpha)
-            alpha = score;
-        if (beta <= alpha)
-            break; /* Beta cutoff */
+        int bit = killers[depth][k];
+        if (bit < 0 || !((empty >> bit) & 1))
+            continue;
+        tried |= 1ULL << bit;
+        PROCESS_MOVE(bit);
     }
+
+    /* Phase 2: remaining moves in descending history order */
+    {
+        uint64_t rem = empty & ~tried;
+        while (rem)
+        {
+            /* Linear scan for the move with the highest history score */
+            int best_bit = CTZ64(rem);
+            int best_hist = history[best_bit];
+            uint64_t scan = rem & (rem - 1);
+            while (scan)
+            {
+                int b = CTZ64(scan);
+                if (history[b] > best_hist)
+                {
+                    best_hist = history[b];
+                    best_bit = b;
+                }
+                scan &= scan - 1;
+            }
+            rem &= ~(1ULL << best_bit);
+            PROCESS_MOVE(best_bit);
+        }
+    }
+move_loop_done:;
+#undef PROCESS_MOVE
 
     /* Classify node type for transposition table storage.
      * Only two early exits exist: WIN (absolute maximum) and beta cutoff
@@ -195,6 +259,10 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
         hash = zobrist_toggle_turn(hash); /* O to move: root hash must include turn key */
     char opponent = (aiPlayer == 'x') ? 'o' : 'x';
 
+    /* Clear killer and history tables for this search */
+    memset(killers, -1, sizeof(killers));
+    memset(history, 0, sizeof(history));
+
     while (empty)
     {
         int bit = CTZ64(empty);
@@ -202,7 +270,7 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
         bitboard_make_move(&board, bit, aiPlayer);
         uint64_t new_hash = zobrist_toggle(hash, bit, aiPlayer);
         new_hash = zobrist_toggle_turn(new_hash);
-        int score = -negamax(board, opponent, -beta, -alpha, new_hash);
+        int score = -negamax(board, opponent, -beta, -alpha, new_hash, 0);
         bitboard_unmake_move(&board, bit, aiPlayer);
 
         if (score > bestScore)
