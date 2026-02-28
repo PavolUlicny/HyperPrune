@@ -20,6 +20,7 @@
 #include "negamax.h"
 #include "transposition.h"
 #include "bitops.h"
+#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -56,6 +57,7 @@ static int history[MAX_MOVES];
 
 static void killers_update(int depth, int bit)
 {
+    assert(depth < MAX_MOVES); /* max reachable depth is MAX_MOVES-3; array sized MAX_MOVES */
     if (killers[depth][0] != bit)
     {
         killers[depth][1] = killers[depth][0];
