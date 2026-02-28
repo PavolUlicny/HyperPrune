@@ -141,7 +141,8 @@ pgo:
 
 pgo-clean:
 	@echo "[CLEAN] removing PGO profile data"
-	@rm -f *.gcda *.gcno default.profraw default.profdata
+	@find . \( -name "*.gcda" -o -name "*.gcno" \) -delete
+	@rm -f default.profraw default.profdata
 
 # Testing
 TEST_DIR := test
