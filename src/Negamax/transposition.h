@@ -120,6 +120,7 @@ extern "C"
      * Parameters:
      *  - size: Number of entries
      *
+     * Safe to call multiple times; frees the existing table before allocating a new one.
      * Note: Call transposition_table_free() when done to release memory
      */
     void transposition_table_init(size_t size);
