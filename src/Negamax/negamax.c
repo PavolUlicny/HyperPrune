@@ -123,33 +123,6 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
     int bestScore = -INF;
     uint64_t tried = 0; /* bitmask of moves already tried via killer slots */
 
-/* Shared move-processing body — updates bestScore, alpha, killers/history on cutoff. */
-#define PROCESS_MOVE(bit)                                               \
-    do                                                                  \
-    {                                                                   \
-        bitboard_make_move(&board, (bit), currentPlayer);               \
-        uint64_t new_hash = zobrist_toggle(hash, (bit), currentPlayer); \
-        new_hash = zobrist_toggle_turn(new_hash);                       \
-        int score = -negamax(board, opponent, -beta, -alpha, new_hash,  \
-                             depth + 1);                                \
-        bitboard_unmake_move(&board, (bit), currentPlayer);             \
-        if (score > bestScore)                                          \
-            bestScore = score;                                          \
-        if (bestScore == WIN)                                           \
-        {                                                               \
-            killers_update(depth, (bit));                               \
-            goto move_loop_done;                                        \
-        }                                                               \
-        if (score > alpha)                                              \
-            alpha = score;                                              \
-        if (beta <= alpha)                                              \
-        {                                                               \
-            killers_update(depth, (bit));                               \
-            history[(bit)]++;                                           \
-            goto move_loop_done;                                        \
-        }                                                               \
-    } while (0)
-
     /* Phase 1: try killer moves first */
     for (int k = 0; k < 2; k++)
     {
@@ -157,7 +130,26 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
         if (bit < 0 || !((empty >> bit) & 1))
             continue;
         tried |= 1ULL << bit;
-        PROCESS_MOVE(bit);
+        bitboard_make_move(&board, bit, currentPlayer);
+        uint64_t new_hash = zobrist_toggle(hash, bit, currentPlayer);
+        new_hash = zobrist_toggle_turn(new_hash);
+        int score = -negamax(board, opponent, -beta, -alpha, new_hash, depth + 1);
+        bitboard_unmake_move(&board, bit, currentPlayer);
+        if (score > bestScore)
+            bestScore = score;
+        if (bestScore == WIN)
+        {
+            killers_update(depth, bit);
+            goto move_loop_done;
+        }
+        if (score > alpha)
+            alpha = score;
+        if (beta <= alpha)
+        {
+            killers_update(depth, bit);
+            history[bit]++;
+            goto move_loop_done;
+        }
     }
 
     /* Phase 2: remaining moves in descending history order */
@@ -180,11 +172,29 @@ static int negamax(Bitboard board, char currentPlayer, int alpha, int beta, uint
                 scan &= scan - 1;
             }
             rem &= ~(1ULL << best_bit);
-            PROCESS_MOVE(best_bit);
+            bitboard_make_move(&board, best_bit, currentPlayer);
+            uint64_t new_hash = zobrist_toggle(hash, best_bit, currentPlayer);
+            new_hash = zobrist_toggle_turn(new_hash);
+            int score = -negamax(board, opponent, -beta, -alpha, new_hash, depth + 1);
+            bitboard_unmake_move(&board, best_bit, currentPlayer);
+            if (score > bestScore)
+                bestScore = score;
+            if (bestScore == WIN)
+            {
+                killers_update(depth, best_bit);
+                goto move_loop_done;
+            }
+            if (score > alpha)
+                alpha = score;
+            if (beta <= alpha)
+            {
+                killers_update(depth, best_bit);
+                history[best_bit]++;
+                goto move_loop_done;
+            }
         }
     }
 move_loop_done:;
-#undef PROCESS_MOVE
 
     /* Classify node type for transposition table storage.
      * Only two early exits exist: WIN (absolute maximum) and beta cutoff
