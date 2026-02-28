@@ -307,6 +307,7 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
             break;
     }
 
+    assert(bestBit >= 0);
     *out_row = BIT_TO_ROW(bestBit);
     *out_col = BIT_TO_COL(bestBit);
 }
