@@ -34,7 +34,7 @@ static void discardLine(void)
     }
 }
 
-/* Count how many digits are needed to print a non-negative integer. */
+/* Count how many digits are needed to print a non-negative integer. Only valid for number >= 0. */
 static int numDigits(int number)
 {
     int digit_quantity = 1;
