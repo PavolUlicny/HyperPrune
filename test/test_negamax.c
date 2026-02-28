@@ -401,12 +401,12 @@ void test_getAiMove_same_position_called_twice(void)
 }
 
 /* NOTE: no direct unit tests exist for the killer-move or history-heuristic
- * tables. Both tables are static to negamax.c and not accessible from tests.
- * The correctness suite (test_optimal_play, test_cross_game_tt_no_reinit)
- * verifies the heuristics do not break correctness, but cannot detect a
- * silently-neutered implementation that still produces correct moves.
- * Directly testing their effect would require either a node-count API or a
- * compile-time flag to disable the tables, neither of which exists today. */
+ * tables. Both are static to negamax.c and inaccessible from tests. The
+ * correctness suite (test_optimal_play, test_cross_game_tt_no_reinit) confirms
+ * the heuristics do not break correctness but cannot detect a silently-neutered
+ * implementation. To close this gap: expose a negamax_get_node_count() API and
+ * assert fewer nodes are searched with heuristics enabled, or add a
+ * -DDISABLE_HEURISTICS compile flag and compare node counts between builds. */
 void test_negamax_suite(void)
 {
     RUN_TEST(test_empty_board_plays_center);
