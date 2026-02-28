@@ -42,7 +42,7 @@ extern "C"
      * Behavior:
      *  - If the board is invalid (x_pieces & o_pieces != 0), returns (-1, -1)
      *  - If the board is terminal (win/tie), returns (-1, -1)
-     *  - On an empty board, selects the center without searching
+     *  - On an empty board, selects the center without searching (lower-right of central 2×2 for even board sizes)
      *  - Otherwise, runs a full-depth alpha–beta search
      *  - Killer and history tables are reset at the start of each call; they do
      *    not persist across calls (repeated calls on the same position are deterministic)
