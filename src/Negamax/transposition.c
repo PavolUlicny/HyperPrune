@@ -49,9 +49,12 @@ static size_t round_up_power_of_2(size_t n)
     if (n == 0)
         return 1;
 
-    /* Guard against overflow: if n > SIZE_MAX/2, can't safely round up */
+    /* Guard against overflow: if n > SIZE_MAX/2, the true next power of 2 would
+     * overflow size_t. Return the largest representable power of 2 as best-effort;
+     * this rounds DOWN for non-power-of-2 inputs in this range. Unreachable in
+     * practice: MAX_TRANSPOSITION_TABLE_SIZE is far below this threshold. */
     if (n > (SIZE_MAX >> 1))
-        return (SIZE_MAX >> 1) + 1; /* Return largest power of 2 */
+        return (SIZE_MAX >> 1) + 1;
 
     /* Already a power of 2? */
     if ((n & (n - 1)) == 0)
