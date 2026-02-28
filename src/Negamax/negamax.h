@@ -16,6 +16,9 @@
  * Notable characteristics:
  * - Deterministic results due to stable ordering of move generation
  * - Simple opening heuristic (play center on empty board)
+ * - Transposition table with Zobrist hashing for position caching
+ * - Killer move heuristic: try refutation moves first at each depth
+ * - History heuristic: order remaining moves by cumulative beta-cutoff count
  */
 
 #include "../TicTacToe/tic_tac_toe.h"
