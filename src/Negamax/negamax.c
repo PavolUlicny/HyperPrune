@@ -52,6 +52,11 @@ _Static_assert(NOT_TERMINAL > WIN,
  * history[bit]: cumulative beta-cutoff count for each move across the whole search.
  *   WIN exits do not update history (intentional; see Phase 1 WIN block comment).
  *   Higher = more likely to cause a cutoff. Used to order non-killer moves.
+ *
+ * Test isolation note: these are module-level statics. getAiMove() always clears
+ * them via memset before searching, so back-to-back getAiMove() calls are safe.
+ * Any future test that calls negamax() directly (bypassing getAiMove()) would see
+ * stale state from the previous call and must clear these tables manually first.
  */
 static int killers[MAX_MOVES][2];
 static int history[MAX_MOVES];
