@@ -8,6 +8,7 @@
  *  - Result checking after each move
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "tic_tac_toe.h"
@@ -79,6 +80,8 @@ void init_win_masks(void)
     for (int i = 0; i < BOARD_SIZE; i++)
         mask |= BIT_MASK(i, BOARD_SIZE - 1 - i);
     win_masks[idx++] = mask;
+
+    assert(idx == WIN_MASK_COUNT);
 }
 
 /* Check if a player has won using pre-computed masks */
