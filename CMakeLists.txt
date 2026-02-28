@@ -58,6 +58,9 @@ add_executable(test_runner
 )
 target_compile_definitions(test_runner PRIVATE BOARD_SIZE=${BOARD_SIZE})
 target_include_directories(test_runner PRIVATE test/unity)
+if(NOT MSVC)
+    target_compile_options(test_runner PRIVATE -O1)
+endif()
 
 if(NOT MSVC)
     target_link_libraries(test_runner m)
