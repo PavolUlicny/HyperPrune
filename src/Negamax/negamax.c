@@ -8,7 +8,7 @@
  *  - Simple opening heuristic: play center on empty board
  *  - Transposition table with Zobrist hashing for position caching
  *  - Killer move heuristic: try refutation moves first at each depth
- *  - History heuristic: order remaining moves by cumulative beta-cutoff count
+ *  - History heuristic: order remaining moves by beta-cutoff count (WIN exits excluded)
  *
  * Negamax formulation: every node is always from the current player's
  * perspective. The parent receives -negamax(child, -beta, -alpha), so scores
@@ -50,6 +50,7 @@ _Static_assert(NOT_TERMINAL > WIN,
  * killers[depth][0..1]: bit indices of moves that caused cutoffs (beta or WIN)
  *   at this depth. -1 = unused. Tried before other moves to get early cutoffs.
  * history[bit]: cumulative beta-cutoff count for each move across the whole search.
+ *   WIN exits do not update history (intentional; see Phase 1 WIN block comment).
  *   Higher = more likely to cause a cutoff. Used to order non-killer moves.
  */
 static int killers[MAX_MOVES][2];
