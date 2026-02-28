@@ -337,7 +337,7 @@ int askRestart(void)
     }
 }
 
-/* Let the user choose 'x' or 'o'; defaults to 'x' on EOF. */
+/* Let the user choose 'x' or 'o'; defaults to 'x' on EOF. Also accepts '0' as an alias for 'o'. */
 void choosePlayerSymbol(void)
 {
     while (1)
