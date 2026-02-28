@@ -8,7 +8,7 @@
  *  - Simple opening heuristic: play center on empty board
  *  - Transposition table with Zobrist hashing for position caching
  *  - Killer move heuristic: try refutation moves first at each depth
- *  - History heuristic: order remaining moves by cumulative cutoff count
+ *  - History heuristic: order remaining moves by cumulative beta-cutoff count
  *
  * Negamax formulation: every node is always from the current player's
  * perspective. The parent receives -negamax(child, -beta, -alpha), so scores
