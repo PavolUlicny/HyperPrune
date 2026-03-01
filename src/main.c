@@ -439,9 +439,10 @@ int main(int argc, char **argv)
     zobrist_init();
 
     /*
-     * Dynamic transposition table sizing.
-     * Formula: size = 1,500,000 × (BOARD_SIZE / 4)^9.4
-     * The result is capped at MAX_TRANSPOSITION_TABLE_SIZE.
+     * Transposition table sizing.
+     * BOARD_SIZE 3 and 4 use hardcoded values tuned by benchmarking.
+     * BOARD_SIZE ≥ 5 uses the formula: size = 1,500,000 × (BOARD_SIZE / 4)^9.4,
+     * capped at MAX_TRANSPOSITION_TABLE_SIZE.
      */
     size_t tt_size;
 
