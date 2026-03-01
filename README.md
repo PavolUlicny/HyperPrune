@@ -1,6 +1,6 @@
 # HyperPrune
 
-> The fastest single-threaded perfect-play Tic-Tac-Toe engine without precomputed lookup tables. Clean API and CLI for interactive play or integration. Alpha-beta pruning, bitboards, and Zobrist-hashed transposition tables deliver deterministic perfect play from 3×3 to 8×8.
+> The fastest perfect-play Tic-Tac-Toe engine built from scratch — negamax alpha-beta, bitboards, killer moves, history heuristics, and Zobrist-hashed transposition tables, with no precomputed lookup tables. Deterministic perfect play from 3×3 to 8×8.
 
 ## Highlights
 
