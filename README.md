@@ -2,6 +2,8 @@
 
 > The fastest perfect-play Tic-Tac-Toe engine built from scratch — negamax alpha-beta, bitboards, killer moves, history heuristics, and Zobrist-hashed transposition tables, with no precomputed lookup tables. Deterministic perfect play from 3×3 to 8×8.
 
+[![Tests](https://github.com/PavolUlicny/HyperPrune/actions/workflows/test.yml/badge.svg)](https://github.com/PavolUlicny/HyperPrune/actions/workflows/test.yml)
+
 ## Highlights
 
 - Perfect-play AI with full-depth search
