@@ -21,34 +21,30 @@ void test_did_last_move_win_row(void)
     TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, 0));
 }
 
-// Test bitboard_did_last_move_win for column win
+// Test bitboard_did_last_move_win for column win (comprehensive - all positions)
 void test_did_last_move_win_col(void)
 {
     Bitboard board = {0, 0};
 
     // Create column win at col 0
     for (int r = 0; r < BOARD_SIZE; r++)
-    {
         bitboard_make_move_rc(&board, r, 0, 'o');
-    }
 
-    // Check that last move at (BOARD_SIZE-1, 0) wins
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.o_pieces, BOARD_SIZE - 1, 0));
+    for (int r = 0; r < BOARD_SIZE; r++)
+        TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.o_pieces, r, 0));
 }
 
-// Test bitboard_did_last_move_win for main diagonal
+// Test bitboard_did_last_move_win for main diagonal (comprehensive - all positions)
 void test_did_last_move_win_main_diagonal(void)
 {
     Bitboard board = {0, 0};
 
     // Create main diagonal win
     for (int i = 0; i < BOARD_SIZE; i++)
-    {
         bitboard_make_move_rc(&board, i, i, 'x');
-    }
 
-    // Check center of diagonal
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, BOARD_SIZE / 2, BOARD_SIZE / 2));
+    for (int i = 0; i < BOARD_SIZE; i++)
+        TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, i, i));
 }
 
 // Test bitboard_did_last_move_win for anti-diagonal (comprehensive - all positions)
