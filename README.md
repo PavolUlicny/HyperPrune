@@ -162,7 +162,7 @@ int main(void)
     zobrist_init();
     transposition_table_init(100000);
 
-    Bitboard board = {0};
+    Bitboard board = {0, 0};
     int row = -1, col = -1;
     getAiMove(board, 'x', &row, &col);
 
