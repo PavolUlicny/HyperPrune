@@ -358,14 +358,14 @@ void test_restartGame_clears_board_and_resets_turn(void)
      * would return GAME_TIE instead of GAME_CONTINUE on the penultimate move.
      */
     int x_bits[MAX_MOVES], o_bits[MAX_MOVES];
-    int nx = 0, no_count = 0;
+    int nx = 0, o_count = 0;
     for (int r = 0; r < BOARD_SIZE; r++)
         for (int c = 0; c < BOARD_SIZE; c++)
         {
             if (((c / 2) + r) % 2 == 0)
                 x_bits[nx++] = r * BOARD_SIZE + c;
             else
-                o_bits[no_count++] = r * BOARD_SIZE + c;
+                o_bits[o_count++] = r * BOARD_SIZE + c;
         }
 
     /* Interleave x and o positions; makeMove() alternates turns automatically */
