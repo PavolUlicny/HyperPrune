@@ -103,7 +103,7 @@ extern "C"
      * collision with legitimate zero-hash positions (1 in 2^64 probability).
      * This preserves full 64-bit hash entropy and prevents artificial collisions.
      *
-     * Total size: 16 bytes (16-byte aligned for memory efficiency)
+     * Total size: 16 bytes (8-byte aligned; sized to a power of 2 for cache efficiency)
      */
     typedef struct
     {
