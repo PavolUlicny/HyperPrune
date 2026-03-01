@@ -64,7 +64,11 @@ target_include_directories(test_runner PRIVATE test/unity)
 if(NOT MSVC)
     target_compile_options(test_runner PRIVATE -O1 -UNDEBUG)
 else()
-    target_compile_options(test_runner PRIVATE /UNDEBUG)
+    # /UNDEBUG would conflict with /DNDEBUG from Release build flags, triggering D9025.
+    # Use a force-included header to #undef NDEBUG at the preprocessor level instead.
+    set(_undef_ndebug_h "${CMAKE_CURRENT_BINARY_DIR}/undef_ndebug.h")
+    file(WRITE "${_undef_ndebug_h}" "#undef NDEBUG\n")
+    target_compile_options(test_runner PRIVATE "/FI${_undef_ndebug_h}")
 endif()
 
 if(NOT MSVC)
