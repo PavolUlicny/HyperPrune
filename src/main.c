@@ -157,7 +157,7 @@ static int selfPlay(int gameCount, int quiet)
     {
         if (timer_get(&startTime) != 0)
         {
-            fprintf(stderr, "Warning: timer initialization failed, timing stats will be unavailable\n");
+            fprintf(stderr, "Warning: timer initialization failed, timing stats unavailable\n");
             timing_available = 0;
         }
         else
