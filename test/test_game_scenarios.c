@@ -605,7 +605,7 @@ void test_ai_o_row_win(void)
     zobrist_init();
     transposition_table_init(10000);
 
-    // O needs (0,2) to complete row 0. X has no immediate win.
+    // O needs (0,2) to complete row 0. X threatens row 1 at (1,1) but O wins first.
     // O O _
     // X _ X
     // _ _ _
