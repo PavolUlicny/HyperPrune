@@ -1,7 +1,7 @@
 #include "unity/unity.h"
 #include "../src/TicTacToe/tic_tac_toe.h"
 
-// Test all 8 win patterns on 3x3
+// Test all 2*BOARD_SIZE+2 win patterns (rows, columns, two diagonals)
 void test_all_win_patterns(void)
 {
     Bitboard board;
