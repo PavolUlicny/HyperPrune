@@ -53,6 +53,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
@@ -149,6 +150,7 @@ jobs:
   test-cmake:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         board_size: [3, 4, 5, 6, 7, 8]
@@ -250,6 +252,7 @@ jobs:
   test-windows:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         board_size: [3, 4, 5, 6, 7, 8]
 
@@ -317,6 +320,7 @@ jobs:
   strict-warnings:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
@@ -356,6 +360,7 @@ jobs:
   sanitize:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         compiler: [gcc, clang]
         board_size: [3, 4, 5, 6, 7, 8]
@@ -394,6 +399,7 @@ jobs:
   valgrind:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         compiler: [gcc, clang]
         board_size: [3, 4, 5, 6, 7, 8]
