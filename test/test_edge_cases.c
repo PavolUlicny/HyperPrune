@@ -210,7 +210,7 @@ void test_zobrist_hash_nonzero(void)
     bitboard_make_move_rc(&board, 0, 0, 'x'); /* Non-empty board: piece key is non-zero */
     uint64_t hash = zobrist_hash(board);
 
-    // (Statistical property - not guaranteed but extremely likely)
+    // Fixed seed (42) + deterministic PRNG: hash is guaranteed non-zero, not just likely
     TEST_ASSERT_NOT_EQUAL_UINT64(0, hash);
 }
 
