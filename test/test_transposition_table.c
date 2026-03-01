@@ -56,7 +56,7 @@ void test_tt_zero_size(void)
     uint64_t hash = zobrist_hash(board);
 
     // Operations should not crash when TT is disabled
-    // Size 0 now properly disables TT (no allocation)
+    // Size 0 disables TT (no allocation)
     transposition_table_store(hash, 50, TRANSPOSITION_TABLE_EXACT);
 
     int score;
