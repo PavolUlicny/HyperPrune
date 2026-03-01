@@ -61,7 +61,7 @@ cmake --build build --config Release
 
 **Native optimizations:**
 
-The `ENABLE_NATIVE_OPTIMIZATIONS` CMake option enables aggressive optimizations (`-march=native`, `-flto`, `-funroll-loops`, etc.) for maximum performance on the build machine. Use `ON` for local builds, `OFF` (default) for portable binaries.
+The `ENABLE_NATIVE_OPTIMIZATIONS` CMake option adds micro-tuning flags (`-march=native`, `-flto`, `-funroll-loops`, etc.) for maximum performance on the build machine. The optimization level (`-O3`) comes from `CMAKE_BUILD_TYPE=Release` — using this flag without `Release` compiles at `-O0`. Use `ON` for local builds, `OFF` (default) for portable binaries.
 
 ### Manual build
 
@@ -104,7 +104,7 @@ cl /std:c11 /O2 /DBOARD_SIZE=3 \
 ```text
 --help, -h                    Show help and exit
 --selfplay, -s [GAMES]        Run self-play mode (default: 1000 games)
---quiet, -q                   Suppress all output in self-play mode
+--quiet, -q                   Suppress all output (requires --selfplay)
 --tt-size SIZE, -t SIZE       Transposition table size in entries (0 to disable)
 --seed SEED                   PRNG seed for Zobrist keys
 ```
