@@ -63,9 +63,9 @@ static int history[MAX_MOVES];
 
 static inline void killers_update(int depth, int bit)
 {
-    assert(depth < MAX_MOVES); /* tight bound: MAX_MOVES-3 (empty board shortcuts in getAiMove;
-                                * root call places 1 piece; negamax returns at full board before
-                                * recursing further — so depth never reaches MAX_MOVES-2) */
+    assert(depth < MAX_MOVES - 2); /* tight bound: MAX_MOVES-3 (empty board shortcuts in getAiMove;
+                                    * root call places 1 piece; negamax returns at full board before
+                                    * recursing further — so depth never reaches MAX_MOVES-2) */
     if (killers[depth][0] != bit)
     {
         killers[depth][1] = killers[depth][0];
