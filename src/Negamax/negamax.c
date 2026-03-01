@@ -89,9 +89,9 @@ static const uint64_t VALID_POSITIONS_MASK = (1ULL << MAX_MOVES) - 1;
  * Only the PREVIOUS player (opponent of currentPlayer) can have just won —
  * currentPlayer hasn't moved yet — so only one bitboard_has_won call suffices.
  *
- *  -WIN (−100)     : opponent of currentPlayer won → currentPlayer loses
- *   TIE (0)  : board is full → draw
- *   NOT_TERMINAL   : game not yet terminal
+ *  -WIN (−100)   : opponent of currentPlayer won → currentPlayer loses
+ *   TIE (0)      : board is full → draw
+ *   NOT_TERMINAL : game not yet terminal
  */
 static inline int boardScore(Bitboard board, char currentPlayer)
 {
