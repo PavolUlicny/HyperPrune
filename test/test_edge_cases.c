@@ -3,22 +3,17 @@
 #include "../src/Negamax/negamax.h"
 #include "../src/Negamax/transposition.h"
 
-// Test bitboard_did_last_move_win for row win
+// Test bitboard_did_last_move_win for row win (comprehensive - all positions)
 void test_did_last_move_win_row(void)
 {
     Bitboard board = {0, 0};
 
     // Create row win at row 0
     for (int c = 0; c < BOARD_SIZE; c++)
-    {
         bitboard_make_move_rc(&board, 0, c, 'x');
-    }
 
-    // Check that last move at (0, BOARD_SIZE-1) wins
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, BOARD_SIZE - 1));
-
-    // Check that same config for a different cell also detects win
-    TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, 0));
+    for (int c = 0; c < BOARD_SIZE; c++)
+        TEST_ASSERT_TRUE(bitboard_did_last_move_win(board.x_pieces, 0, c));
 }
 
 // Test bitboard_did_last_move_win for column win (comprehensive - all positions)
