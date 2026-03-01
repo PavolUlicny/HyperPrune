@@ -270,6 +270,7 @@ jobs:
         if: matrix.board_size == 3 || matrix.board_size == 4
         shell: pwsh
         run: |
+          Write-Host "Running self-play verification for perfect play..."
           $output = & ./build/Release/ttt.exe -s 1000000
           $output | ForEach-Object { Write-Host $_ }
 
