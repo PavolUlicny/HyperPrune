@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  BOARD_SIZE: 3
+
+jobs:
+  gate:
+    name: Tests
+    uses: ./.github/workflows/test.yml
+    timeout-minutes: 90
+
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: gate
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: ttt-linux-x86_64
+          - os: macos-latest
+            artifact: ttt-macos-arm64
+          - os: windows-latest
+            artifact: ttt-windows-x86_64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build portable release (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: make portable BOARD_SIZE=${{ env.BOARD_SIZE }}
+
+      - name: Rename binary (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: mv ttt ${{ matrix.artifact }}
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -B build -DBOARD_SIZE=${{ env.BOARD_SIZE }} -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: cmake --build build --config Release
+
+      - name: Rename binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Move-Item build/Release/ttt.exe ${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+          retention-days: 1
+
+  publish:
+    name: Publish release
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 5
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract release notes from CHANGELOG
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          awk -v tag="## [$TAG_NAME]" \
+            'index($0,tag)==1{found=1;next} found && /^## \[/{exit} found' \
+            CHANGELOG.md > release_notes.md
+          [ -s release_notes.md ] || { echo "ERROR: No changelog entry for $TAG_NAME"; exit 1; }
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: sha256sum ttt-* > checksums.txt
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG_NAME" \
+            --title "HyperPrune $TAG_NAME" \
+            --notes-file release_notes.md \
+            ttt-linux-x86_64 ttt-macos-arm64 ttt-windows-x86_64.exe checksums.txt
