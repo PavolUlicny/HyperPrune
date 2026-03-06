@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [V2.1.0] - 2026-03-01
+## [v2.1.0] - 2026-03-01
 
 ### Added
 
@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `fail-fast: false` to all matrix jobs for full failure visibility
 
-## [V2.0.0] - 2026-02-25
+## [v2.0.0] - 2026-02-25
 
 ### Added
 
@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Transposition table correctness bug: TT entries could be reused incorrectly across `getAiMove` calls when side-to-move was not encoded in the hash
 
-## [V1.4.0] - 2026-02-22
+## [v1.4.0] - 2026-02-22
 
 ### Added
 
@@ -62,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI clarity and correctness improvements
 - Code and comment polishes
 
-## [V1.3.0] - 2026-02-17
+## [v1.3.0] - 2026-02-17
 
 ### Added
 
@@ -75,7 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clearer CLI output and documentation
 - Improved transposition table size-0 handling
 
-## [V1.2.0] - 2026-02-16
+## [v1.2.0] - 2026-02-16
 
 ### Added
 
@@ -87,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Polished transposition table probe API
 
-## [V1.1.0] - 2026-02-15
+## [v1.1.0] - 2026-02-15
 
 ### Added
 
