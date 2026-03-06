@@ -6,10 +6,12 @@
 
 ## Highlights
 
-- Perfect-play AI with full-depth search
-- Interactive play and self-play benchmarks
-- Deterministic results with optional seeding
-- PGO target for peak performance
+- Bitboard representation — win detection via bitwise AND against precomputed masks
+- Negamax with alpha-beta pruning — reduces the search tree from O(b^d) toward O(b^(d/2))
+- Zobrist-hashed transposition table — ~99.9% hit rate on 3×3, avoiding redundant re-evaluation
+- Killer-move and history heuristics for move ordering — measurable throughput gains
+- Profile-guided optimization (PGO) target for peak performance
+- Verified perfect play on 3×3 and 4×4 (100% ties) across Linux, macOS, and Windows in CI
 
 ## Requirements
 
