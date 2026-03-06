@@ -192,7 +192,7 @@ Notes:
 ## Performance notes
 
 - Fastest build: `make pgo`
-- Large boards (5×5+) grow quickly in search time
+- Large boards grow exponentially: 5×5 takes on the order of minutes per move; 6×6+ is impractical without further pruning improvements
 - Default transposition table sizing is automatic; override with `--tt-size`
 
 ## Project structure
