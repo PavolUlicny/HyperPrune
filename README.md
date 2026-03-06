@@ -32,7 +32,10 @@ make
 make              # Default release build
 make debug        # Debug build with symbols
 make release      # Optimized release build
+make portable     # Release build without -march=native (portable binary)
 make pgo          # Profile-guided optimization
+make install      # Install to /usr/local/bin (override with PREFIX=...)
+make uninstall    # Remove installed binary
 ```
 
 Board size (3-8):
