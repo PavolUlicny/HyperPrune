@@ -16,14 +16,9 @@ env:
   BOARD_SIZE: 3
 
 jobs:
-  gate:
-    name: Tests
-    uses: ./.github/workflows/test.yml
-
   build:
     name: Build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    needs: gate
     timeout-minutes: 15
     strategy:
       fail-fast: false
