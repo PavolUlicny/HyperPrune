@@ -19,7 +19,6 @@ jobs:
   gate:
     name: Tests
     uses: ./.github/workflows/test.yml
-    timeout-minutes: 90
 
   build:
     name: Build (${{ matrix.os }})
