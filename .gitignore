@@ -78,3 +78,6 @@ test/test_runner
 # claude files
 .claude/
 CLAUDE.md
+
+# Python virtual environment for recording gifs of terminal
+.record/
