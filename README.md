@@ -128,6 +128,20 @@ cl /std:c11 /O2 /DBOARD_SIZE=3 \
 ./ttt -t 0 -s 1000              # Benchmark without TT
 ```
 
+## How it works
+
+HyperPrune is built around five compounding optimizations:
+
+**Bitboard representation** — The board is two `uint64_t` fields (`x_pieces`, `o_pieces`), one bit per cell. Win detection checks `2×N + 2` precomputed masks (N rows, N columns, two diagonals) with a single bitwise AND each — no per-cell iteration.
+
+**Negamax with alpha-beta pruning** — A single recursive function replaces separate min/max functions; every score is relative to the player-to-move, and the parent receives `-negamax(child)`. Alpha-beta pruning skips branches that cannot affect the result, reducing the search tree from O(b^d) toward O(b^(d/2)) in the best case.
+
+**Zobrist-hashed transposition table** — Every evaluated position is stored by a 64-bit Zobrist hash. On 3×3, the TT hit rate reaches ~99.9%, meaning the engine almost never re-evaluates a position it has seen before. The hash includes a side-to-move key: without it, the same board reached at different depths across separate `getAiMove()` calls hashes identically but requires a different score, producing non-optimal moves.
+
+**Killer-move and history heuristics** — Move ordering determines how quickly alpha-beta finds cutoffs. The engine keeps two killer slots per depth — moves that recently caused a cutoff at that depth — and tries them before all others. Remaining moves are ordered by cumulative beta-cutoff count (history). Better ordering means more pruning.
+
+**Profile-guided optimization** — `make pgo` compiles the binary twice: once instrumented to collect a real execution profile, then again with that profile fed back to the compiler for targeted inlining and branch-prediction hints.
+
 ## Testing
 
 The test suite uses Unity and ships with the repo.
