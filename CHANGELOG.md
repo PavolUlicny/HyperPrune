@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Automated release workflow: pushing a version tag builds Linux/macOS/Windows binaries, generates `checksums.txt`, extracts release notes from CHANGELOG, and publishes the GitHub release automatically
+
+### Changed
+
+- `make portable` on Linux now statically links, producing a fully self-contained binary with no glibc version dependency
+- Windows CMake builds now use static CRT (`/MT`), eliminating the Visual C++ Redistributable requirement
+- Bumped CMake minimum required version from 3.10 to 3.15
+
+### CI
+
+- Test workflow restricted to branch pushes; tag pushes handled exclusively by the release workflow to avoid duplicate runs
+
 ## [v2.1.0] - 2026-03-01
 
 ### Added
