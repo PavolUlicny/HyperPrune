@@ -4,6 +4,8 @@
 
 [![Tests](https://github.com/PavolUlicny/HyperPrune/actions/workflows/test.yml/badge.svg)](https://github.com/PavolUlicny/HyperPrune/actions/workflows/test.yml)
 
+![Demo](demo.gif)
+
 ## Highlights
 
 - Bitboard representation — win detection via bitwise AND against precomputed masks
