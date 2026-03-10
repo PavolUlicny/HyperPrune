@@ -45,7 +45,7 @@ jobs:
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'
-        run: cmake -B build -DBOARD_SIZE=${{ env.BOARD_SIZE }} -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -DBOARD_SIZE=${{ env.BOARD_SIZE }}
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
