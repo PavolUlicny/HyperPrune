@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.2.0] - 2026-03-10
+
 ### Added
 
 - Automated release workflow: pushing a version tag builds Linux/macOS/Windows binaries, generates `checksums.txt`, extracts release notes from CHANGELOG, and publishes the GitHub release automatically
