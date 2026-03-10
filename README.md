@@ -12,6 +12,7 @@
 - Killer-move and history heuristics for move ordering — measurable throughput gains
 - Profile-guided optimization (PGO) target for peak performance
 - Verified perfect play on 3×3 and 4×4 (100% ties) across Linux, macOS, and Windows in CI
+- ~7.1 M games/s (3×3 release), ~7.7 M games/s (3×3 PGO) on AMD Ryzen 7 8845HS
 
 ## Requirements
 
@@ -195,6 +196,13 @@ Notes:
 - `BOARD_SIZE` is compile-time; it must match across all objects.
 
 ## Performance notes
+
+Benchmarked on AMD Ryzen 7 8845HS (performance governor):
+
+| Board | Release | PGO |
+|-------|---------|-----|
+| 3×3 | ~7.1 M games/s | ~7.7 M games/s |
+| 4×4 | ~2.2 M games/s | ~2.8 M games/s |
 
 - Fastest build: `make pgo`
 - Large boards grow exponentially: 5×5 takes on the order of minutes per move; 6×6+ is impractical without further pruning improvements
