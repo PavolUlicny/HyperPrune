@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### CI
 
 - Test workflow restricted to branch pushes; tag pushes handled exclusively by the release workflow to avoid duplicate runs
+- Release workflow now smoke-tests each binary (`--help`) before uploading, catching startup crashes or broken linker output
 
 ## [v2.1.0] - 2026-03-01
 
