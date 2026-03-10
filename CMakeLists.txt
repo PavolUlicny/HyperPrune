@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 project(HyperPrune LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
@@ -31,6 +31,13 @@ add_executable(ttt
     src/Negamax/transposition.c
 )
 target_compile_definitions(ttt PRIVATE BOARD_SIZE=${BOARD_SIZE})
+
+# Static CRT for portable Windows distribution (no Visual C++ Redistributable required)
+if(MSVC)
+    set_target_properties(ttt PROPERTIES
+        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+    )
+endif()
 
 if(NOT MSVC)
     target_link_libraries(ttt m)
