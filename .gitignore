@@ -81,3 +81,6 @@ CLAUDE.md
 
 # Python virtual environment for recording gifs of terminal
 .record/
+
+# Asciinema raw recording (source for demo.gif)
+*.cast
