@@ -56,6 +56,15 @@ jobs:
         shell: pwsh
         run: Move-Item build/Release/ttt.exe ${{ matrix.artifact }}
 
+      - name: Smoke test binary (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: ./${{ matrix.artifact }} --help
+
+      - name: Smoke test binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./${{ matrix.artifact }} --help
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
