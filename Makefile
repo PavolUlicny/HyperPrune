@@ -27,6 +27,14 @@ else
 	SEMANTIC_INTERPOSITION_FLAG :=
 endif
 
+# Static link on Linux for portable distribution (no glibc version dependency)
+# macOS does not support full static linking
+ifeq ($(UNAME_S),Linux)
+PORTABLE_LDFLAGS := -static
+else
+PORTABLE_LDFLAGS :=
+endif
+
 BUILD ?= release
 
 SRCDIR := src
@@ -63,7 +71,7 @@ MODE_CFLAGS := $(DEBUG_CFLAGS)
 MODE_LDFLAGS :=
 else ifeq ($(BUILD),portable)
 MODE_CFLAGS := $(PORTABLE_CFLAGS)
-MODE_LDFLAGS :=
+MODE_LDFLAGS := $(PORTABLE_LDFLAGS)
 else
 MODE_CFLAGS := $(RELEASE_CFLAGS)
 MODE_LDFLAGS := -flto
