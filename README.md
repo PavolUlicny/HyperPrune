@@ -199,10 +199,10 @@ Notes:
 
 Benchmarked on AMD Ryzen 7 8845HS (performance governor):
 
-| Board | Release | PGO |
-|-------|---------|-----|
-| 3×3 | ~7.1 M games/s | ~7.7 M games/s |
-| 4×4 | ~2.2 M games/s | ~2.8 M games/s |
+| Board | Release        | PGO            |
+|-------|----------------|----------------|
+| 3×3   | ~7.1 M games/s | ~7.7 M games/s |
+| 4×4   | ~2.2 M games/s | ~2.8 M games/s |
 
 - Fastest build: `make pgo`
 - Large boards grow exponentially: 5×5 takes on the order of minutes per move; 6×6+ is impractical without further pruning improvements
