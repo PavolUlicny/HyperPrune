@@ -221,6 +221,7 @@ Benchmarked on AMD Ryzen 7 8845HS (performance governor):
 | 4×4   | ~2.2 M games/s | ~2.8 M games/s |
 
 - Fastest build: `make pgo`
+- Released binaries are compiled for 3×3. For other board sizes, compile from source with `make BOARD_SIZE=N`
 - Large boards grow exponentially: 5×5 takes on the order of minutes per move; 6×6+ is impractical without further pruning improvements
 - Default transposition table sizing is automatic; override with `--tt-size`
 
