@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.2.1] - 2026-03-11
+
+### Fixed
+
+- `--selfplay` now exits with an error on invalid non-integer values instead of silently falling back to the default count
+- Clarified in README that released binaries are compiled for 3×3; other board sizes require compiling from source
+
 ## [v2.2.0] - 2026-03-10
 
 ### Added
