@@ -346,9 +346,10 @@ int main(int argc, char **argv)
                 }
                 else if (argv[i + 1][0] != '-')
                 {
-                    /* Non-flag, non-integer: warn and leave in place */
-                    fprintf(stderr, "Warning: Invalid --selfplay value '%s', using default %d\n",
-                            argv[i + 1], opt_selfplay_games);
+                    /* Non-flag, non-integer: error */
+                    fprintf(stderr, "Error: Invalid --selfplay value '%s' (must be a positive integer)\n",
+                            argv[i + 1]);
+                    return EXIT_FAILURE;
                 }
                 /* Starts with '-': another flag, leave for next iteration */
             }
