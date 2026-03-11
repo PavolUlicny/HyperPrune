@@ -43,7 +43,7 @@ make install      # Install to /usr/local/bin (override with PREFIX=...)
 make uninstall    # Remove installed binary
 ```
 
-Board size (3-8):
+Board size (3–8):
 
 ```sh
 make BOARD_SIZE=4
@@ -158,7 +158,7 @@ make BOARD_SIZE=4 test
 **CMake (cross-platform):**
 
 ```sh
-cmake -B build -DBOARD_SIZE=3
+cmake -B build -DBOARD_SIZE=3 -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
