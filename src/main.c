@@ -423,7 +423,12 @@ int main(int argc, char **argv)
             fprintf(stderr, "Use --help to see available options.\n");
             return EXIT_FAILURE;
         }
-        /* Non-flag positional args not consumed as values are silently ignored */
+        else
+        {
+            fprintf(stderr, "Error: Unexpected argument '%s'\n", arg);
+            fprintf(stderr, "Use --help to see available options.\n");
+            return EXIT_FAILURE;
+        }
     }
 
     if (opt_quiet && !opt_selfplay)
