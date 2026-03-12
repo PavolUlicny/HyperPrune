@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `build-portable` job to normal CI that mirrors the exact portable build path used by the release workflow (`make portable BOARD_SIZE=3`), smoke-tests the binary, and runs 1M-game perfect-play verification on Linux and macOS
 - Bumped `actions/checkout` from v4 to v6 across all workflows for Node.js 24 compatibility
+- Bumped `actions/upload-artifact` and `actions/download-artifact` from v4 to v7 for Node.js 24 compatibility
 
 ### Fixed
 
