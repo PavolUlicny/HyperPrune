@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- CLI now errors on unexpected positional arguments (e.g. `ttt foo`) instead of silently ignoring them and entering interactive mode
+- CLI now errors on unexpected positional arguments (e.g. `ttt foo`, `ttt -- foo`) instead of silently ignoring them and entering interactive mode
 - `getAiMove` now returns (-1, -1) on invalid `aiPlayer` (not `'x'` or `'o'`) instead of producing silently wrong results
 
 ## [v2.2.1] - 2026-03-11
