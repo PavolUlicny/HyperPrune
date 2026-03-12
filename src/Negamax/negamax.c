@@ -244,6 +244,14 @@ move_loop_done:;
  */
 void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
 {
+    /* Validate: aiPlayer must be 'x' or 'o' */
+    if (aiPlayer != 'x' && aiPlayer != 'o')
+    {
+        *out_row = -1;
+        *out_col = -1;
+        return;
+    }
+
     /* Validate: no overlapping pieces */
     if (board.x_pieces & board.o_pieces)
     {
