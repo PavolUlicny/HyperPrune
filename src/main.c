@@ -322,7 +322,15 @@ int main(int argc, char **argv)
         const char *arg = argv[i];
 
         if (strcmp(arg, "--") == 0)
-            break; /* Stop option processing; remaining args are positional */
+        {
+            if (i + 1 < argc)
+            {
+                fprintf(stderr, "Error: Unexpected argument '%s'\n", argv[i + 1]);
+                fprintf(stderr, "Use --help to see available options.\n");
+                return EXIT_FAILURE;
+            }
+            break;
+        }
 
         if (strcmp(arg, "--selfplay") == 0 || strcmp(arg, "-s") == 0)
         {
