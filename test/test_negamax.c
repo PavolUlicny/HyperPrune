@@ -400,6 +400,32 @@ void test_getAiMove_same_position_called_twice(void)
 #endif
 }
 
+// Test that invalid aiPlayer (not 'x' or 'o') is rejected with (-1, -1).
+// Covers both the empty-board fast path and the main search path, since
+// the validation fires before either is reached.
+void test_invalid_player_rejected(void)
+{
+    zobrist_init();
+    transposition_table_init(10000);
+
+    // Empty board: fast path would return center without this check
+    Bitboard empty_board = {0, 0};
+    int row, col;
+    getAiMove(empty_board, 'q', &row, &col);
+    TEST_ASSERT_EQUAL(-1, row);
+    TEST_ASSERT_EQUAL(-1, col);
+
+    // Non-empty, non-terminal board: search path would treat 'r' as 'o' without this check
+    Bitboard board = {0, 0};
+    bitboard_make_move_rc(&board, 0, 0, 'x');
+    bitboard_make_move_rc(&board, 1, 1, 'o');
+    getAiMove(board, 'r', &row, &col);
+    TEST_ASSERT_EQUAL(-1, row);
+    TEST_ASSERT_EQUAL(-1, col);
+
+    transposition_table_free();
+}
+
 /* NOTE: no direct unit tests exist for the killer-move or history-heuristic
  * tables. Both are static to negamax.c and inaccessible from tests. The
  * correctness suite (test_optimal_play, test_cross_game_tt_no_reinit) confirms
@@ -419,4 +445,5 @@ void test_negamax_suite(void)
     RUN_TEST(test_getAiMove_anti_diagonal_win);
     RUN_TEST(test_getAiMove_main_diagonal_win);
     RUN_TEST(test_getAiMove_same_position_called_twice);
+    RUN_TEST(test_invalid_player_rejected);
 }
