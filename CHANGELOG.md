@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.2.3] - 2026-03-15
+
 ### Fixed
 
 - Replaced `scanf("%d")` with `fgets`+`strtol` in interactive coordinate input to eliminate undefined behaviour on out-of-range integer input
