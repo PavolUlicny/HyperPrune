@@ -232,29 +232,19 @@ static int selfPlay(int gameCount, int quiet)
             }
         }
 
-        /* Print results header */
-        printf("\n");
-        printf("===============================================================\n");
-        printf("  Self-Play Results: %d games (all ties)\n", gameCount);
-        printf("===============================================================\n");
-        printf("\n");
-
-        /* Print performance stats (only if timing available) */
         if (timing_available)
         {
-            printf("  Performance\n");
-            printf("    Elapsed:     %8.3f s\n", elapsed);
             if (throughput >= 1000000.0)
-                printf("    Throughput:  %8.2f M games/s\n", throughput / 1000000.0);
+                printf("%d games in %.3f s (%.2f M games/s)\n", gameCount, elapsed, throughput / 1000000.0);
             else if (throughput >= 1000.0)
-                printf("    Throughput:  %8.2f K games/s\n", throughput / 1000.0);
+                printf("%d games in %.3f s (%.2f K games/s)\n", gameCount, elapsed, throughput / 1000.0);
             else
-                printf("    Throughput:  %8.1f games/s\n", throughput);
-            printf("\n");
+                printf("%d games in %.3f s (%.1f games/s)\n", gameCount, elapsed, throughput);
         }
-
-        printf("===============================================================\n");
-        printf("\n");
+        else
+        {
+            printf("%d games (timing unavailable)\n", gameCount);
+        }
     }
 
     return EXIT_SUCCESS;
