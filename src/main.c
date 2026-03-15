@@ -325,7 +325,7 @@ int main(int argc, char **argv)
                     /* Valid integer — consume as game count */
                     if (errno == ERANGE || val < 1 || val > INT_MAX)
                     {
-                        fprintf(stderr, "Game count must be a positive integer.\n");
+                        fprintf(stderr, "Error: Game count must be a positive integer.\n");
                         return EXIT_FAILURE;
                     }
                     opt_selfplay_games = (int)val;
