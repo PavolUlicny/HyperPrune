@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Self-play mode now exits with code 1 and prints a diagnostic to stderr if any game is won (perfect play broken); previously continued silently
 - Self-play output no longer includes the Outcomes breakdown (x/o/tie counts); all games are expected to be ties
+- Self-play output condensed to a single line: `N games in X.XXX s (Y.YY M games/s)`
 
 ### CI
 
