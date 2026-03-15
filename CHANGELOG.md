@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Replaced `scanf("%d")` with `fgets`+`strtol` in interactive coordinate input to eliminate undefined behaviour on out-of-range integer input
+
 ### CI
 
 - Added CodeQL static analysis workflow (`security-extended` query suite) with weekly schedule
