@@ -4,7 +4,7 @@
  * - Interactive game loop (human vs AI)
  * - Self-play mode via --selfplay|-s [games] [--quiet|-q] [--tt-size|-t SIZE] [--seed SEED]
  *   * Default games: 1000 when omitted
- *   * --quiet/-q suppresses all self-play output
+ *   * --quiet/-q suppresses all self-play output (errors always printed)
  *   * --tt-size/-t overrides transposition table size
  *   * --seed sets PRNG seed for Zobrist keys (deterministic by default)
  */
@@ -138,18 +138,18 @@ static void playGame(void)
 
 /*
  * Self-play mode: runs gameCount AI vs AI games starting from an empty
- * board, alternating turns. Collects win/tie stats and (optionally) prints
- * timing and throughput.
+ * board, alternating turns. Prints timing and throughput unless quiet.
+ *
+ * Returns EXIT_SUCCESS if all games are ties (correct perfect play).
+ * Returns EXIT_FAILURE immediately if any game is won, printing a diagnostic
+ * to stderr; a win indicates a bug in the engine.
  *
  * Parameters:
  *  - gameCount: number of games to run
- *  - quiet:     when non-zero, suppress all self-play output
+ *  - quiet:     when non-zero, suppress all self-play output (errors always print)
  */
 static int selfPlay(int gameCount, int quiet)
 {
-    int x_wins = 0;
-    int o_wins = 0;
-    int ties = 0;
     HiResTimer startTime = {0};
     int timing_available = 0;
 
@@ -190,12 +190,12 @@ static int selfPlay(int gameCount, int quiet)
 
             if (result != GAME_CONTINUE)
             {
-                if (result == GAME_TIE)
-                    ++ties;
-                else if (result == X_WIN)
-                    ++x_wins;
-                else
-                    ++o_wins;
+                if (result != GAME_TIE)
+                {
+                    fprintf(stderr, "Error: perfect play broken - %s won game %d\n",
+                            (result == X_WIN) ? "X" : "O", g + 1);
+                    return EXIT_FAILURE;
+                }
                 break;
             }
         }
@@ -232,22 +232,11 @@ static int selfPlay(int gameCount, int quiet)
             }
         }
 
-        /* Calculate percentages */
-        double x_pct = (100.0 * x_wins) / gameCount;
-        double o_pct = (100.0 * o_wins) / gameCount;
-        double tie_pct = (100.0 * ties) / gameCount;
-
         /* Print results header */
         printf("\n");
         printf("===============================================================\n");
-        printf("  Self-Play Results: %d games\n", gameCount);
+        printf("  Self-Play Results: %d games (all ties)\n", gameCount);
         printf("===============================================================\n");
-
-        /* Print game outcomes (always available) */
-        printf("  Outcomes\n");
-        printf("    X wins:  %8d  (%5.1f%%)\n", x_wins, x_pct);
-        printf("    O wins:  %8d  (%5.1f%%)\n", o_wins, o_pct);
-        printf("    Ties:    %8d  (%5.1f%%)\n", ties, tie_pct);
         printf("\n");
 
         /* Print performance stats (only if timing available) */
