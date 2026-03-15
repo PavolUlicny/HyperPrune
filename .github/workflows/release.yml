@@ -65,6 +65,21 @@ jobs:
         shell: pwsh
         run: ./${{ matrix.artifact }} --help
 
+      - name: Self-play verification (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          set -euo pipefail
+          ./${{ matrix.artifact }} -s 1000000
+          echo "PASSED: perfect play verified (exit 0)"
+
+      - name: Self-play verification (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./${{ matrix.artifact }} -s 1000000
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          Write-Host "PASSED: perfect play verified (exit 0)"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
