@@ -270,7 +270,7 @@ int main(int argc, char **argv)
             printf("    Start an interactive game against the AI.\n\n");
             printf("  Self-Play Mode:\n");
             printf("    --selfplay, -s [GAMES]    Run self-play simulations (default: 1000 games)\n");
-            printf("    --quiet, -q               Suppress output\n\n");
+            printf("    --quiet, -q               Suppress output (requires --selfplay)\n\n");
             printf("  Configuration:\n");
             printf("    --tt-size SIZE, -t SIZE   Transposition table size in entries\n");
             printf("                              (0 disables TT, default: auto-sized, max: %d)\n", MAX_TRANSPOSITION_TABLE_SIZE);
