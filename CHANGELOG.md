@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### CI
 
 - Added CodeQL static analysis workflow (`security-extended` query suite) with weekly schedule
+- Bumped `github/codeql-action` from v3 to v4 for Node.js 24 compatibility
 
 ## [v2.2.2] - 2026-03-15
 
