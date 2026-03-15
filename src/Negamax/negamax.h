@@ -40,6 +40,7 @@ extern "C"
      *  - out_col:   Output pointer for selected column (0-based). Set to -1 if the game is already terminal
      *
      * Behavior:
+     *  - out_row and out_col must be non-null
      *  - If aiPlayer is not 'x' or 'o', returns (-1, -1)
      *  - If the board is invalid (x_pieces & o_pieces != 0), returns (-1, -1)
      *  - If the board is terminal (win/tie), returns (-1, -1)
