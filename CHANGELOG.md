@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.2.2] - 2026-03-15
+
 ### CI
 
 - Added `build-portable` job to normal CI that mirrors the exact portable build path used by the release workflow (`make portable BOARD_SIZE=3`), smoke-tests the binary, and runs 1M-game perfect-play verification on Linux and macOS
