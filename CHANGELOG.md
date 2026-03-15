@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Self-play mode now exits with code 1 and prints a diagnostic to stderr if any game is won (perfect play broken); previously continued silently
+- Self-play output no longer includes the Outcomes breakdown (x/o/tie counts); all games are expected to be ties
+
 ### CI
 
 - CodeQL now runs on all branches and pull requests, not only `main`
+- Simplified self-play verification steps to rely on exit code instead of parsing human-readable output
 
 ## [v2.2.3] - 2026-03-15
 
