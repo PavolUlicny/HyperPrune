@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "tic_tac_toe.h"
 
 /* Global game state used by the simple CLI program. */
@@ -204,34 +205,54 @@ void printGameResult(GameResult result)
  */
 static int getValidCoord(const char *prompt, int *out_value)
 {
-    int value;
+    char buf[64];
 
     while (1)
     {
         printf("%s", prompt);
-        int rc = scanf("%d", &value);
 
-        if (rc != 1)
+        if (fgets(buf, sizeof(buf), stdin) == NULL)
+            return -1; /* EOF */
+
+        /* No newline in buffer: either oversized input or EOF after partial line */
+        if (strchr(buf, '\n') == NULL)
         {
-            if (rc == EOF)
+            if (!feof(stdin))
             {
-                return -1; /* Signal EOF to caller */
+                /* Oversized input: buffer full — flush and retry */
+                discardLine();
+                printf("Invalid input. Enter a number 1-%d.\n", BOARD_SIZE);
+                continue;
             }
+            /* EOF after partial line: fall through and attempt to parse buf */
+        }
 
+        char *endptr;
+        long val = strtol(buf, &endptr, 10);
+
+        if (endptr == buf)
+        {
             printf("Invalid input. Enter a number 1-%d.\n", BOARD_SIZE);
-            discardLine();
             continue;
         }
 
-        discardLine();
+        /* Allow trailing whitespace before line terminator */
+        while (*endptr == ' ' || *endptr == '\t')
+            endptr++;
 
-        if (value < 1 || value > BOARD_SIZE)
+        if (*endptr != '\n' && *endptr != '\0')
+        {
+            printf("Invalid input. Enter a number 1-%d.\n", BOARD_SIZE);
+            continue;
+        }
+
+        if (val < 1 || val > BOARD_SIZE)
         {
             printf("Out of range (1-%d).\n", BOARD_SIZE);
             continue;
         }
 
-        *out_value = value - 1;
+        *out_value = (int)(val - 1);
         return 0; /* Success */
     }
 }
