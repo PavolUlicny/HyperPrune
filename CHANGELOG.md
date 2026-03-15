@@ -13,10 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Self-play output no longer includes the Outcomes breakdown (x/o/tie counts); all games are expected to be ties
 - Self-play output condensed to a single line: `N games in X.XXX s (Y.YY M games/s)`
 
+### Fixed
+
+- `--help` text now documents that `--quiet` requires `--selfplay`
+
 ### CI
 
 - CodeQL now runs on all branches and pull requests, not only `main`
 - Simplified self-play verification steps to rely on exit code instead of parsing human-readable output
+- Release workflow now runs 1M-game self-play verification before uploading binaries
 
 ## [v2.2.3] - 2026-03-15
 
