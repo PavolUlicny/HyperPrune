@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `player_to_index`: replaced conditional with `player & 1` (ASCII bit-parity)
 - `getAiMove`: cache `occupied` mask to avoid recomputing `x_pieces | o_pieces` twice
-- Combined ~+1.8% throughput improvement: 3×3 release ~7.3 M games/s, PGO ~8.2 M games/s (up from ~7.1 / ~7.7)
+- Combined throughput improvement: 3×3 release ~7.3 M games/s, PGO ~8.2 M games/s (up from ~7.1 / ~7.7)
 
 ## [v2.3.0] - 2026-03-16
 
