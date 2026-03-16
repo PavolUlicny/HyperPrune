@@ -14,7 +14,7 @@
 - Killer-move and history heuristics for move ordering — measurable throughput gains
 - Profile-guided optimization (PGO) target for peak performance
 - Verified perfect play on 3×3 and 4×4 (100% ties) across Linux, macOS, and Windows in CI
-- ~7.1 M games/s (3×3 release), ~7.7 M games/s (3×3 PGO) on AMD Ryzen 7 8845HS
+- ~7.3 M games/s (3×3 release), ~8.2 M games/s (3×3 PGO) on AMD Ryzen 7 8845HS
 
 ## Requirements
 
@@ -217,8 +217,8 @@ Benchmarked on AMD Ryzen 7 8845HS (performance governor):
 
 | Board | Release        | PGO            |
 |-------|----------------|----------------|
-| 3×3   | ~7.1 M games/s | ~7.7 M games/s |
-| 4×4   | ~2.2 M games/s | ~2.8 M games/s |
+| 3×3   | ~7.3 M games/s | ~8.2 M games/s |
+| 4×4   | ~2.3 M games/s | ~2.8 M games/s |
 
 - Fastest build: `make pgo`
 - Released binaries are compiled for 3×3. For other board sizes, compile from source with `make BOARD_SIZE=N`
