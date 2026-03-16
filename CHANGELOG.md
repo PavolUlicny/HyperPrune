@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `--help` text now documents that `--quiet` requires `--selfplay`
+- Corrected inaccurate comments and documentation across the codebase
 
 ### CI
 
