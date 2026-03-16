@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.3.1] - 2026-03-16
+
 ### Performance
 
 - `player_to_index`: replaced conditional with `player & 1` (ASCII bit-parity)
