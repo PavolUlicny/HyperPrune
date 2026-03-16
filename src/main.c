@@ -281,7 +281,7 @@ int main(int argc, char **argv)
             printf("  ttt                          # Interactive game\n");
             printf("  ttt --selfplay 5000          # Run 5000 self-play games\n");
             printf("  ttt --selfplay 10000 -q      # Run 10000 games, quiet output\n");
-            printf("  ttt --seed 42 -s 1000        # Deterministic game with seed 42\n");
+            printf("  ttt --seed 42 -s 1000        # Custom Zobrist hash seed\n");
             printf("  ttt --tt-size 0 -s 1000      # Benchmark without transposition table\n");
             return EXIT_SUCCESS;
         }
