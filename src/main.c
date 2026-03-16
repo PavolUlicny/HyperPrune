@@ -274,7 +274,7 @@ int main(int argc, char **argv)
             printf("  Configuration:\n");
             printf("    --tt-size SIZE, -t SIZE   Transposition table size in entries\n");
             printf("                              (0 disables TT, default: auto-sized, max: %d)\n", MAX_TRANSPOSITION_TABLE_SIZE);
-            printf("    --seed SEED               PRNG seed for Zobrist keys (default: deterministic)\n\n");
+            printf("    --seed SEED               PRNG seed for Zobrist keys (default: fixed internal seed)\n\n");
             printf("  Help:\n");
             printf("    --help, -h                Show this help message and exit\n\n");
             printf("EXAMPLES:\n");
