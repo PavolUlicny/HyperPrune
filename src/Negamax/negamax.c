@@ -261,15 +261,16 @@ void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col)
     }
 
     /* Terminal check (both players — either may have already won) */
+    uint64_t occupied = board.x_pieces | board.o_pieces;
     if (bitboard_has_won(board.x_pieces) || bitboard_has_won(board.o_pieces) ||
-        (board.x_pieces | board.o_pieces) == VALID_POSITIONS_MASK)
+        occupied == VALID_POSITIONS_MASK)
     {
         *out_row = -1;
         *out_col = -1;
         return;
     }
 
-    uint64_t empty = ~(board.x_pieces | board.o_pieces) & VALID_POSITIONS_MASK;
+    uint64_t empty = ~occupied & VALID_POSITIONS_MASK;
 
     if (empty == VALID_POSITIONS_MASK)
     {
