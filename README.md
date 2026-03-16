@@ -236,6 +236,10 @@ test/
 └── unity/                    # Unity test framework
 ```
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 ## License
 
 MIT License - see [LICENSE](LICENSE).
