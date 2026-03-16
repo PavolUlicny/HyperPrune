@@ -73,10 +73,11 @@ static size_t round_up_power_of_2(size_t n)
     return n + 1;
 }
 
-/* Map player symbol to index for Zobrist key lookup */
+/* Map player symbol to index for Zobrist key lookup.
+ * 'x' == 0x78 (bit 0 = 0), 'o' == 0x6F (bit 0 = 1) — ASCII-only, always called with 'x' or 'o'. */
 static inline int player_to_index(char player)
 {
-    return (player == 'x') ? 0 : 1;
+    return player & 1;
 }
 
 void zobrist_set_seed(uint64_t seed)
