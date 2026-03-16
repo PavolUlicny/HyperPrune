@@ -29,6 +29,19 @@ make
 ./ttt
 ```
 
+## Prebuilt binaries
+
+Download the latest release from the [Releases](https://github.com/PavolUlicny/HyperPrune/releases) page.
+
+On Linux and macOS, mark the binary executable before running:
+
+```sh
+chmod +x ttt-linux-x86_64   # or ttt-macos-arm64
+./ttt-linux-x86_64
+```
+
+Windows binaries can be run directly. Released binaries are compiled for 3×3. For other board sizes, compile from source.
+
 ## Build
 
 ### Unix (Linux, macOS, BSD) - Makefile
