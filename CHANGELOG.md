@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.3.0] - 2026-03-16
+
 ### Changed
 
 - Self-play mode now exits with code 1 and prints a diagnostic to stderr if any game is won (perfect play broken); previously continued silently
