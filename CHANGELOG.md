@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `make install` now runs `make clean` after installing, preventing root-owned build artifacts from blocking future `make clean` calls when installing with `sudo`
+
 ### Documentation
 
 - Clarified that `make install` and `make uninstall` require `sudo` on systems where `/usr/local/bin` is root-owned
