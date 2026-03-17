@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - Added "Prebuilt binaries" section to README with `chmod +x` instructions for Linux/macOS release downloads
+- Added author credit to README and `--help` output
 
 ## [v2.3.1] - 2026-03-16
 
