@@ -119,6 +119,7 @@ install: $(TARGET)
 	@echo "[INSTALL] installing to $(DESTDIR)$(PREFIX)/bin"
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin
 	@install -m 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/
+	@$(MAKE) --no-print-directory clean
 
 uninstall:
 	@echo "[UNINSTALL] removing from $(DESTDIR)$(PREFIX)/bin"
