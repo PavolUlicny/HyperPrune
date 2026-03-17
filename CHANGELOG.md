@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- Clarified that `make install` and `make uninstall` require `sudo` on systems where `/usr/local/bin` is root-owned
+
 ## [v2.3.2] - 2026-03-17
 
 ### Added
