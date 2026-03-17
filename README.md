@@ -135,12 +135,11 @@ cl /std:c11 /O2 /DBOARD_SIZE=3 \
 ### Examples
 
 ```sh
-./ttt
-./ttt --selfplay 5000
-./ttt -s 20000 -q
-./ttt -S 42 -s 1000
-./ttt -t 50000000 -s 10000
-./ttt -t 0 -s 1000              # Benchmark without TT
+./ttt                          # Interactive game
+./ttt --selfplay 5000          # Run 5000 self-play games
+./ttt --selfplay 10000 -q      # Run 10000 games, quiet output
+./ttt -S 42 -s 1000            # Custom Zobrist hash seed
+./ttt --tt-size 0 -s 1000      # Benchmark without transposition table
 ```
 
 ## How it works
