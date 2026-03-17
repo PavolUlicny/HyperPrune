@@ -47,13 +47,13 @@ Windows binaries can be run directly. Released binaries are compiled for 3×3. F
 ### Unix (Linux, macOS, BSD) - Makefile
 
 ```sh
-make              # Default release build
-make debug        # Debug build with symbols
-make release      # Optimized release build
-make portable     # Portable build: no -march=native; statically linked on Linux
-make pgo          # Profile-guided optimization
-make install      # Install to /usr/local/bin (override with PREFIX=...)
-make uninstall    # Remove installed binary
+make                   # Default release build
+make debug             # Debug build with symbols
+make release           # Optimized release build
+make portable          # Portable build: no -march=native; statically linked on Linux
+make pgo               # Profile-guided optimization
+sudo make install      # Install to /usr/local/bin (override with PREFIX=...)
+sudo make uninstall    # Remove installed binary
 ```
 
 Board size (3–8):
