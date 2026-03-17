@@ -2,11 +2,11 @@
  * Program entry and CLI modes
  * ---------------------------
  * - Interactive game loop (human vs AI)
- * - Self-play mode via --selfplay|-s [games] [--quiet|-q] [--tt-size|-t SIZE] [--seed SEED]
+ * - Self-play mode via --selfplay|-s [games] [--quiet|-q] [--tt-size|-t SIZE] [--seed|-S SEED]
  *   * Default games: 1000 when omitted
  *   * --quiet/-q suppresses all self-play output (errors always printed)
  *   * --tt-size/-t overrides transposition table size
- *   * --seed sets PRNG seed for Zobrist keys (deterministic by default)
+ *   * --seed/-S sets PRNG seed for Zobrist keys (deterministic by default)
  */
 
 /* Platform-specific high-resolution timer */
@@ -274,14 +274,14 @@ int main(int argc, char **argv)
             printf("  Configuration:\n");
             printf("    --tt-size SIZE, -t SIZE   Transposition table size in entries\n");
             printf("                              (0 disables TT, default: auto-sized, max: %d)\n", MAX_TRANSPOSITION_TABLE_SIZE);
-            printf("    --seed SEED               PRNG seed for Zobrist keys (default: fixed internal seed)\n\n");
+            printf("    --seed SEED, -S SEED      PRNG seed for Zobrist keys (default: fixed internal seed)\n\n");
             printf("  Help:\n");
             printf("    --help, -h                Show this help message and exit\n\n");
             printf("EXAMPLES:\n");
             printf("  ttt                          # Interactive game\n");
             printf("  ttt --selfplay 5000          # Run 5000 self-play games\n");
             printf("  ttt --selfplay 10000 -q      # Run 10000 games, quiet output\n");
-            printf("  ttt --seed 42 -s 1000        # Custom Zobrist hash seed\n");
+            printf("  ttt -S 42 -s 1000            # Custom Zobrist hash seed\n");
             printf("  ttt --tt-size 0 -s 1000      # Benchmark without transposition table\n");
             return EXIT_SUCCESS;
         }
@@ -345,23 +345,23 @@ int main(int argc, char **argv)
         {
             opt_quiet = 1;
         }
-        else if (strcmp(arg, "--seed") == 0)
+        else if (strcmp(arg, "--seed") == 0 || strcmp(arg, "-S") == 0)
         {
             if (i + 1 >= argc)
             {
-                fprintf(stderr, "Error: --seed requires a value\n");
+                fprintf(stderr, "Error: --seed/-S requires a value\n");
                 return EXIT_FAILURE;
             }
             i++;
             const char *seed_str = argv[i];
             if (seed_str[0] == '\0')
             {
-                fprintf(stderr, "Error: --seed value cannot be empty\n");
+                fprintf(stderr, "Error: --seed/-S value cannot be empty\n");
                 return EXIT_FAILURE;
             }
             if (seed_str[0] == '-')
             {
-                fprintf(stderr, "Error: Invalid --seed value '%s' (must be 0 to %llu)\n",
+                fprintf(stderr, "Error: Invalid --seed/-S value '%s' (must be 0 to %llu)\n",
                         seed_str, (unsigned long long)ULLONG_MAX);
                 return EXIT_FAILURE;
             }
@@ -370,12 +370,12 @@ int main(int argc, char **argv)
             unsigned long long val = strtoull(seed_str, &endptr, 10);
             if (endptr == seed_str || *endptr != '\0')
             {
-                fprintf(stderr, "Error: Invalid --seed value '%s' (not a valid number)\n", seed_str);
+                fprintf(stderr, "Error: Invalid --seed/-S value '%s' (not a valid number)\n", seed_str);
                 return EXIT_FAILURE;
             }
             if (errno == ERANGE)
             {
-                fprintf(stderr, "Error: --seed value '%s' out of range (max: %llu)\n",
+                fprintf(stderr, "Error: --seed/-S value '%s' out of range (max: %llu)\n",
                         seed_str, (unsigned long long)ULLONG_MAX);
                 return EXIT_FAILURE;
             }
