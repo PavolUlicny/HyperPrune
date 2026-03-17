@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `-S` short flag for `--seed` (e.g. `ttt -S 42 -s 1000`)
+
 ### Documentation
 
 - Added "Prebuilt binaries" section to README with `chmod +x` instructions for Linux/macOS release downloads
