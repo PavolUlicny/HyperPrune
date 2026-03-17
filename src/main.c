@@ -253,7 +253,7 @@ static int selfPlay(int gameCount, int quiet)
 /*
  * CLI:
  *  - Default (no args): interactive human vs AI game
- *  - --selfplay|-s [games] [--quiet|-q]: run AI vs AI for N games (default 1000)
+ *  - --selfplay|-s [games] [--quiet|-q] [--tt-size|-t SIZE] [--seed|-S SEED]: run AI vs AI for N games (default 1000)
  */
 int main(int argc, char **argv)
 {
