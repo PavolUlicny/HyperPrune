@@ -283,6 +283,7 @@ int main(int argc, char **argv)
             printf("  ttt --selfplay 10000 -q      # Run 10000 games, quiet output\n");
             printf("  ttt -S 42 -s 1000            # Custom Zobrist hash seed\n");
             printf("  ttt --tt-size 0 -s 1000      # Benchmark without transposition table\n");
+            printf("\nBuilt by Pavol Ulicny — github.com/PavolUlicny\n");
             return EXIT_SUCCESS;
         }
     }
