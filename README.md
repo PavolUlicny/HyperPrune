@@ -253,6 +253,10 @@ test/
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
+## Author
+
+Built by [Pavol Ulicny](https://github.com/PavolUlicny)
+
 ## License
 
 MIT License - see [LICENSE](LICENSE).
