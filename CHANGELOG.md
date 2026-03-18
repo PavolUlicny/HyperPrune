@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.3.3] - 2026-03-18
+
 ### Fixed
 
 - `make install` now runs `make clean` after installing, preventing root-owned build artifacts from blocking future `make clean` calls when installing with `sudo`
