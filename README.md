@@ -23,6 +23,8 @@
 - Platform: Linux, macOS, Windows (x64), BSD, WSL
 - Build system: Make (Unix) or CMake (cross-platform)
 
+> **Note:** Boards 5×5 and above are impractical for real-time play — see [Performance Notes](#performance-notes).
+
 ## Quick start
 
 ```sh
