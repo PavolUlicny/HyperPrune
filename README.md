@@ -15,6 +15,7 @@
 - Profile-guided optimization (PGO) target for peak performance
 - Verified perfect play on 3×3 and 4×4 (100% ties) across Linux, macOS, and Windows in CI
 - ~7.3 M games/s (3×3 release), ~8.2 M games/s (3×3 PGO) on AMD Ryzen 7 8845HS
+- Automated CI/CD — comprehensive test matrix (sanitizers, Valgrind, strict warnings, CMake, 6 board sizes) on every push; tag a commit with `v*` to release Linux, macOS, and Windows binaries with SHA256 checksums
 
 ## Requirements
 
