@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - Clarified that `make install` and `make uninstall` require `sudo` on systems where `/usr/local/bin` is root-owned
+- Corrected PGO description in README from "compiles twice" to the accurate three-step process
 
 ## [v2.3.2] - 2026-03-17
 
