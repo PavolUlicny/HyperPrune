@@ -8,10 +8,10 @@
 
 ## Highlights
 
-- Bitboard representation — win detection via bitwise AND against precomputed masks
-- Negamax with alpha-beta pruning — reduces the search tree from O(b^d) toward O(b^(d/2))
-- Zobrist-hashed transposition table — ~99.9% hit rate on 3×3, avoiding redundant re-evaluation
-- Killer-move and history heuristics for move ordering — measurable throughput gains
+- Bitboard representation
+- Negamax with alpha-beta pruning
+- Zobrist-hashed transposition table
+- Killer-move and history heuristics for move ordering
 - Profile-guided optimization (PGO) target for peak performance
 - Verified perfect play on 3×3 and 4×4 (100% ties) across Linux, macOS, and Windows in CI
 - ~7.3 M games/s (3×3 release), ~8.2 M games/s (3×3 PGO) on AMD Ryzen 7 8845HS
