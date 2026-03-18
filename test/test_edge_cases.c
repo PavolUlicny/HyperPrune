@@ -358,12 +358,12 @@ void test_restartGame_clears_board_and_resets_turn(void)
      * would return GAME_TIE instead of GAME_CONTINUE on the penultimate move.
      */
     int x_bits[MAX_MOVES], o_bits[MAX_MOVES];
-    int nx = 0, o_count = 0;
+    int x_count = 0, o_count = 0;
     for (int r = 0; r < BOARD_SIZE; r++)
         for (int c = 0; c < BOARD_SIZE; c++)
         {
             if (((c / 2) + r) % 2 == 0)
-                x_bits[nx++] = r * BOARD_SIZE + c;
+                x_bits[x_count++] = r * BOARD_SIZE + c;
             else
                 o_bits[o_count++] = r * BOARD_SIZE + c;
         }
@@ -381,7 +381,7 @@ void test_restartGame_clears_board_and_resets_turn(void)
     TEST_ASSERT_EQUAL(GAME_CONTINUE, checkWinner(last_row, last_col));
 
     /* Final move: completes the board, must be GAME_TIE (not a win) */
-    int final_bit = (xi < nx) ? x_bits[xi] : o_bits[oi];
+    int final_bit = (xi < x_count) ? x_bits[xi] : o_bits[oi];
     makeMove(final_bit / BOARD_SIZE, final_bit % BOARD_SIZE);
     TEST_ASSERT_EQUAL(GAME_TIE, checkWinner(final_bit / BOARD_SIZE, final_bit % BOARD_SIZE));
 }
