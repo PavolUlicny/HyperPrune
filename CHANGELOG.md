@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- Rewrote "How it works" as a step-by-step pipeline walkthrough of a single `getAiMove()` call, covering board representation, move generation, search entry point, negamax loop, transposition table, terminal conditions, move ordering, and PGO
 - Trimmed Highlights section — removed redundant inline explanations already covered in "How it works"
 - Added CodeQL, release version, and platforms badges to README
 - Added CI/CD bullet to Highlights covering the test matrix and automated release workflow
