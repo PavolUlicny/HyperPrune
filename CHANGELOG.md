@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `make install` now runs `make clean` after installing, preventing root-owned build artifacts from blocking future `make clean` calls when installing with `sudo`
 - CI: set `cancel-in-progress: false` on all workflows so new pushes queue instead of cancelling in-progress runs
 
+### Tests
+
+- Renamed `nx` to `x_count` in `test_restartGame_clears_board_and_resets_turn` for consistency with `o_count`
+
 ### Documentation
 
 - Clarified that `make install` and `make uninstall` require `sudo` on systems where `/usr/local/bin` is root-owned
