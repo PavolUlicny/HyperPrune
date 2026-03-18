@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- Trimmed Highlights section — removed redundant inline explanations already covered in "How it works"
+- Added CodeQL, release version, and platforms badges to README
+- Added CI/CD bullet to Highlights covering the test matrix and automated release workflow
+- Added note after Requirements about 5×5+ boards being impractical for real-time play
+
 ## [v2.3.3] - 2026-03-18
 
 ### Fixed
