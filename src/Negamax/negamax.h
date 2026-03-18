@@ -31,7 +31,10 @@ extern "C"
     /**
      * Compute the AI's next move using Negamax with alpha–beta pruning.
      *
-     * Prerequisite: init_win_masks() must be called once before the first call.
+     * Prerequisites (call once before the first call):
+     *  - init_win_masks()
+     *  - zobrist_init()
+     *  - transposition_table_init()
      *
      * Parameters:
      *  - board:     Current position (bitboard representation)
