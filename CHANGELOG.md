@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `make install` now runs `make clean` after installing, preventing root-owned build artifacts from blocking future `make clean` calls when installing with `sudo`
+- CI: set `cancel-in-progress: false` on all workflows so new pushes queue instead of cancelling in-progress runs
 
 ### Documentation
 
