@@ -2,7 +2,7 @@
 
 > The fastest perfect-play Tic-Tac-Toe engine built from scratch — negamax alpha-beta, bitboards, killer moves, history heuristics, and Zobrist-hashed transposition tables, with no precomputed lookup tables. Deterministic perfect play from 3×3 to 8×8.
 
-[![Tests](https://github.com/PavolUlicny/HyperPrune/actions/workflows/test.yml/badge.svg)](https://github.com/PavolUlicny/HyperPrune/actions/workflows/test.yml)
+[![Tests](https://github.com/PavolUlicny/HyperPrune/actions/workflows/test.yml/badge.svg)](https://github.com/PavolUlicny/HyperPrune/actions/workflows/test.yml) [![CodeQL](https://github.com/PavolUlicny/HyperPrune/actions/workflows/codeql.yml/badge.svg)](https://github.com/PavolUlicny/HyperPrune/actions/workflows/codeql.yml) [![Release](https://img.shields.io/github/v/release/PavolUlicny/HyperPrune)](https://github.com/PavolUlicny/HyperPrune/releases/latest) ![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-blue)
 
 ![Demo](demo.gif)
 
