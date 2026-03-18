@@ -154,7 +154,7 @@ HyperPrune is built around five compounding optimizations:
 
 **Killer-move and history heuristics** — Move ordering determines how quickly alpha-beta finds cutoffs. The engine keeps two killer slots per depth — moves that recently caused a cutoff at that depth — and tries them before all others. Remaining moves are ordered by cumulative beta-cutoff count (history). Better ordering means more pruning.
 
-**Profile-guided optimization** — `make pgo` compiles the binary twice: once instrumented to collect a real execution profile, then again with that profile fed back to the compiler for targeted inlining and branch-prediction hints.
+**Profile-guided optimization** — `make pgo` builds in three steps: compile with instrumentation, run a workload to collect a real execution profile, then recompile with that profile fed back to the compiler for targeted inlining and branch-prediction hints.
 
 ## Testing
 
