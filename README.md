@@ -87,7 +87,7 @@ cmake --build build --config Release
 
 **Native optimizations:**
 
-The `ENABLE_NATIVE_OPTIMIZATIONS` CMake option adds micro-tuning flags (`-march=native`, `-flto`, `-funroll-loops`, etc.) for maximum performance on the build machine. The optimization level (`-O3`) comes from `CMAKE_BUILD_TYPE=Release` — using this flag without `Release` compiles at `-O0`. Use `ON` for local builds, `OFF` (default) for portable binaries.
+The `ENABLE_NATIVE_OPTIMIZATIONS` CMake option adds `-march=native` to target the build machine's CPU for additional performance. LTO, `-funroll-loops`, and `-fno-semantic-interposition` are always applied to Release builds without this option. Use `ON` for local builds, `OFF` (default) for portable binaries.
 
 ### Manual build
 
