@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.3.4] - 2026-03-19
+
 ### Performance
 
 - Portable builds (`make portable`, `make install`) now use LTO, `-fno-semantic-interposition`, matching the release build flags (minus `-march=native`)
