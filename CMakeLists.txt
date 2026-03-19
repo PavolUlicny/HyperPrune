@@ -17,11 +17,9 @@ else()
     add_compile_options(-Wall -Wextra)
 endif()
 
-# Native optimizations (opt-in for maximum performance)
-# Note: this flag adds micro-tuning flags only (-march=native, -funroll-loops, etc.).
-# The optimization level (-O3 -DNDEBUG) comes from CMAKE_BUILD_TYPE=Release.
-# Using -DENABLE_NATIVE_OPTIMIZATIONS=ON without -DCMAKE_BUILD_TYPE=Release compiles at -O0.
-option(ENABLE_NATIVE_OPTIMIZATIONS "Enable -march=native, -flto, and aggressive optimizations" OFF)
+# CPU-specific tuning (opt-in): adds -march=native to target the build machine's CPU.
+# LTO, -funroll-loops, and -fno-semantic-interposition are always applied to Release builds.
+option(ENABLE_NATIVE_OPTIMIZATIONS "Enable -march=native for CPU-specific tuning" OFF)
 
 # Main executable
 add_executable(ttt
@@ -43,12 +41,26 @@ if(NOT MSVC)
     target_link_libraries(ttt m)
 endif()
 
-if(ENABLE_NATIVE_OPTIMIZATIONS AND NOT MSVC)
-    target_compile_options(ttt PRIVATE -march=native -funroll-loops -fomit-frame-pointer)
+# Portable Release flags: no -march=native, compatible with any CPU
+if(NOT MSVC)
+    target_compile_options(ttt PRIVATE
+        $<$<CONFIG:Release>:-funroll-loops>
+        $<$<CONFIG:Release>:-fomit-frame-pointer>
+    )
     if(NOT APPLE)
-        target_compile_options(ttt PRIVATE -fno-semantic-interposition)
+        target_compile_options(ttt PRIVATE $<$<CONFIG:Release>:-fno-semantic-interposition>)
     endif()
-    set_target_properties(ttt PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
+
+# LTO for Release builds
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported)
+if(ipo_supported)
+    set_target_properties(ttt PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+endif()
+
+if(ENABLE_NATIVE_OPTIMIZATIONS AND NOT MSVC)
+    target_compile_options(ttt PRIVATE -march=native)
 endif()
 
 # Test executable
@@ -83,11 +95,7 @@ if(NOT MSVC)
 endif()
 
 if(ENABLE_NATIVE_OPTIMIZATIONS AND NOT MSVC)
-    target_compile_options(test_runner PRIVATE -march=native -funroll-loops -fomit-frame-pointer)
-    if(NOT APPLE)
-        target_compile_options(test_runner PRIVATE -fno-semantic-interposition)
-    endif()
-    set_target_properties(test_runner PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+    target_compile_options(test_runner PRIVATE -march=native)
 endif()
 
 enable_testing()
