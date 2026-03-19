@@ -64,14 +64,14 @@ BASE_CFLAGS := -std=c11 -MMD -MP -pipe -DBOARD_SIZE=$(BOARD_SIZE)
 
 DEBUG_CFLAGS := -O0 -g
 RELEASE_CFLAGS := -O3 -march=native -flto -funroll-loops -fomit-frame-pointer $(SEMANTIC_INTERPOSITION_FLAG) -DNDEBUG
-PORTABLE_CFLAGS := -O3 -funroll-loops -fomit-frame-pointer -DNDEBUG
+PORTABLE_CFLAGS := -O3 -flto -funroll-loops -fomit-frame-pointer $(SEMANTIC_INTERPOSITION_FLAG) -DNDEBUG
 
 ifeq ($(BUILD),debug)
 MODE_CFLAGS := $(DEBUG_CFLAGS)
 MODE_LDFLAGS :=
 else ifeq ($(BUILD),portable)
 MODE_CFLAGS := $(PORTABLE_CFLAGS)
-MODE_LDFLAGS := $(PORTABLE_LDFLAGS)
+MODE_LDFLAGS := -flto $(PORTABLE_LDFLAGS)
 else
 MODE_CFLAGS := $(RELEASE_CFLAGS)
 MODE_LDFLAGS := -flto
