@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Performance
+
+- Portable builds (`make portable`, `make install`) now use LTO, `-fno-semantic-interposition`, matching the release build flags (minus `-march=native`)
+- Default CMake Release builds now use LTO, `-funroll-loops`, and `-fno-semantic-interposition`; previously these required `-DENABLE_NATIVE_OPTIMIZATIONS=ON`
+
 ### Documentation
 
 - Rewrote "How it works" as a step-by-step pipeline walkthrough of a single `getAiMove()` call, covering board representation, move generation, search entry point, negamax loop, transposition table, terminal conditions, move ordering, and PGO
