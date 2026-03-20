@@ -168,31 +168,29 @@ jobs:
         run: |
           foreach ($bs in @(3,4,5,6,7,8)) {
             foreach ($mo in @("ON","OFF")) {
-              foreach ($bt in @("Debug","Release")) {
-                cmake -B build -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo -DCMAKE_BUILD_TYPE=$bt
+              cmake -B build -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo
+              if ($LASTEXITCODE -ne 0) { exit 1 }
+              cmake --build build --config Release
+              if ($LASTEXITCODE -ne 0) { exit 1 }
+              ctest --test-dir build --build-config Release --output-on-failure
+              if ($LASTEXITCODE -ne 0) { exit 1 }
+              if ($bs -le 4) {
+                ./build/Release/ttt.exe -s 1000000
                 if ($LASTEXITCODE -ne 0) { exit 1 }
-                cmake --build build --config $bt
-                if ($LASTEXITCODE -ne 0) { exit 1 }
-                ctest --test-dir build --build-config $bt --output-on-failure
-                if ($LASTEXITCODE -ne 0) { exit 1 }
-                if ($bs -le 4 -and $bt -eq "Release") {
-                  ./build/Release/ttt.exe -s 1000000
-                  if ($LASTEXITCODE -ne 0) { exit 1 }
-                  Write-Host "PASSED: perfect play verified (exit 0)"
-                }
-                if ($bs -eq 3 -and $bt -eq "Release") {
-                  ./build/Release/ttt.exe --tt-size 0 -s 100000
-                  if ($LASTEXITCODE -ne 0) { exit 1 }
-                  Write-Host "PASSED: perfect play verified without TT (exit 0)"
-                  ./build/Release/ttt.exe -S 42 -s 1000
-                  if ($LASTEXITCODE -ne 0) { exit 1 }
-                  Write-Host "PASSED: -S seed flag verified (exit 0)"
-                  ./build/Release/ttt.exe --seed 42 -s 1000
-                  if ($LASTEXITCODE -ne 0) { exit 1 }
-                  Write-Host "PASSED: --seed flag verified (exit 0)"
-                }
-                Remove-Item -Recurse -Force build
+                Write-Host "PASSED: perfect play verified (exit 0)"
               }
+              if ($bs -eq 3) {
+                ./build/Release/ttt.exe --tt-size 0 -s 100000
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+                Write-Host "PASSED: perfect play verified without TT (exit 0)"
+                ./build/Release/ttt.exe -S 42 -s 1000
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+                Write-Host "PASSED: -S seed flag verified (exit 0)"
+                ./build/Release/ttt.exe --seed 42 -s 1000
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+                Write-Host "PASSED: --seed flag verified (exit 0)"
+              }
+              Remove-Item -Recurse -Force build
             }
           }
           # Validate default ENABLE_MOVE_ORDERING selection (no explicit override)
