@@ -59,8 +59,15 @@ else
     $(error BOARD_SIZE must be between 3 and 8 (got $(BOARD_SIZE)))
 endif
 
+# Move ordering: killer-move and history heuristics (default: ON for BOARD_SIZE <= 4)
+ifeq ($(shell test $(BOARD_SIZE) -le 4 && echo yes),yes)
+ENABLE_MOVE_ORDERING ?= 1
+else
+ENABLE_MOVE_ORDERING ?= 0
+endif
+
 WARNINGS := -Wall -Wextra
-BASE_CFLAGS := -std=c11 -MMD -MP -pipe -DBOARD_SIZE=$(BOARD_SIZE)
+BASE_CFLAGS := -std=c11 -MMD -MP -pipe -DBOARD_SIZE=$(BOARD_SIZE) -DENABLE_MOVE_ORDERING=$(ENABLE_MOVE_ORDERING)
 
 DEBUG_CFLAGS := -O0 -g
 RELEASE_CFLAGS := -O3 -march=native -flto -funroll-loops -fomit-frame-pointer $(SEMANTIC_INTERPOSITION_FLAG) -DNDEBUG
@@ -134,7 +141,7 @@ pgo:
 	@$(MAKE) pgo-clean > /dev/null 2>&1
 	@$(MAKE) clean > /dev/null
 	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native -flto $(PGO_GENERATE) \
-		-funroll-loops $(SEMANTIC_INTERPOSITION_FLAG) -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
+		-funroll-loops $(SEMANTIC_INTERPOSITION_FLAG) -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) -DENABLE_MOVE_ORDERING=$(ENABLE_MOVE_ORDERING) \
 		$(SOURCES) -o $(TARGET) -lm
 	@PROFILE_GAMES=$$((1000000 / (($(BOARD_SIZE) - 2) * ($(BOARD_SIZE) - 2)))); \
 	if [ $$PROFILE_GAMES -lt 10000 ]; then PROFILE_GAMES=10000; fi; \
@@ -143,7 +150,7 @@ pgo:
 	@$(PGO_MERGE)
 	@echo "[PGO  ] Step 3/3: Rebuilding with profile-guided optimizations..."
 	@$(CC) -std=c11 -Wall -Wextra -O3 -march=native $(PGO_USE) -flto \
-		-funroll-loops $(SEMANTIC_INTERPOSITION_FLAG) -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) \
+		-funroll-loops $(SEMANTIC_INTERPOSITION_FLAG) -fomit-frame-pointer -DNDEBUG -pipe -DBOARD_SIZE=$(BOARD_SIZE) -DENABLE_MOVE_ORDERING=$(ENABLE_MOVE_ORDERING) \
 		$(SOURCES) -o $(TARGET) -lm
 	@$(MAKE) pgo-clean > /dev/null 2>&1
 	@echo "[PGO  ] PGO-optimized binary ready"
@@ -190,7 +197,7 @@ test: $(TEST_TARGET)
 
 $(TEST_TARGET): $(TEST_SOURCES) $(CORE_SOURCES) $(TEST_UNITY_DIR)/unity.c $(TEST_HEADERS)
 	@echo "[BUILD] Test suite..."
-	@$(CC) $(WARNINGS) -O1 -std=c11 -DBOARD_SIZE=$(BOARD_SIZE) -I$(TEST_UNITY_DIR) \
+	@$(CC) $(WARNINGS) -O1 -std=c11 -DBOARD_SIZE=$(BOARD_SIZE) -DENABLE_MOVE_ORDERING=$(ENABLE_MOVE_ORDERING) -I$(TEST_UNITY_DIR) \
 		$(TEST_SOURCES) $(CORE_SOURCES) $(TEST_UNITY_DIR)/unity.c \
 		-o $(TEST_TARGET) -lm
 
