@@ -60,6 +60,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
         board_size: [3, 4, 5, 6, 7, 8]
+        move_ordering: [0, 1]
 
     steps:
       - name: Checkout code
@@ -68,12 +69,12 @@ jobs:
       - name: Build
         run: |
           set -euo pipefail
-          make CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
+          make CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }} ENABLE_MOVE_ORDERING=${{ matrix.move_ordering }}
 
       - name: Run tests
         run: |
           set -euo pipefail
-          make test CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }}
+          make test CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }} ENABLE_MOVE_ORDERING=${{ matrix.move_ordering }}
 
       - name: Self-play verification
         if: matrix.board_size == 3 || matrix.board_size == 4
@@ -137,13 +138,14 @@ jobs:
       fail-fast: false
       matrix:
         board_size: [3, 4, 5, 6, 7, 8]
+        move_ordering: [ON, OFF]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
       - name: Configure CMake
-        run: cmake -B build -DBOARD_SIZE=${{ matrix.board_size }}
+        run: cmake -B build -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }}
 
       - name: Build
         run: cmake --build build --config Release
@@ -241,6 +243,7 @@ jobs:
       matrix:
         compiler: [gcc, clang]
         board_size: [3, 4, 5, 6, 7, 8]
+        move_ordering: [0, 1]
     env:
       ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1:check_initialization_order=1
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
@@ -254,7 +257,7 @@ jobs:
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
-            -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
+            -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }} -I test/unity \
             test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
             test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
             test/test_correctness.c test/unity/unity.c \
@@ -268,7 +271,7 @@ jobs:
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
             -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
-            -DBOARD_SIZE=${{ matrix.board_size }} \
+            -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }} \
             src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o ttt_san -lm
           ./ttt_san -s 1000 -q
@@ -280,6 +283,7 @@ jobs:
       matrix:
         compiler: [gcc, clang]
         board_size: [3, 4, 5, 6, 7, 8]
+        move_ordering: [0, 1]
 
     steps:
       - name: Checkout code
@@ -295,7 +299,7 @@ jobs:
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
-            -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
+            -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }} -I test/unity \
             test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
             test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
             test/test_correctness.c test/unity/unity.c \
@@ -314,7 +318,7 @@ jobs:
         run: |
           set -euo pipefail
           ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
-            -DBOARD_SIZE=${{ matrix.board_size }} \
+            -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }} \
             src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
             -o ttt_valgrind -lm
           valgrind --leak-check=full --show-leak-kinds=all \
