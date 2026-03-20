@@ -142,7 +142,7 @@ cl /std:c11 /O2 /DBOARD_SIZE=3 \
 --help, -h                    Show help and exit
 --selfplay, -s [GAMES]        Run self-play mode (default: 1000 games)
 --quiet, -q                   Suppress output (requires --selfplay)
---tt-size SIZE, -t SIZE       Transposition table size in entries (0 to disable)
+--tt-size SIZE, -t SIZE       Transposition table size in entries (0 to disable, default: auto-sized, max: 250000000)
 --seed SEED, -S SEED          PRNG seed for Zobrist keys (default: fixed internal seed)
 ```
 
