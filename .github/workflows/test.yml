@@ -77,7 +77,7 @@ jobs:
           for bs in 3 4 5 6 7 8; do
             for mo in 0 1; do
               make CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo BUILD=debug
-              make test CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo BUILD=debug
+              make test CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo
               make clean
               make CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo
               make test CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo
