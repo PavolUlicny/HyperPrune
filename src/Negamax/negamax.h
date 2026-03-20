@@ -17,8 +17,8 @@
  * - Deterministic results due to stable ordering of move generation
  * - Simple opening heuristic (play center on empty board)
  * - Transposition table with Zobrist hashing for position caching
- * - Killer move heuristic: try refutation moves first at each depth
- * - History heuristic: order remaining moves by cumulative beta-cutoff count
+ * - Killer move and history heuristics for move ordering (compile-time,
+ *   controlled by ENABLE_MOVE_ORDERING; default ON for BOARD_SIZE <= 4)
  */
 
 #include "../TicTacToe/tic_tac_toe.h"
@@ -49,8 +49,8 @@ extern "C"
      *  - If the board is terminal (win/tie), returns (-1, -1)
      *  - On an empty board, selects the center without searching (lower-right of central 2×2 for even board sizes)
      *  - Otherwise, runs a full-depth alpha–beta search
-     *  - Killer and history tables are reset at the start of each call; they do
-     *    not persist across calls (repeated calls on the same position are deterministic)
+     *  - When ENABLE_MOVE_ORDERING is active, killer and history tables are reset
+     *    at the start of each call (repeated calls on the same position are deterministic)
      */
     void getAiMove(Bitboard board, char aiPlayer, int *out_row, int *out_col);
 
