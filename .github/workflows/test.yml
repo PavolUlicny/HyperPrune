@@ -26,11 +26,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang-tidy cppcheck
 
-      - name: Configure CMake for clang-tidy (BOARD_SIZE=3..8)
+      - name: Configure CMake for clang-tidy (all board sizes and move ordering values)
         run: |
           set -euo pipefail
           for bs in 3 4 5 6 7 8; do
-            cmake -B build/tidy-$bs -DBOARD_SIZE=$bs -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+            for mo in ON OFF; do
+              cmake -B build/tidy-${bs}-${mo} -DBOARD_SIZE=$bs -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DENABLE_MOVE_ORDERING=$mo
+            done
           done
 
       - name: Run clang-tidy (warnings as errors)
@@ -38,8 +41,10 @@ jobs:
           set -euo pipefail
           SRC_FILES="src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c"
           for bs in 3 4 5 6 7 8; do
-            for f in $SRC_FILES; do
-              clang-tidy "$f" -p build/tidy-$bs --warnings-as-errors='*'
+            for mo in ON OFF; do
+              for f in $SRC_FILES; do
+                clang-tidy "$f" -p build/tidy-${bs}-${mo} --warnings-as-errors='*'
+              done
             done
           done
 
@@ -47,9 +52,11 @@ jobs:
         run: |
           set -euo pipefail
           for bs in 3 4 5 6 7 8; do
-            cppcheck --std=c11 --error-exitcode=1 --inline-suppr \
-              --enable=warning,style,performance,portability \
-              -DBOARD_SIZE=$bs -I src src
+            for mo in 0 1; do
+              cppcheck --std=c11 --error-exitcode=1 --inline-suppr \
+                --enable=warning,style,performance,portability \
+                -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo -I src src
+            done
           done
 
   test:
@@ -59,36 +66,45 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
-        board_size: [3, 4, 5, 6, 7, 8]
-        move_ordering: [0, 1]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Build
+      - name: Build, test, and verify all configurations
         run: |
           set -euo pipefail
-          make CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }} ENABLE_MOVE_ORDERING=${{ matrix.move_ordering }}
+          for bs in 3 4 5 6 7 8; do
+            for mo in 0 1; do
+              make CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo BUILD=debug
+              make test CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo BUILD=debug
+              make clean
+              make CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo
+              make test CC=${{ matrix.compiler }} BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo
+              if [ "$bs" -le 4 ]; then
+                ./ttt -s 1000000
+                echo "PASSED: perfect play verified (exit 0)"
+              fi
+              if [ "$bs" -eq 3 ]; then
+                ./ttt --tt-size 0 -s 100000
+                echo "PASSED: perfect play verified without TT (exit 0)"
+                ./ttt -S 42 -s 1000
+                echo "PASSED: -S seed flag verified (exit 0)"
+                ./ttt --seed 42 -s 1000
+                echo "PASSED: --seed flag verified (exit 0)"
+              fi
+              make clean
+            done
+          done
 
-      - name: Run tests
+      - name: Validate default ENABLE_MOVE_ORDERING selection (no explicit override)
         run: |
           set -euo pipefail
-          make test CC=${{ matrix.compiler }} BOARD_SIZE=${{ matrix.board_size }} ENABLE_MOVE_ORDERING=${{ matrix.move_ordering }}
-
-      - name: Self-play verification
-        if: matrix.board_size == 3 || matrix.board_size == 4
-        run: |
-          set -euo pipefail
-          ./ttt -s 1000000
-          echo "PASSED: perfect play verified (exit 0)"
-
-      - name: Self-play verification (TT disabled, 3x3 only)
-        if: matrix.board_size == 3
-        run: |
-          set -euo pipefail
-          ./ttt --tt-size 0 -s 100000
-          echo "PASSED: perfect play verified without TT (exit 0)"
+          for bs in 3 5; do
+            make CC=${{ matrix.compiler }} BOARD_SIZE=$bs
+            make test CC=${{ matrix.compiler }} BOARD_SIZE=$bs
+            make clean
+          done
 
   test-cmake:
     runs-on: ${{ matrix.os }}
@@ -96,78 +112,99 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        board_size: [3, 4, 5, 6, 7, 8]
         native_opt: [ON, OFF]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure CMake
+      - name: Build, test, and verify all configurations
         run: |
           set -euo pipefail
-          cmake -B build -DBOARD_SIZE=${{ matrix.board_size }} -DCMAKE_BUILD_TYPE=Release -DENABLE_NATIVE_OPTIMIZATIONS=${{ matrix.native_opt }}
+          for bs in 3 4 5 6 7 8; do
+            for mo in ON OFF; do
+              for bt in Debug Release; do
+                cmake -B build -DBOARD_SIZE=$bs -DCMAKE_BUILD_TYPE=$bt \
+                  -DENABLE_NATIVE_OPTIMIZATIONS=${{ matrix.native_opt }} \
+                  -DENABLE_MOVE_ORDERING=$mo
+                cmake --build build
+                ctest --test-dir build --build-config $bt --output-on-failure
+                if [ "$bs" -le 4 ] && [ "$bt" = "Release" ]; then
+                  ./build/ttt -s 1000000
+                  echo "PASSED: perfect play verified (exit 0)"
+                fi
+                if [ "$bs" -eq 3 ] && [ "$bt" = "Release" ]; then
+                  ./build/ttt --tt-size 0 -s 100000
+                  echo "PASSED: perfect play verified without TT (exit 0)"
+                  ./build/ttt -S 42 -s 1000
+                  echo "PASSED: -S seed flag verified (exit 0)"
+                  ./build/ttt --seed 42 -s 1000
+                  echo "PASSED: --seed flag verified (exit 0)"
+                fi
+                rm -rf build
+              done
+            done
+          done
 
-      - name: Build
+      - name: Validate default ENABLE_MOVE_ORDERING selection (no explicit override)
         run: |
           set -euo pipefail
-          cmake --build build --config Release
-
-      - name: Run tests
-        run: |
-          set -euo pipefail
-          ctest --test-dir build --build-config Release --output-on-failure
-
-      - name: Self-play verification
-        if: matrix.board_size == 3 || matrix.board_size == 4
-        run: |
-          set -euo pipefail
-          ./build/ttt -s 1000000
-          echo "PASSED: perfect play verified (exit 0)"
-
-      - name: Self-play verification (TT disabled, 3x3 only)
-        if: matrix.board_size == 3
-        run: |
-          set -euo pipefail
-          ./build/ttt --tt-size 0 -s 100000
-          echo "PASSED: perfect play verified without TT (exit 0)"
+          for bs in 3 5; do
+            cmake -B build -DBOARD_SIZE=$bs -DCMAKE_BUILD_TYPE=Release \
+              -DENABLE_NATIVE_OPTIMIZATIONS=${{ matrix.native_opt }}
+            cmake --build build
+            ctest --test-dir build --build-config Release --output-on-failure
+            rm -rf build
+          done
 
   test-windows:
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        board_size: [3, 4, 5, 6, 7, 8]
-        move_ordering: [ON, OFF]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure CMake
-        run: cmake -B build -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }}
-
-      - name: Build
-        run: cmake --build build --config Release
-
-      - name: Run tests
-        run: ctest --test-dir build --build-config Release --output-on-failure
-
-      - name: Self-play verification
-        if: matrix.board_size == 3 || matrix.board_size == 4
+      - name: Build, test, and verify all configurations
         shell: pwsh
         run: |
-          ./build/Release/ttt.exe -s 1000000
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-          Write-Host "PASSED: perfect play verified (exit 0)"
-
-      - name: Self-play verification (TT disabled, 3x3 only)
-        if: matrix.board_size == 3
-        shell: pwsh
-        run: |
-          ./build/Release/ttt.exe --tt-size 0 -s 100000
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-          Write-Host "PASSED: perfect play verified without TT (exit 0)"
+          foreach ($bs in @(3,4,5,6,7,8)) {
+            foreach ($mo in @("ON","OFF")) {
+              foreach ($bt in @("Debug","Release")) {
+                cmake -B build -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo -DCMAKE_BUILD_TYPE=$bt
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+                cmake --build build --config $bt
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+                ctest --test-dir build --build-config $bt --output-on-failure
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+                if ($bs -le 4 -and $bt -eq "Release") {
+                  ./build/Release/ttt.exe -s 1000000
+                  if ($LASTEXITCODE -ne 0) { exit 1 }
+                  Write-Host "PASSED: perfect play verified (exit 0)"
+                }
+                if ($bs -eq 3 -and $bt -eq "Release") {
+                  ./build/Release/ttt.exe --tt-size 0 -s 100000
+                  if ($LASTEXITCODE -ne 0) { exit 1 }
+                  Write-Host "PASSED: perfect play verified without TT (exit 0)"
+                  ./build/Release/ttt.exe -S 42 -s 1000
+                  if ($LASTEXITCODE -ne 0) { exit 1 }
+                  Write-Host "PASSED: -S seed flag verified (exit 0)"
+                  ./build/Release/ttt.exe --seed 42 -s 1000
+                  if ($LASTEXITCODE -ne 0) { exit 1 }
+                  Write-Host "PASSED: --seed flag verified (exit 0)"
+                }
+                Remove-Item -Recurse -Force build
+              }
+            }
+          }
+          # Validate default ENABLE_MOVE_ORDERING selection (no explicit override)
+          foreach ($bs in @(3,5)) {
+            cmake -B build -DBOARD_SIZE=$bs
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+            cmake --build build --config Release
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+            ctest --test-dir build --build-config Release --output-on-failure
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+            Remove-Item -Recurse -Force build
+          }
 
   build-portable:
     runs-on: ${{ matrix.os }}
@@ -180,21 +217,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Build portable release
+      - name: Build, smoke test, and verify all configurations
         run: |
           set -euo pipefail
-          make portable BOARD_SIZE=3
-
-      - name: Smoke test
-        run: |
-          set -euo pipefail
-          ./ttt --help
-
-      - name: Self-play verification
-        run: |
-          set -euo pipefail
-          ./ttt -s 1000000
-          echo "PASSED: perfect play verified (exit 0)"
+          for bs in 3 4 5 6 7 8; do
+            for mo in 0 1; do
+              make portable BOARD_SIZE=$bs ENABLE_MOVE_ORDERING=$mo
+              ./ttt --help
+              if [ "$bs" -le 4 ]; then
+                ./ttt -s 1000000
+                echo "PASSED: perfect play verified (exit 0)"
+              fi
+              make clean
+            done
+          done
 
   strict-warnings:
     runs-on: ${{ matrix.os }}
@@ -203,13 +239,12 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
-        board_size: [3, 4, 5, 6, 7, 8]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Build with strict warnings
+      - name: Build with strict warnings (all configurations)
         run: |
           set -euo pipefail
           COMMON="-Wall -Wextra -Wpedantic -Werror"
@@ -228,13 +263,17 @@ jobs:
           APP_SRC="src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c"
           TEST_SRC="test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c test/test_correctness.c test/unity/unity.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c"
 
-          ${{ matrix.compiler }} -std=c11 -O1 $APP_STRICT -DBOARD_SIZE=${{ matrix.board_size }} \
-            $APP_SRC \
-            -o /dev/null -lm
+          for bs in 3 4 5 6 7 8; do
+            for mo in 0 1; do
+              ${{ matrix.compiler }} -std=c11 -O1 $APP_STRICT -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo \
+                $APP_SRC \
+                -o /dev/null -lm
 
-          ${{ matrix.compiler }} -std=c11 -O1 $TEST_STRICT -DBOARD_SIZE=${{ matrix.board_size }} -I test/unity \
-            $TEST_SRC \
-            -o /dev/null -lm
+              ${{ matrix.compiler }} -std=c11 -O1 $TEST_STRICT -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo -I test/unity \
+                $TEST_SRC \
+                -o /dev/null -lm
+            done
+          done
 
   sanitize:
     runs-on: ubuntu-latest
@@ -242,8 +281,6 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [gcc, clang]
-        board_size: [3, 4, 5, 6, 7, 8]
-        move_ordering: [0, 1]
     env:
       ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1:check_initialization_order=1
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
@@ -252,29 +289,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Build and run tests under ASan+UBSan
+      - name: Build and run under ASan+UBSan (all configurations)
         run: |
           set -euo pipefail
-          ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
-            -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
-            -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }} -I test/unity \
-            test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
-            test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
-            test/test_correctness.c test/unity/unity.c \
-            src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
-            -o test_runner_san -lm
-          ./test_runner_san
-
-      - name: Run self-play under ASan+UBSan (3x3/4x4)
-        if: matrix.board_size == 3 || matrix.board_size == 4
-        run: |
-          set -euo pipefail
-          ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
-            -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
-            -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
-            -o ttt_san -lm
-          ./ttt_san -s 1000 -q
+          for bs in 3 4 5 6 7 8; do
+            for mo in 0 1; do
+              ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+                -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
+                -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo -I test/unity \
+                test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
+                test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
+                test/test_correctness.c test/unity/unity.c \
+                src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
+                -o test_runner_san -lm
+              ./test_runner_san
+              if [ "$bs" -le 4 ]; then
+                ${{ matrix.compiler }} -std=c11 -O1 -Wall -Wextra -Werror -g -fno-omit-frame-pointer \
+                  -fsanitize=address,undefined,float-divide-by-zero,float-cast-overflow,pointer-compare,pointer-subtract \
+                  -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo \
+                  src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
+                  -o ttt_san -lm
+                ./ttt_san -s 1000 -q
+              fi
+            done
+          done
 
   valgrind:
     runs-on: ubuntu-latest
@@ -282,8 +320,6 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [gcc, clang]
-        board_size: [3, 4, 5, 6, 7, 8]
-        move_ordering: [0, 1]
 
     steps:
       - name: Checkout code
@@ -295,32 +331,29 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y valgrind
 
-      - name: Build test runner for valgrind
+      - name: Build and run under valgrind (all configurations)
         run: |
           set -euo pipefail
-          ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
-            -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }} -I test/unity \
-            test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
-            test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
-            test/test_correctness.c test/unity/unity.c \
-            src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
-            -o test_runner_valgrind -lm
-
-      - name: Run tests under valgrind
-        run: |
-          set -euo pipefail
-          valgrind --leak-check=full --show-leak-kinds=all \
-            --errors-for-leak-kinds=all --error-exitcode=1 \
-            ./test_runner_valgrind
-
-      - name: Run self-play under valgrind (3x3/4x4)
-        if: matrix.board_size == 3 || matrix.board_size == 4
-        run: |
-          set -euo pipefail
-          ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
-            -DBOARD_SIZE=${{ matrix.board_size }} -DENABLE_MOVE_ORDERING=${{ matrix.move_ordering }} \
-            src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
-            -o ttt_valgrind -lm
-          valgrind --leak-check=full --show-leak-kinds=all \
-            --errors-for-leak-kinds=all --error-exitcode=1 \
-            ./ttt_valgrind -s 1000 -q
+          for bs in 3 4 5 6 7 8; do
+            for mo in 0 1; do
+              ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
+                -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo -I test/unity \
+                test/test_runner.c test/test_bitboard.c test/test_negamax.c test/test_zobrist.c \
+                test/test_transposition_table.c test/test_game_scenarios.c test/test_edge_cases.c \
+                test/test_correctness.c test/unity/unity.c \
+                src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
+                -o test_runner_valgrind -lm
+              valgrind --leak-check=full --show-leak-kinds=all \
+                --errors-for-leak-kinds=all --error-exitcode=1 \
+                ./test_runner_valgrind
+              if [ "$bs" -le 4 ]; then
+                ${{ matrix.compiler }} -std=c11 -O1 -g -Wall -Wextra -Werror \
+                  -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo \
+                  src/main.c src/TicTacToe/tic_tac_toe.c src/Negamax/negamax.c src/Negamax/transposition.c \
+                  -o ttt_valgrind -lm
+                valgrind --leak-check=full --show-leak-kinds=all \
+                  --errors-for-leak-kinds=all --error-exitcode=1 \
+                  ./ttt_valgrind -s 1000 -q
+              fi
+            done
+          done
