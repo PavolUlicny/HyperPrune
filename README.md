@@ -98,7 +98,7 @@ The `ENABLE_NATIVE_OPTIMIZATIONS` CMake option adds `-march=native` to target th
 
 **Move ordering:**
 
-The `ENABLE_MOVE_ORDERING` option controls killer-move and history heuristics. Defaults to `ON` for `BOARD_SIZE <= 4` where the pruning gains outweigh the O(n²) sort cost, and `OFF` for larger boards where it degrades performance. Can be overridden: `-DENABLE_MOVE_ORDERING=OFF`. For manual builds that do not pass this flag, the source applies the same default automatically. Note: when changing `BOARD_SIZE` in an existing build directory, the cached `ENABLE_MOVE_ORDERING` value is preserved — use a fresh build directory or pass `-DENABLE_MOVE_ORDERING=` explicitly to get the correct default for the new board size.
+The `ENABLE_MOVE_ORDERING` option controls killer-move and history heuristics. Defaults to `ON` for `BOARD_SIZE <= 4` where the pruning gains outweigh the O(n²) sort cost, and `OFF` for larger boards where it degrades performance. Can be overridden: `-DENABLE_MOVE_ORDERING=OFF`. For manual builds that do not pass this flag, the source applies the same default automatically. Note: when changing `BOARD_SIZE` in an existing build directory, the cached `ENABLE_MOVE_ORDERING` value is preserved — use a fresh build directory or pass `-DENABLE_MOVE_ORDERING=ON/OFF` explicitly to get the correct value for the new board size.
 
 ### Manual build
 
