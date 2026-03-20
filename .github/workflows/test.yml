@@ -164,45 +164,36 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Build, test, and verify all configurations
-        shell: pwsh
+        shell: bash
         run: |
-          foreach ($bs in @(3,4,5,6,7,8)) {
-            foreach ($mo in @("ON","OFF")) {
+          set -euo pipefail
+          for bs in 3 4 5 6 7 8; do
+            for mo in ON OFF; do
               cmake -B build -DBOARD_SIZE=$bs -DENABLE_MOVE_ORDERING=$mo
-              if ($LASTEXITCODE -ne 0) { exit 1 }
               cmake --build build --config Release
-              if ($LASTEXITCODE -ne 0) { exit 1 }
               ctest --test-dir build --build-config Release --output-on-failure
-              if ($LASTEXITCODE -ne 0) { exit 1 }
-              if ($bs -le 4) {
+              if [ "$bs" -le 4 ]; then
                 ./build/Release/ttt.exe -s 1000000
-                if ($LASTEXITCODE -ne 0) { exit 1 }
-                Write-Host "PASSED: perfect play verified (exit 0)"
-              }
-              if ($bs -eq 3) {
+                echo "PASSED: perfect play verified (exit 0)"
+              fi
+              if [ "$bs" -eq 3 ]; then
                 ./build/Release/ttt.exe --tt-size 0 -s 100000
-                if ($LASTEXITCODE -ne 0) { exit 1 }
-                Write-Host "PASSED: perfect play verified without TT (exit 0)"
+                echo "PASSED: perfect play verified without TT (exit 0)"
                 ./build/Release/ttt.exe -S 42 -s 1000
-                if ($LASTEXITCODE -ne 0) { exit 1 }
-                Write-Host "PASSED: -S seed flag verified (exit 0)"
+                echo "PASSED: -S seed flag verified (exit 0)"
                 ./build/Release/ttt.exe --seed 42 -s 1000
-                if ($LASTEXITCODE -ne 0) { exit 1 }
-                Write-Host "PASSED: --seed flag verified (exit 0)"
-              }
-              Remove-Item -Recurse -Force build
-            }
-          }
+                echo "PASSED: --seed flag verified (exit 0)"
+              fi
+              rm -rf build
+            done
+          done
           # Validate default ENABLE_MOVE_ORDERING selection (no explicit override)
-          foreach ($bs in @(3,5)) {
+          for bs in 3 5; do
             cmake -B build -DBOARD_SIZE=$bs
-            if ($LASTEXITCODE -ne 0) { exit 1 }
             cmake --build build --config Release
-            if ($LASTEXITCODE -ne 0) { exit 1 }
             ctest --test-dir build --build-config Release --output-on-failure
-            if ($LASTEXITCODE -ne 0) { exit 1 }
-            Remove-Item -Recurse -Force build
-          }
+            rm -rf build
+          done
 
   build-portable:
     runs-on: ${{ matrix.os }}
