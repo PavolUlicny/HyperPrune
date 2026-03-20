@@ -21,6 +21,16 @@ endif()
 # LTO, -funroll-loops, and -fno-semantic-interposition are always applied to Release builds.
 option(ENABLE_NATIVE_OPTIMIZATIONS "Enable -march=native for CPU-specific tuning" OFF)
 
+# Move ordering: killer-move and history heuristics.
+# Default: ON for BOARD_SIZE <= 4 (ordering improves pruning), OFF for larger boards
+# (O(n^2) sort overhead outweighs pruning gains when TT coverage drops).
+if(BOARD_SIZE LESS 5)
+    set(ENABLE_MOVE_ORDERING_DEFAULT ON)
+else()
+    set(ENABLE_MOVE_ORDERING_DEFAULT OFF)
+endif()
+option(ENABLE_MOVE_ORDERING "Enable killer-move and history heuristics for move ordering" ${ENABLE_MOVE_ORDERING_DEFAULT})
+
 # Main executable
 add_executable(ttt
     src/main.c
@@ -29,6 +39,7 @@ add_executable(ttt
     src/Negamax/transposition.c
 )
 target_compile_definitions(ttt PRIVATE BOARD_SIZE=${BOARD_SIZE})
+target_compile_definitions(ttt PRIVATE ENABLE_MOVE_ORDERING=$<BOOL:${ENABLE_MOVE_ORDERING}>)
 
 # Static CRT for portable Windows distribution (no Visual C++ Redistributable required)
 if(MSVC)
@@ -79,6 +90,7 @@ add_executable(test_runner
     src/Negamax/transposition.c
 )
 target_compile_definitions(test_runner PRIVATE BOARD_SIZE=${BOARD_SIZE})
+target_compile_definitions(test_runner PRIVATE ENABLE_MOVE_ORDERING=$<BOOL:${ENABLE_MOVE_ORDERING}>)
 target_include_directories(test_runner PRIVATE test/unity)
 if(NOT MSVC)
     target_compile_options(test_runner PRIVATE -O1 -UNDEBUG)
