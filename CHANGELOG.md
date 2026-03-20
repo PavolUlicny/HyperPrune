@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Performance
+
+- Added `ENABLE_MOVE_ORDERING` compile-time flag to control killer-move and history heuristics; defaults to `ON` for `BOARD_SIZE <= 4` (pruning gains outweigh O(n²) sort cost) and `OFF` for larger boards where ordering degrades performance
+
 ## [v2.3.4] - 2026-03-19
 
 ### Performance
