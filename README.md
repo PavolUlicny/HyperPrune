@@ -66,6 +66,13 @@ make BOARD_SIZE=4
 make pgo BOARD_SIZE=5
 ```
 
+Move ordering (killer-move and history heuristics):
+
+```sh
+make BOARD_SIZE=5 ENABLE_MOVE_ORDERING=0   # Default for BOARD_SIZE >= 5
+make BOARD_SIZE=3 ENABLE_MOVE_ORDERING=1   # Default for BOARD_SIZE <= 4
+```
+
 ### Cross-platform - CMake
 
 ```sh
@@ -88,6 +95,10 @@ cmake --build build --config Release
 **Native optimizations:**
 
 The `ENABLE_NATIVE_OPTIMIZATIONS` CMake option adds `-march=native` to target the build machine's CPU for additional performance. LTO, `-funroll-loops`, and `-fno-semantic-interposition` are always applied to Release builds without this option. Use `ON` for local builds, `OFF` (default) for portable binaries.
+
+**Move ordering:**
+
+The `ENABLE_MOVE_ORDERING` option controls killer-move and history heuristics. Defaults to `ON` for `BOARD_SIZE <= 4` where the pruning gains outweigh the O(n²) sort cost, and `OFF` for larger boards where it degrades performance. Can be overridden: `-DENABLE_MOVE_ORDERING=OFF`. For manual builds that do not pass this flag, the source applies the same default automatically. Note: when changing `BOARD_SIZE` in an existing build directory, the cached `ENABLE_MOVE_ORDERING` value is preserved — use a fresh build directory or pass `-DENABLE_MOVE_ORDERING=` explicitly to get the correct default for the new board size.
 
 ### Manual build
 
@@ -161,7 +172,7 @@ Here is the full pipeline of a single `getAiMove()` call.
 
 **Terminal conditions** — After the TT probe and before move generation, `negamax()` calls `boardScore()` to check whether the position is terminal. `boardScore()` checks only the opponent's pieces — the player who just moved — since the current player has not yet placed a piece. It calls `bitboard_has_won()`, which scans all `WIN_MASK_COUNT = 2 × BOARD_SIZE + 2` precomputed masks (N row masks, N column masks, main diagonal, anti-diagonal), testing `(player_pieces & mask) == mask` for each. A full board with no winner is `TIE = 0`. If neither condition holds, the sentinel `NOT_TERMINAL` is returned and the search continues into move generation.
 
-**Move ordering** — After the TT probe and terminal check, `negamax()` splits move generation into two phases. Phase 1 tries up to two killer moves — bit indices stored in `killers[depth][0..1]` from moves that caused cutoffs at this depth in an earlier branch. Phase 2 iterates the remaining empty squares in descending `history[bit]` order, where `history` accumulates the beta-cutoff count each move has caused anywhere in the tree. The Phase 2 selection is a linear scan (O(n²) across all iterations, n ≤ MAX_MOVES). Together, killers and history push likely-cutoff moves to the front, which lets alpha-beta prune more of the tree before it is evaluated.
+**Move ordering** — Controlled at compile time by `ENABLE_MOVE_ORDERING` (default: `ON` for `BOARD_SIZE <= 4`, `OFF` for larger boards). When enabled, `negamax()` splits move generation into two phases. Phase 1 tries up to two killer moves — bit indices stored in `killers[depth][0..1]` from moves that caused cutoffs at this depth in an earlier branch. Phase 2 iterates the remaining empty squares in descending `history[bit]` order, where `history` accumulates the beta-cutoff count each move has caused anywhere in the tree. The Phase 2 selection is a linear scan (O(n²) across all iterations, n ≤ MAX_MOVES). Together, killers and history push likely-cutoff moves to the front, which lets alpha-beta prune more of the tree before it is evaluated. On larger boards the O(n²) sort cost dominates because TT coverage drops and the move loop runs far more often, so ordering is disabled by default.
 
 **Profile-guided optimization** — `make pgo` runs a three-step build: compile with profiling instrumentation, run a self-play workload to collect a real execution profile, then rebuild with that profile fed back to the compiler. The search logic is identical; PGO uses the observed hot paths to guide inlining decisions and branch-prediction hints.
 
