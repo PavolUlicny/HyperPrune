@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### CI
 
 - Reworked test workflow: replaced matrix dimensions for `board_size` and `move_ordering` with inner shell loops, reducing job count while covering all board sizes (3–8) × both move-ordering states across every job
-- Added Debug build coverage to `test` (Make) and `test-cmake` jobs
+- Added Debug build coverage to `test` (Make), `test-cmake`, and `test-windows` jobs
 - Added `--seed` / `-S` CLI smoke tests to `test`, `test-cmake`, and `test-windows` (3×3 Release runs)
 - Added default `ENABLE_MOVE_ORDERING` selection validation (no explicit override) for `BOARD_SIZE=3` and `BOARD_SIZE=5` in `test`, `test-cmake`, and `test-windows`, exercising the Makefile and CMake default-derivation logic
 - Expanded `build-portable` to cover all board sizes × both move-ordering states (was 3×3 only)
