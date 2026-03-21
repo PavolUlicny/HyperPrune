@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Corrected `initializeBoard()` comment: `player_turn` is not used by `checkWinner()`; only `move_count` is
+- Corrected `checkWinner()` comment: abbreviated return values `TIE`/`CONTINUE` changed to actual enum names `GAME_TIE`/`GAME_CONTINUE`
+
 ## [v2.4.0] - 2026-03-20
 
 ### Performance
