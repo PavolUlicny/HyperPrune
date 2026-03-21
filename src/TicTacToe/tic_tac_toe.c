@@ -131,7 +131,7 @@ static void bitboard_to_array(Bitboard board, char out_array[BOARD_SIZE][BOARD_S
  * Initialize all board cells to empty.
  *
  * NOTE: This only resets the bitboard state. It does NOT reset move_count
- * or player_turn, which are used by checkWinner() for tie detection.
+ * (used by checkWinner() for tie detection) or player_turn.
  * For a complete game reset, use restartGame() instead.
  */
 void initializeBoard(void)
@@ -303,7 +303,7 @@ void makeMove(int row, int col)
 /*
  * Check whether the last move at (row,col) finished the game.
  * Uses bitboard win detection for checking.
- * Returns X_WIN/O_WIN/TIE/CONTINUE.
+ * Returns X_WIN/O_WIN/GAME_TIE/GAME_CONTINUE.
  */
 GameResult checkWinner(int row, int col)
 {
