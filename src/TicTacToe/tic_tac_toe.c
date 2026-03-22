@@ -336,15 +336,24 @@ void makeMove(int row, int col)
 
 /*
  * Check whether the last move at (row,col) finished the game.
- * Uses bitboard win detection for checking.
  * Returns X_WIN/O_WIN/GAME_TIE/GAME_CONTINUE.
+ *
+ * Win detection: for MAX_MOVES <= 16 uses has_won_lut (checks any win for the
+ * player, not only through row,col). This is equivalent under the invariant that
+ * checkWinner is always called immediately after a move on a previously
+ * non-terminal board — no win existed before the move, so any win now is due to
+ * that move. For larger boards, falls back to bitboard_did_last_move_win.
  */
 GameResult checkWinner(int row, int col)
 {
     char player = bitboard_get_cell(board_state, row, col);
     uint64_t player_pieces = (player == 'x') ? board_state.x_pieces : board_state.o_pieces;
 
+#if MAX_MOVES <= 16
+    if (has_won_lut[player_pieces])
+#else
     if (bitboard_did_last_move_win(player_pieces, row, col))
+#endif
         return (player == 'x') ? X_WIN : O_WIN;
 
     if (move_count < MAX_MOVES)

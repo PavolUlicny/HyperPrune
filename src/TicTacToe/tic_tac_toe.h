@@ -108,8 +108,13 @@ extern "C"
      * Returns X_WIN or O_WIN based on the symbol at that cell,
      * GAME_TIE if the board is full, or GAME_CONTINUE otherwise.
      *
-     * Precondition: (row,col) must be an occupied cell. Calling with an
-     * empty cell produces undefined results.
+     * Preconditions:
+     *  - (row,col) must be an occupied cell; calling with an empty cell
+     *    produces undefined results.
+     *  - Must be called immediately after a move on a previously non-terminal
+     *    board (no player had already won before the move). For MAX_MOVES <= 16,
+     *    win detection uses a full-board lookup rather than checking only through
+     *    (row,col); both are equivalent under this precondition.
      */
     GameResult checkWinner(int row, int col);
 
