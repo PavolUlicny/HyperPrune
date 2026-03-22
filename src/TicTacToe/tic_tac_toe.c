@@ -25,6 +25,17 @@ char ai_symbol = 'o';
 #define WIN_MASK_COUNT (2 * BOARD_SIZE + 2)
 static uint64_t win_masks[WIN_MASK_COUNT];
 
+#if MAX_MOVES <= 16
+/* Lookup table for win detection (BOARD_SIZE <= 4 only).
+ * has_won_lut[player_pieces] == 1 if those pieces contain a complete win line.
+ * Indexed directly by the player's bitboard value; valid indices are [0, 2^MAX_MOVES).
+ * Populated by init_win_masks(). Replaces the WIN_MASK_COUNT-iteration loop
+ * with a single array access — 512 bytes for 3x3, 64 KiB for 4x4.
+ * No masking of player_pieces is needed: all internal callers pass bitboards built
+ * via bitboard_make_move, which sets bits strictly in [0, MAX_MOVES). */
+static uint8_t has_won_lut[1u << MAX_MOVES];
+#endif
+
 /* Consume the rest of the current input line (including newline). */
 static void discardLine(void)
 {
@@ -83,17 +94,40 @@ void init_win_masks(void)
     win_masks[idx++] = mask;
 
     assert(idx == WIN_MASK_COUNT);
+
+#if MAX_MOVES <= 16
+    /* Populate win lookup table: for each possible player bitboard, check all
+     * win masks and record the result. O(2^MAX_MOVES * WIN_MASK_COUNT) at startup
+     * — 4096 operations for 3x3, 655360 for 4x4. Negligible cost. */
+    for (unsigned int bits = 0; bits < (1u << MAX_MOVES); bits++)
+    {
+        uint8_t won = 0;
+        for (int i = 0; i < WIN_MASK_COUNT; i++)
+        {
+            if ((bits & win_masks[i]) == win_masks[i])
+            {
+                won = 1;
+                break;
+            }
+        }
+        has_won_lut[bits] = won;
+    }
+#endif
 }
 
 /* Check if a player has won using pre-computed masks */
 int bitboard_has_won(uint64_t player_pieces)
 {
+#if MAX_MOVES <= 16
+    return has_won_lut[player_pieces];
+#else
     for (int i = 0; i < WIN_MASK_COUNT; i++)
     {
         if ((player_pieces & win_masks[i]) == win_masks[i])
             return 1;
     }
     return 0;
+#endif
 }
 
 /* Win check for patterns passing through (row, col) — row, column, and diagonals if on them */
