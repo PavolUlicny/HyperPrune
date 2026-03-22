@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.5.0] - 2026-03-22
+
 ### Performance
 
 - Replaced `bitboard_has_won` mask loop with a precomputed lookup table for `MAX_MOVES` ≤ 16 (i.e. `BOARD_SIZE` ≤ 4); 512 bytes for 3×3, 64 KiB for 4×4, populated once at startup by `init_win_masks()`
