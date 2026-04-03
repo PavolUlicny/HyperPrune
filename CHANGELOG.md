@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### CI
+
+- Added dedicated `verify-5x5` CI job: builds for `BOARD_SIZE=5` and runs 1M self-play games with a 200M-entry transposition table to verify perfect play on 5×5
+
+### Documentation
+
+- Updated README tagline to reflect verified perfect play on 3×3 to 5×5 (was an unverified claim for all boards up to 8×8)
+
 ## [v2.5.0] - 2026-03-22
 
 ### Performance
