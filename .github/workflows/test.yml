@@ -197,6 +197,20 @@ jobs:
             rm -rf build
           done
 
+  verify-5x5:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Build for 5x5
+        run: make BOARD_SIZE=5
+
+      - name: Verify perfect play (1M games)
+        run: |
+          ./ttt -s 1000000 -t 200000000
+          echo "PASSED: 5x5 perfect play verified (exit 0)"
+
   build-portable:
     runs-on: ${{ matrix.os }}
     strategy:
