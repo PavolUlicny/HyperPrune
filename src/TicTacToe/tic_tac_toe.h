@@ -181,6 +181,9 @@ extern "C"
 
     /**
      * Check if a player has won using pre-computed win masks.
+     * Precondition: player_pieces must have no bits set above bit MAX_MOVES-1.
+     * For MAX_MOVES <= 16 the implementation indexes a LUT directly by player_pieces;
+     * violating this precondition causes an out-of-bounds access.
      */
     int bitboard_has_won(uint64_t player_pieces);
 
