@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- Updated the vendored Unity test framework sources to upstream 2.6.3 and removed the local formatting changes
+- Added upstream Unity MIT license text at `test/unity/LICENSE.txt`
+- Added a short third-party notices section to `README.md` pointing to the vendored Unity license
+
 ## [v2.5.1] - 2026-04-03
 
 ### CI
