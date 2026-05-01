@@ -268,6 +268,10 @@ test/
 └── unity/                    # Unity test framework
 ```
 
+## Third-party notices
+
+The test suite vendors the Unity C test framework under [test/unity/](test/unity/). Its upstream MIT license is included in [test/unity/LICENSE.txt](test/unity/LICENSE.txt).
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
