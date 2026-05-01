@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.5.2] - 2026-05-01
+
 ### Documentation
 
 - Updated the vendored Unity test framework sources to upstream 2.6.3 and removed the local formatting changes
